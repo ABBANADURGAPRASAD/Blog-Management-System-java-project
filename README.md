@@ -36,4 +36,3 @@ blog-management-system/
 │── pom.xml
 │── application.properties
 
-
