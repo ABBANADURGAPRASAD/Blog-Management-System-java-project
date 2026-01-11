@@ -1,0 +1,164 @@
+<div class="main-container">
+  <div class="profile-edit-container">
+    <div class="card profile-edit-card">
+      <!-- Tabs -->
+      <div class="tabs">
+        <button 
+          class="tab" 
+          [class.active]="activeTab === 'profile'"
+          (click)="switchTab('profile')"
+        >
+          Profile
+        </button>
+        <button 
+          class="tab" 
+          [class.active]="activeTab === 'account'"
+          (click)="switchTab('account')"
+        >
+          Account Settings
+        </button>
+      </div>
+
+      <!-- Profile Tab Content -->
+      <div *ngIf="activeTab === 'profile'" class="tab-content">
+        <form [formGroup]="profileForm" (ngSubmit)="saveChanges()">
+          <!-- Profile Picture -->
+          <div class="profile-pic-section">
+            <div class="profile-pic-container">
+              <img 
+                [src]="profilePicPreview || 'https://via.placeholder.com/120'" 
+                alt="Profile" 
+                class="profile-pic-edit"
+              />
+              <label class="camera-overlay">
+                <input 
+                  type="file" 
+                  accept="image/*" 
+                  (change)="onProfilePicChange($event)"
+                  style="display: none;"
+                />
+                <span class="camera-icon">📷</span>
+              </label>
+            </div>
+            <div class="profile-name-section">
+              <h2 class="profile-name">{{ profileForm.get('fullName')?.value || 'User' }}</h2>
+              <p class="profile-role">{{ user?.role || 'Member' }}</p>
+            </div>
+          </div>
+
+          <!-- Form Fields -->
+          <div class="form-fields">
+            <div class="form-group">
+              <label>Full Name</label>
+              <input 
+                type="text" 
+                formControlName="fullName"
+                class="form-control"
+                placeholder="Enter full name"
+              />
+            </div>
+
+            <div class="form-group">
+              <label>Bio</label>
+              <textarea 
+                formControlName="bio"
+                class="form-control"
+                rows="4"
+                placeholder="Tell us about yourself"
+              ></textarea>
+            </div>
+
+            <div class="form-group">
+              <label>Phone Number</label>
+              <input 
+                type="tel" 
+                formControlName="phoneNumber"
+                class="form-control"
+                placeholder="Enter phone number"
+              />
+            </div>
+
+            <div class="form-group">
+              <label>Twitter URL</label>
+              <input 
+                type="url" 
+                formControlName="twitterUrl"
+                class="form-control"
+                placeholder="https://twitter.com/username"
+              />
+            </div>
+
+            <div class="form-group">
+              <label>Linkedin URL</label>
+              <input 
+                type="url" 
+                formControlName="linkedInUrl"
+                class="form-control"
+                placeholder="https://linkedin.com/in/username"
+              />
+            </div>
+          </div>
+
+          <!-- Action Buttons -->
+          <div class="form-actions">
+            <button type="submit" class="btn btn-primary">Save Changes</button>
+            <button type="button" class="btn btn-outline" (click)="cancel()">Cancel</button>
+          </div>
+        </form>
+      </div>
+
+      <!-- Account Settings Tab Content -->
+      <div *ngIf="activeTab === 'account'" class="tab-content">
+        <form [formGroup]="accountForm" (ngSubmit)="saveChanges()">
+          <div class="form-fields">
+            <div class="form-group">
+              <label>Email</label>
+              <input 
+                type="email" 
+                formControlName="email"
+                class="form-control"
+                placeholder="Enter email"
+              />
+            </div>
+
+            <div class="form-group">
+              <label>Username</label>
+              <input 
+                type="text" 
+                formControlName="username"
+                class="form-control"
+                placeholder="Enter username"
+              />
+            </div>
+
+            <div class="form-group">
+              <label>New Password</label>
+              <input 
+                type="password" 
+                formControlName="password"
+                class="form-control"
+                placeholder="Enter new password"
+              />
+            </div>
+
+            <div class="form-group">
+              <label>Confirm Password</label>
+              <input 
+                type="password" 
+                formControlName="confirmPassword"
+                class="form-control"
+                placeholder="Confirm new password"
+              />
+            </div>
+          </div>
+
+          <div class="form-actions">
+            <button type="submit" class="btn btn-primary">Save Changes</button>
+            <button type="button" class="btn btn-outline" (click)="cancel()">Cancel</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+

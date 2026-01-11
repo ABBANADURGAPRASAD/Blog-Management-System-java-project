@@ -1,0 +1,23 @@
+<header class="app-header">
+  <div class="header-left">
+    <a (click)="onHomeClick()" class="tumblr-logo" style="cursor: pointer;">
+      <img src="assets/images/Blog_mang_logo.png" alt="DP Blog Logo" class="logo-image" />
+      <span class="logo-text">Feel free</span>
+    </a>
+    <div class="search-bar">
+      <input type="text" placeholder="Search..." />
+      <span class="search-icon">🔍</span>
+    </div>
+  </div>
+  <div class="header-right">
+    <img 
+      src="assets/images/dp_profile.jpeg"
+      alt="Profile" 
+      class="user-profile-pic"
+      (click)="onProfileClick()"
+    />
+    <span class="notification-bell">🔔</span>
+    <button class="new-post-btn" (click)="onNewPostClick()">+ New Post</button>
+  </div>
+</header>
+

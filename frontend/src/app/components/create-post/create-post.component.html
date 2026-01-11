@@ -1,0 +1,89 @@
+<div class="create-post-container">
+  <div class="create-post-modal">
+    <div class="modal-header">
+      <h2 class="modal-title">New Post</h2>
+    </div>
+
+    <form [formGroup]="postForm" (ngSubmit)="publishPost()">
+      <!-- Image Upload Section -->
+      <div class="form-group">
+        <div 
+          class="file-upload-zone"
+          [class.dragover]="isDragging"
+          (dragover)="onDragOver($event)"
+          (dragleave)="onDragLeave($event)"
+          (drop)="onDrop($event)"
+        >
+          <div *ngIf="!filePreview" class="upload-placeholder">
+            <p>Drag and drop zone</p>
+            <input 
+              type="file" 
+              id="fileInput" 
+              accept="image/*" 
+              (change)="onFileSelected($event)"
+              style="display: none;"
+            />
+            <label for="fileInput" class="choose-file-btn">Choose file</label>
+          </div>
+          <div *ngIf="filePreview" class="uploaded-file">
+            <img [src]="filePreview" alt="Preview" />
+            <div class="file-info">
+              <div class="file-name">{{ selectedFile?.name }}</div>
+            </div>
+            <button type="button" class="remove-file-btn" (click)="removeFile()">X Remove</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Text Editor Toolbar -->
+      <div class="text-editor-toolbar">
+        <button type="button" class="toolbar-btn" (click)="formatText('bold')" title="Bold">B</button>
+        <button type="button" class="toolbar-btn" (click)="formatText('italic')" title="Italic">I</button>
+        <button type="button" class="toolbar-btn" (click)="formatText('strikeThrough')" title="Strikethrough">S</button>
+        <button type="button" class="toolbar-btn" (click)="formatText('insertUnorderedList')" title="Unordered List">•</button>
+        <button type="button" class="toolbar-btn" (click)="formatText('insertOrderedList')" title="Ordered List">1.</button>
+        <button type="button" class="toolbar-btn" (click)="formatText('createLink')" title="Link">🔗</button>
+        <button type="button" class="toolbar-btn" (click)="formatText('undo')" title="Undo">↶</button>
+        <button type="button" class="toolbar-btn" (click)="formatText('redo')" title="Redo">↷</button>
+      </div>
+
+      <!-- Text Area -->
+      <div class="form-group">
+        <textarea 
+          formControlName="content"
+          class="form-control post-content-area"
+          placeholder="What's your mind?"
+          rows="8"
+        ></textarea>
+      </div>
+
+      <!-- Tags and Category -->
+      <div class="form-row">
+        <div class="form-group" style="flex: 1;">
+          <input 
+            type="text" 
+            formControlName="tags"
+            class="form-control"
+            placeholder="Tags, category..."
+          />
+        </div>
+        <div class="form-group" style="flex: 1;">
+          <select 
+            formControlName="category"
+            class="form-control"
+          >
+            <option value="">Select category</option>
+            <option *ngFor="let cat of categories" [value]="cat">{{ cat }}</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Action Buttons -->
+      <div class="form-actions">
+        <button type="submit" class="btn btn-primary">Publish</button>
+        <button type="button" class="btn btn-secondary" (click)="saveDraft()">Save Draft</button>
+      </div>
+    </form>
+  </div>
+</div>
+

@@ -1,0 +1,71 @@
+<div class="main-container">
+  <div class="home-layout">
+    <!-- Main Content -->
+    <div class="posts-section">
+      <div class="posts-grid">
+        <div class="post-card" *ngFor="let post of posts">
+          <img [src]="post.media || 'https://via.placeholder.com/400x200'" [alt]="post.title" class="post-image" />
+          <div class="post-content">
+            <h3 class="post-title">{{ post.title || 'Untitled Post' }}</h3>
+            <p class="post-description">{{ post.content }}</p>
+            <div class="post-meta">
+              <img [src]="post.authorPic || 'https://via.placeholder.com/32'" [alt]="post.author" class="post-author-pic" />
+              <div>
+                <div class="post-author-name">{{ post.author || 'Anonymous' }}</div>
+                <div class="post-date">{{ post.date || 'Unknown date' }}</div>
+              </div>
+            </div>
+            <button class="read-more-btn">Read More</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Pagination -->
+      <div class="pagination">
+        <button (click)="changePage(currentPage - 1)" [disabled]="currentPage === 1">←</button>
+        <button 
+          *ngFor="let page of [1, 2, 13]" 
+          [class.active]="page === currentPage"
+          (click)="changePage(page)">
+          {{ page }}
+        </button>
+        <button (click)="changePage(currentPage + 1)" [disabled]="currentPage === totalPages">→</button>
+      </div>
+    </div>
+
+    <!-- Sidebar -->
+    <div class="sidebar-section">
+      <!-- Popular Posts -->
+      <div class="sidebar">
+        <h3 class="sidebar-title">Popular Posts</h3>
+        <div class="sidebar-item" *ngFor="let post of popularPosts">
+          <img [src]="post.media || 'https://via.placeholder.com/50'" [alt]="post.title" />
+          <div class="sidebar-item-content">
+            <div class="sidebar-item-title">{{ post.title }}</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Recent Comments -->
+      <div class="sidebar">
+        <h3 class="sidebar-title">Recent Comments</h3>
+        <div class="sidebar-item" *ngFor="let comment of recentComments">
+          <div class="activity-icon">{{ comment.author }}</div>
+          <div class="sidebar-item-content">
+            <div class="sidebar-item-title">{{ comment.name }}</div>
+            <div class="sidebar-item-meta">{{ comment.text }} {{ comment.time }}</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Tags -->
+      <div class="sidebar">
+        <h3 class="sidebar-title">Tags</h3>
+        <div class="tags-container">
+          <span class="tag" *ngFor="let tag of tags" (click)="onTagClick(tag)">{{ tag }}</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
