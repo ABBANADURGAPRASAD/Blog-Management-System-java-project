@@ -31,6 +31,10 @@ public class Post {
 
     private String imageUrl;
 
+    private String mediaUrl;
+
+    private String mediaType; // "image", "video", "pdf"
+
     private String category;
 
     private String tags;

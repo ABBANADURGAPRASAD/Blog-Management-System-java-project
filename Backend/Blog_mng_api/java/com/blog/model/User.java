@@ -42,4 +42,7 @@ public class User {
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Post> posts = new ArrayList<>();
+
+    @Transient // Not saved to DB, serves as input from JSON
+    private String password;
 }

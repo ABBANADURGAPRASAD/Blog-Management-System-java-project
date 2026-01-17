@@ -1,4 +1,5 @@
 com/blog/controller/UserController.class
+com/blog/config/WebConfig.class
 com/blog/controller/CommentController.class
 com/blog/controller/LikeController.class
 com/blog/service/LikeService.class

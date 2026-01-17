@@ -32,17 +32,36 @@ public class PostController {
     }
 
     @PostMapping(consumes = { "multipart/form-data" })
-    public Post createPost(@RequestPart("post") Post post,
-            @RequestPart(value = "image", required = false) org.springframework.web.multipart.MultipartFile image,
+    public ResponseEntity<?> createPost(@RequestPart("post") String postJson,
+            @RequestPart(value = "file", required = false) org.springframework.web.multipart.MultipartFile file,
             @RequestParam Long userId) {
-        if (image != null && !image.isEmpty()) {
-            // Simplified logic: In production, save to S3/Cloudinary and get URL
-            // For now, setting a mock URL or usage logic
-            String fileName = System.currentTimeMillis() + "_" + image.getOriginalFilename();
-            // In a real app: fileStorageService.store(image, fileName);
-            post.setImageUrl("/uploads/" + fileName);
+        try {
+            com.fasterxml.jackson.databind.ObjectMapper objectMapper = new com.fasterxml.jackson.databind.ObjectMapper();
+            Post post = objectMapper.readValue(postJson, Post.class);
+            if (file != null && !file.isEmpty()) {
+                String contentType = file.getContentType();
+                String fileName = System.currentTimeMillis() + "_" + file.getOriginalFilename();
+                // Save file logic here (e.g., to disk or cloud storage)
+
+                String mediaType = "unknown";
+                if (contentType != null) {
+                    if (contentType.startsWith("image")) {
+                        mediaType = "image";
+                        post.setImageUrl("/uploads/" + fileName); // Keep legacy field populated
+                    } else if (contentType.startsWith("video")) {
+                        mediaType = "video";
+                    } else if (contentType.equals("application/pdf")) {
+                        mediaType = "pdf";
+                    }
+                }
+
+                post.setMediaUrl("/uploads/" + fileName);
+                post.setMediaType(mediaType);
+            }
+            return ResponseEntity.ok(postService.createPost(post, userId));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body("Error processing request: " + e.getMessage());
         }
-        return postService.createPost(post, userId);
     }
 
     @GetMapping("/popular")

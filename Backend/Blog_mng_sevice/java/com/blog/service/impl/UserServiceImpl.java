@@ -23,6 +23,10 @@ public class UserServiceImpl implements UserService {
         if (userRepository.existsByEmail(user.getEmail())) {
             throw new RuntimeException("Email already in use");
         }
+        // Simple "hashing" for now as per requirements
+        if (user.getPassword() != null) {
+            user.setPasswordHash(user.getPassword());
+        }
         return userRepository.save(user);
     }
 
