@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Dashboard - Tumblr Clone</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <header>
+        <h2>Welcome, <span id="username"></span></h2>
+        <button onclick="logout()">Logout</button>
+    </header>
+    <div>
+        <h3>New Post</h3>
+        <input type="file" id="mediaUpload">
+        <textarea id="postContent" placeholder="What's on your mind?"></textarea>
+        <button onclick="createPost()">Post</button>
+    </div>
+    <div id="post-feed"></div>
+    <script src="script.js"></script>
+</body>
+</html>
