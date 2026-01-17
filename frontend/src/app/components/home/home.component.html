@@ -4,12 +4,12 @@
     <div class="posts-section">
       <div class="posts-grid">
         <div class="post-card" *ngFor="let post of posts">
-          <img [src]="post.media || 'https://via.placeholder.com/400x200'" [alt]="post.title" class="post-image" />
+          <img src="assets/images/image.png" [alt]="post.title" class="post-image" />
           <div class="post-content">
             <h3 class="post-title">{{ post.title || 'Untitled Post' }}</h3>
             <p class="post-description">{{ post.content }}</p>
             <div class="post-meta">
-              <img [src]="post.authorPic || 'https://via.placeholder.com/32'" [alt]="post.author" class="post-author-pic" />
+              <img src="assets/images/dp_profile.jpeg" [alt]="post.author" class="post-author-pic" />
               <div>
                 <div class="post-author-name">{{ post.author || 'Anonymous' }}</div>
                 <div class="post-date">{{ post.date || 'Unknown date' }}</div>

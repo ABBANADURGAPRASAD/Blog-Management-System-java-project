@@ -118,5 +118,9 @@ export class CreatePostComponent implements OnInit {
     console.log('Saving draft...', this.postForm.value);
     alert('Draft saved successfully!');
   }
+
+  cancel(){
+    this.router.navigate(['/home']);
+  }
 }
 
