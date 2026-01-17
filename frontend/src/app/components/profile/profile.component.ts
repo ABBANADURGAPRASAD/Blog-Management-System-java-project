@@ -23,80 +23,78 @@ export class ProfileComponent implements OnInit {
 
   ngOnInit() {
     this.loadUserProfile();
-    this.loadRecentActivities();
   }
 
   loadUserProfile() {
     this.userService.getCurrentUser().subscribe({
       next: (data) => {
-        this.user = data;
+        this.user = this.transformUser(data);
+        this.loadRecentActivities();
       },
       error: (error) => {
         console.error('Error loading user profile:', error);
-        // Mock data for development
-        this.user = this.getMockUser();
+        this.user = null;
+        this.recentActivities = [];
       }
     });
   }
 
-  loadRecentActivities() {
-    // Mock recent activities
-    this.recentActivities = [
-      {
-        type: 'post',
-        icon: '+',
-        text: 'Recent Post',
-        time: '5 minutes ago'
-      },
-      {
-        type: 'post',
-        icon: '📝',
-        text: 'Gemini_Generated_Image 6tmtz4u8tmz.png remove lorem ipsum ioum dolor sit amet, consectetur adipiscing elit, selis...',
-        author: 'Durga Prasad',
-        authorPic: 'https://via.placeholder.com/24',
-        date: 'Jun 11, 2023'
-      },
-      {
-        type: 'post',
-        icon: '📝',
-        text: 'How to Insttomast Strong Framework? v? tronse6tmz4i0tmz.png',
-        author: 'Durga Prasad',
-        authorPic: 'https://via.placeholder.com/24',
-        time: '20 minutes ago'
-      },
-      {
-        type: 'post',
-        icon: '📝',
-        text: 'How to Becinvas a blogmancy a ploer wzmd, consectetur adipiscing elit.',
-        date: 'Aug 11, 2023'
-      },
-      {
-        type: 'post',
-        icon: '📝',
-        text: 'How to Mnite coreegory Whire? amet, consectetur adipiscing elit.',
-        author: 'Durga Prasad',
-        authorPic: 'https://via.placeholder.com/24',
-        date: 'Jun 11, 2023'
-      }
-    ];
+  transformUser(user: User): User {
+    return {
+      ...user,
+      profilePic: user.profileImageUrl || user.profilePic,
+      linkedInUrl: user.linkedinUrl || user.linkedInUrl,
+      postsCount: user.posts?.length || user.postsCount || 0
+    };
   }
 
-  getMockUser(): User {
-    return {
-      id: 1,
-      username: 'durga_prasad',
-      fullName: 'Durga Prasad',
-      email: 'durga@example.com',
-      role: 'Admin',
-      bio: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et',
-      profilePic: 'https://via.placeholder.com/120',
-      bannerPic: 'https://via.placeholder.com/800x200',
-      postsCount: 12,
-      commentsCount: 45,
-      followersCount: 120,
-      twitterUrl: 'https://twitter.com/durga',
-      linkedInUrl: 'https://linkedin.com/in/durga'
-    };
+  loadRecentActivities() {
+    if (!this.user?.id) {
+      this.recentActivities = [];
+      return;
+    }
+
+    // Load user's posts as recent activities
+    this.postService.getAllPosts().subscribe({
+      next: (posts) => {
+        const userPosts = posts.filter(post => post.user?.id === this.user?.id || post.author === this.user?.fullName);
+        this.recentActivities = userPosts.slice(0, 5).map(post => ({
+          type: 'post',
+          icon: '📝',
+          text: post.title || post.content?.substring(0, 100) || 'Recent Post',
+          author: post.user?.fullName || this.user?.fullName,
+          authorPic: post.user?.profileImageUrl || this.user?.profilePic,
+          date: this.formatDate(post.createdAt),
+          time: this.getTimeAgo(post.createdAt)
+        }));
+      },
+      error: (error) => {
+        console.error('Error loading recent activities:', error);
+        this.recentActivities = [];
+      }
+    });
+  }
+
+  formatDate(dateString?: string): string {
+    if (!dateString) return '';
+    const date = new Date(dateString);
+    const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    return `${months[date.getMonth()]} ${date.getDate()}, ${date.getFullYear()}`;
+  }
+
+  getTimeAgo(dateString?: string): string {
+    if (!dateString) return '';
+    const date = new Date(dateString);
+    const now = new Date();
+    const diffMs = now.getTime() - date.getTime();
+    const diffMins = Math.floor(diffMs / 60000);
+    
+    if (diffMins < 1) return 'just now';
+    if (diffMins < 60) return `${diffMins} minutes ago`;
+    const diffHours = Math.floor(diffMins / 60);
+    if (diffHours < 24) return `${diffHours} hours ago`;
+    const diffDays = Math.floor(diffHours / 24);
+    return `${diffDays} days ago`;
   }
 
   editProfile() {

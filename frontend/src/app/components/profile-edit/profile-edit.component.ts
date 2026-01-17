@@ -47,42 +47,32 @@ export class ProfileEditComponent implements OnInit {
   loadUserData() {
     this.userService.getCurrentUser().subscribe({
       next: (data) => {
-        this.user = data;
+        this.user = this.transformUser(data);
         this.profileForm.patchValue({
           fullName: data.fullName || data.username || '',
           bio: data.bio || '',
           phoneNumber: data.phoneNumber || '',
           twitterUrl: data.twitterUrl || '',
-          linkedInUrl: data.linkedInUrl || ''
+          linkedInUrl: data.linkedinUrl || data.linkedInUrl || ''
         });
         this.accountForm.patchValue({
           email: data.email || '',
           username: data.username || ''
         });
-        this.profilePicPreview = data.profilePic || null;
+        this.profilePicPreview = data.profileImageUrl || data.profilePic || null;
       },
       error: (error) => {
         console.error('Error loading user data:', error);
-        // Mock data for development
-        this.user = this.getMockUser();
-        this.profileForm.patchValue({
-          fullName: 'Durga Prasad',
-          bio: 'Durga Prasad',
-          phoneNumber: '',
-          twitterUrl: 'Duitren besd.',
-          linkedInUrl: '1 monusttions'
-        });
+        this.user = null;
       }
     });
   }
 
-  getMockUser(): User {
+  transformUser(user: User): User {
     return {
-      id: 1,
-      username: 'durga_prasad',
-      fullName: 'Durga Prasad',
-      email: 'durga@example.com',
-      role: 'Admin'
+      ...user,
+      profilePic: user.profileImageUrl || user.profilePic,
+      linkedInUrl: user.linkedinUrl || user.linkedInUrl
     };
   }
 
@@ -104,38 +94,52 @@ export class ProfileEditComponent implements OnInit {
 
   saveChanges() {
     if (this.activeTab === 'profile') {
-      if (this.profileForm.valid) {
-        const formData = new FormData();
-        const formValue = this.profileForm.value;
-        
-        Object.keys(formValue).forEach(key => {
-          if (formValue[key]) {
-            formData.append(key, formValue[key]);
+      if (this.profileForm.valid && this.user?.id) {
+        const userData: User = {
+          ...this.user,
+          ...this.profileForm.value,
+          email: this.user.email // Ensure email is preserved
+        };
+
+        // Note: Profile picture upload would need a separate endpoint
+        // For now, we only update text fields
+        if (this.selectedProfilePic) {
+          console.warn('Profile picture upload not yet implemented. Image will not be uploaded.');
+        }
+
+        this.userService.updateUser(this.user.id, userData).subscribe({
+          next: (response) => {
+            console.log('Profile updated successfully:', response);
+            this.router.navigate(['/profile']);
+          },
+          error: (error) => {
+            console.error('Error updating profile:', error);
+            alert('Failed to update profile. Please try again.');
           }
         });
-
-        if (this.selectedProfilePic) {
-          formData.append('profilePic', this.selectedProfilePic);
-        }
-
-        if (this.user?.id) {
-          this.userService.updateUser(this.user.id, formData).subscribe({
-            next: (response) => {
-              console.log('Profile updated successfully:', response);
-              this.router.navigate(['/profile']);
-            },
-            error: (error) => {
-              console.error('Error updating profile:', error);
-              alert('Failed to update profile. Please try again.');
-            }
-          });
-        }
       }
     } else {
-      if (this.accountForm.valid) {
-        // Handle account settings update
-        console.log('Account settings:', this.accountForm.value);
-        alert('Account settings updated successfully!');
+      if (this.accountForm.valid && this.user?.id) {
+        const userData: User = {
+          ...this.user,
+          ...this.accountForm.value
+        };
+
+        // Don't send password if not changed
+        if (!userData.password || userData.password === '') {
+          delete userData.password;
+        }
+
+        this.userService.updateUser(this.user.id, userData).subscribe({
+          next: (response) => {
+            console.log('Account settings updated successfully:', response);
+            this.router.navigate(['/profile']);
+          },
+          error: (error) => {
+            console.error('Error updating account settings:', error);
+            alert('Failed to update account settings. Please try again.');
+          }
+        });
       }
     }
   }

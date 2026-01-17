@@ -10,15 +10,22 @@
     </div>
   </div>
   <div class="header-right">
-    <button class="new-post-btn" (click)="onNewPostClick()">+ New_Post</button>
-    <span class="notification-bell">🔔</span>
-    <img 
-      src="assets/images/dp_profile.jpeg"
-      alt="Profile" 
-      class="user-profile-pic"
-      (click)="onProfileClick()"
-    />
-
+    <ng-container *ngIf="isAuthenticated; else unauthenticated">
+      <button class="new-post-btn" (click)="onNewPostClick()">+ New_Post</button>
+      <span class="notification-bell">🔔</span>
+      <img 
+        [src]="currentUser?.profilePic || currentUser?.profileImageUrl || 'assets/images/dp_profile.jpeg'"
+        alt="Profile" 
+        class="user-profile-pic"
+        (click)="onProfileClick()"
+        onerror="this.src='assets/images/dp_profile.jpeg'"
+      />
+      <button class="logout-btn" (click)="onLogoutClick()">Logout</button>
+    </ng-container>
+    <ng-template #unauthenticated>
+      <button class="login-btn" (click)="onLoginClick()">Login</button>
+      <button class="register-btn" (click)="onRegisterClick()">Register</button>
+    </ng-template>
   </div>
 </header>
 

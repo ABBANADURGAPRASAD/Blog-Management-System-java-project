@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { PostService } from '../../services/post.service';
+import { AuthService } from '../../services/auth.service';
 
 @Component({
   selector: 'app-create-post',
@@ -21,6 +22,7 @@ export class CreatePostComponent implements OnInit {
   constructor(
     private fb: FormBuilder,
     private postService: PostService,
+    private authService: AuthService,
     private router: Router
   ) {
     this.postForm = this.fb.group({
@@ -83,22 +85,30 @@ export class CreatePostComponent implements OnInit {
 
   publishPost() {
     if (this.postForm.valid) {
-      const formData = new FormData();
-      formData.append('content', this.postForm.get('content')?.value);
-      
-      if (this.selectedFile) {
-        formData.append('media', this.selectedFile);
-      }
-      
-      if (this.postForm.get('tags')?.value) {
-        formData.append('tags', this.postForm.get('tags')?.value);
-      }
-      
-      if (this.postForm.get('category')?.value) {
-        formData.append('category', this.postForm.get('category')?.value);
+      const currentUser = this.authService.getCurrentUser();
+      if (!currentUser?.id) {
+        alert('Please login to create a post.');
+        this.router.navigate(['/login']);
+        return;
       }
 
-      this.postService.createPost(formData).subscribe({
+      const formData = new FormData();
+      
+      // Create post object as JSON
+      const postData = {
+        title: this.postForm.get('content')?.value?.substring(0, 100) || 'Untitled Post',
+        content: this.postForm.get('content')?.value,
+        tags: this.postForm.get('tags')?.value || '',
+        category: this.postForm.get('category')?.value || ''
+      };
+      
+      formData.append('post', JSON.stringify(postData));
+      
+      if (this.selectedFile) {
+        formData.append('image', this.selectedFile);
+      }
+
+      this.postService.createPost(formData, currentUser.id).subscribe({
         next: (response) => {
           console.log('Post created successfully:', response);
           this.router.navigate(['/home']);
