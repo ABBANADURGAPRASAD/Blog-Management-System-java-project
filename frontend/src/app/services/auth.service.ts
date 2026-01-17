@@ -20,7 +20,7 @@ export interface RegisterRequest {
   providedIn: 'root'
 })
 export class AuthService {
-  private apiUrl = 'http://localhost:8080/api/auth';
+  private apiUrl = '/api/auth';
   private currentUserSubject = new BehaviorSubject<User | null>(this.getStoredUser());
   public currentUser$ = this.currentUserSubject.asObservable();
 
@@ -29,8 +29,10 @@ export class AuthService {
   login(credentials: LoginRequest): Observable<User> {
     return this.http.post<User>(`${this.apiUrl}/login`, credentials).pipe(
       tap(user => {
-        this.setStoredUser(user);
-        this.currentUserSubject.next(user);
+        if (user) {
+            this.setStoredUser(user);
+            this.currentUserSubject.next(user);
+        }
       })
     );
   }
@@ -39,8 +41,10 @@ export class AuthService {
     const { confirmPassword, ...registerData } = userData;
     return this.http.post<User>(`${this.apiUrl}/register`, registerData).pipe(
       tap(user => {
-        this.setStoredUser(user);
-        this.currentUserSubject.next(user);
+        if (user) {
+            this.setStoredUser(user);
+            this.currentUserSubject.next(user);
+        }
       })
     );
   }

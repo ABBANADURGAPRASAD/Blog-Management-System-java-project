@@ -35,15 +35,19 @@ export interface Comment {
   providedIn: 'root'
 })
 export class PostService {
-  private apiUrl = 'http://localhost:8080/api/posts';
+  private apiUrl = '/api/posts';
 
-  constructor(private http: HttpClient) {}
+  constructor(private http: HttpClient) { }
 
-  createPost(postData: FormData, userId: number): Observable<Post> {
-    postData.append('userId', userId.toString());
-    return this.http.post<Post>(this.apiUrl, postData, {
-      headers: { 'Content-Type': 'multipart/form-data' }
-    });
+  createPost(postData: any, image: File | null, userId: number): Observable<Post> {
+    const formData = new FormData();
+    formData.append('post', JSON.stringify(postData));
+    if (image) {
+      formData.append('image', image);
+    }
+    formData.append('userId', userId.toString());
+
+    return this.http.post<Post>(this.apiUrl, formData);
   }
 
   getAllPosts(): Observable<Post[]> {

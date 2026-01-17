@@ -4,60 +4,45 @@
     <div class="posts-section">
       <div class="posts-grid">
         <div class="post-card" *ngFor="let post of getPaginatedPosts()">
-          <img 
-            *ngIf="post.media || post.imageUrl" 
-            [src]="post.media || post.imageUrl" 
-            [alt]="post.title" 
-            class="post-image"
-            onerror="this.src='assets/images/image.png'"
-          />
+          <img *ngIf="post.media || post.imageUrl" [src]="post.media || post.imageUrl" [alt]="post.title"
+            class="post-image" onerror="this.src='assets/images/image.png'" />
           <div class="post-content">
             <h3 class="post-title">{{ post.title || 'Untitled Post' }}</h3>
-            <p class="post-description">{{ post.content | slice:0:150 }}{{ post.content && post.content.length > 150 ? '...' : '' }}</p>
+            <p class="post-description">{{ post.content | slice:0:150 }}{{ post.content && post.content.length > 150 ?
+              '...' : '' }}</p>
             <div class="post-meta">
-              <img 
-                [src]="post.authorPic || 'assets/images/dp_profile.jpeg'" 
-                [alt]="post.author" 
-                class="post-author-pic"
-                onerror="this.src='assets/images/dp_profile.jpeg'"
-              />
+              <img [src]="post.authorPic || 'assets/images/dp_profile.jpeg'" [alt]="post.author" class="post-author-pic"
+                onerror="this.src='assets/images/dp_profile.jpeg'" />
               <div>
                 <div class="post-author-name">{{ post.author || 'Anonymous' }}</div>
                 <div class="post-date">{{ post.date || 'Unknown date' }}</div>
               </div>
             </div>
-            
+
             <!-- Post Actions -->
             <div class="post-actions">
-              <button 
-                class="action-btn like-btn" 
-                [class.liked]="post.isLiked"
-                (click)="toggleLike(post)"
-                [title]="post.isLiked ? 'Unlike' : 'Like'"
-              >
-                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                  <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
+              <button class="action-btn like-btn" [class.liked]="post.isLiked" (click)="toggleLike(post)"
+                [title]="post.isLiked ? 'Unlike' : 'Like'">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                  stroke="currentColor" stroke-width="2">
+                  <path
+                    d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z">
+                  </path>
                 </svg>
                 <span>{{ post.likesCount || 0 }}</span>
               </button>
-              
-              <button 
-                class="action-btn comment-btn" 
-                (click)="openComments(post)"
-                title="Comment"
-              >
-                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+
+              <button class="action-btn comment-btn" (click)="openComments(post)" title="Comment">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                  stroke="currentColor" stroke-width="2">
                   <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
                 </svg>
                 <span>{{ post.commentsCount || 0 }}</span>
               </button>
-              
-              <button 
-                class="action-btn share-btn" 
-                (click)="sharePost(post)"
-                title="Share"
-              >
-                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+
+              <button class="action-btn share-btn" (click)="sharePost(post)" title="Share">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                  stroke="currentColor" stroke-width="2">
                   <circle cx="18" cy="5" r="3"></circle>
                   <circle cx="6" cy="12" r="3"></circle>
                   <circle cx="18" cy="19" r="3"></circle>
@@ -67,8 +52,8 @@
                 <span>Share</span>
               </button>
             </div>
-            
-            <button class="read-more-btn">Read More</button>
+
+            <button class="read-more-btn" [routerLink]="['/posts', post.id]">Read More</button>
           </div>
         </div>
       </div>
@@ -80,9 +65,7 @@
       <!-- Pagination -->
       <div class="pagination" *ngIf="totalPages > 1">
         <button (click)="changePage(currentPage - 1)" [disabled]="currentPage === 1">←</button>
-        <button 
-          *ngFor="let page of [].constructor(totalPages); let i = index" 
-          [class.active]="(i + 1) === currentPage"
+        <button *ngFor="let page of [].constructor(totalPages); let i = index" [class.active]="(i + 1) === currentPage"
           (click)="changePage(i + 1)">
           {{ i + 1 }}
         </button>
@@ -96,11 +79,8 @@
       <div class="sidebar" *ngIf="popularPosts.length > 0">
         <h3 class="sidebar-title">Popular Posts</h3>
         <div class="sidebar-item" *ngFor="let post of popularPosts">
-          <img 
-            [src]="post.media || post.imageUrl || 'assets/images/image.png'" 
-            [alt]="post.title"
-            onerror="this.src='assets/images/image.png'"
-          />
+          <img [src]="post.media || post.imageUrl || 'assets/images/image.png'" [alt]="post.title"
+            onerror="this.src='assets/images/image.png'" />
           <div class="sidebar-item-content">
             <div class="sidebar-item-title">{{ post.title }}</div>
           </div>
@@ -135,12 +115,7 @@
         </div>
       </div>
       <div class="comment-input-section" *ngIf="currentUserId">
-        <textarea 
-          [(ngModel)]="newComment" 
-          placeholder="Write a comment..."
-          class="comment-input"
-          rows="3"
-        ></textarea>
+        <textarea [(ngModel)]="newComment" placeholder="Write a comment..." class="comment-input" rows="3"></textarea>
         <button class="add-comment-btn" (click)="addComment()" [disabled]="!newComment.trim()">
           Add Comment
         </button>
@@ -151,4 +126,3 @@
     </div>
   </div>
 </div>
-

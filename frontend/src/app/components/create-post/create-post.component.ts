@@ -32,7 +32,7 @@ export class CreatePostComponent implements OnInit {
     });
   }
 
-  ngOnInit() {}
+  ngOnInit() { }
 
   onFileSelected(event: any) {
     const file = event.target.files[0];
@@ -92,8 +92,6 @@ export class CreatePostComponent implements OnInit {
         return;
       }
 
-      const formData = new FormData();
-      
       // Create post object as JSON
       const postData = {
         title: this.postForm.get('content')?.value?.substring(0, 100) || 'Untitled Post',
@@ -101,14 +99,8 @@ export class CreatePostComponent implements OnInit {
         tags: this.postForm.get('tags')?.value || '',
         category: this.postForm.get('category')?.value || ''
       };
-      
-      formData.append('post', JSON.stringify(postData));
-      
-      if (this.selectedFile) {
-        formData.append('image', this.selectedFile);
-      }
 
-      this.postService.createPost(formData, currentUser.id).subscribe({
+      this.postService.createPost(postData, this.selectedFile, currentUser.id).subscribe({
         next: (response) => {
           console.log('Post created successfully:', response);
           this.router.navigate(['/home']);
@@ -129,7 +121,7 @@ export class CreatePostComponent implements OnInit {
     alert('Draft saved successfully!');
   }
 
-  cancel(){
+  cancel() {
     this.router.navigate(['/home']);
   }
 }

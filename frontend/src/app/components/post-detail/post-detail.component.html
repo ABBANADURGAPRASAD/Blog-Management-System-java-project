@@ -1,0 +1,23 @@
+<div class="post-detail-container">
+    <div *ngIf="isLoading" class="loading">Loading...</div>
+
+    <div *ngIf="error" class="error">{{ error }}</div>
+
+    <div *ngIf="post" class="post-content">
+        <h1>{{ post.title }}</h1>
+        <div class="meta">
+            <span>By {{ post.author }}</span>
+            <span>{{ post.date }}</span>
+        </div>
+
+        <img *ngIf="post.media" [src]="post.media" class="main-image" onerror="this.src='assets/images/image.png'">
+
+        <div class="body">
+            <p>{{ post.content }}</p>
+        </div>
+
+        <div class="actions">
+            <button [routerLink]="['/home']">Back to Home</button>
+        </div>
+    </div>
+</div>
