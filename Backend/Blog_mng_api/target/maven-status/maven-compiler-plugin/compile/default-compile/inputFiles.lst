@@ -6,7 +6,10 @@
 /Users/ent-00210/Desktop/personal pro/Blog-Management-System-java-project/Backend/Blog_mng_api/java/com/blog/service/CommentService.java
 /Users/ent-00210/Desktop/personal pro/Blog-Management-System-java-project/Backend/Blog_mng_api/java/com/blog/controller/UserController.java
 /Users/ent-00210/Desktop/personal pro/Blog-Management-System-java-project/Backend/Blog_mng_api/java/com/blog/service/UserService.java
+/Users/ent-00210/Desktop/personal pro/Blog-Management-System-java-project/Backend/Blog_mng_api/java/com/blog/service/FileStorageService.java
+/Users/ent-00210/Desktop/personal pro/Blog-Management-System-java-project/Backend/Blog_mng_api/java/com/blog/controller/FileController.java
 /Users/ent-00210/Desktop/personal pro/Blog-Management-System-java-project/Backend/Blog_mng_api/java/com/blog/service/LikeService.java
+/Users/ent-00210/Desktop/personal pro/Blog-Management-System-java-project/Backend/Blog_mng_api/java/com/blog/config/AuthInterceptor.java
 /Users/ent-00210/Desktop/personal pro/Blog-Management-System-java-project/Backend/Blog_mng_api/java/com/blog/service/PostService.java
 /Users/ent-00210/Desktop/personal pro/Blog-Management-System-java-project/Backend/Blog_mng_api/java/com/blog/model/Comment.java
 /Users/ent-00210/Desktop/personal pro/Blog-Management-System-java-project/Backend/Blog_mng_api/java/com/blog/model/Post.java

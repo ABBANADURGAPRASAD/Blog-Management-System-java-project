@@ -19,7 +19,7 @@ export class ProfileComponent implements OnInit {
     private userService: UserService,
     private postService: PostService,
     private router: Router
-  ) {}
+  ) { }
 
   ngOnInit() {
     this.loadUserProfile();
@@ -42,9 +42,12 @@ export class ProfileComponent implements OnInit {
   transformUser(user: User): User {
     return {
       ...user,
-      profilePic: user.profileImageUrl || user.profilePic,
+      profilePic: user.profileImageUrl || user.profilePic || 'https://via.placeholder.com/150',
+      bannerPic: user.backgroundImageUrl || user.bannerPic || 'https://via.placeholder.com/800x200',
       linkedInUrl: user.linkedinUrl || user.linkedInUrl,
-      postsCount: user.posts?.length || user.postsCount || 0
+      postsCount: user.postsCount || 0,
+      followersCount: user.followersCount || 0,
+      followingCount: user.followingCount || 0
     };
   }
 
@@ -58,6 +61,9 @@ export class ProfileComponent implements OnInit {
     this.postService.getAllPosts().subscribe({
       next: (posts) => {
         const userPosts = posts.filter(post => post.user?.id === this.user?.id || post.author === this.user?.fullName);
+        if (this.user) {
+          this.user.postsCount = userPosts.length;
+        }
         this.recentActivities = userPosts.slice(0, 5).map(post => ({
           type: 'post',
           icon: '📝',
@@ -88,7 +94,7 @@ export class ProfileComponent implements OnInit {
     const now = new Date();
     const diffMs = now.getTime() - date.getTime();
     const diffMins = Math.floor(diffMs / 60000);
-    
+
     if (diffMins < 1) return 'just now';
     if (diffMins < 60) return `${diffMins} minutes ago`;
     const diffHours = Math.floor(diffMins / 60);

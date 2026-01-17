@@ -15,12 +15,15 @@ export interface User {
   linkedinUrl?: string;
   linkedInUrl?: string;
   profileImageUrl?: string;
+  backgroundImageUrl?: string; // Added field
   profilePic?: string;
   bannerPic?: string;
   role?: string;
   postsCount?: number;
   commentsCount?: number;
   followersCount?: number;
+  followingCount?: number; // Added field
+  token?: string;
   posts?: any[];
 }
 

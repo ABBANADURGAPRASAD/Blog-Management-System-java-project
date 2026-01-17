@@ -20,7 +20,7 @@ export class HomeComponent implements OnInit {
   currentPage = 1;
   totalPages = 1;
   currentUserId: number | null = null;
-  
+
   // Comment modal state
   selectedPostId: number | null = null;
   newComment: string = '';
@@ -30,7 +30,7 @@ export class HomeComponent implements OnInit {
   constructor(
     private postService: PostService,
     private authService: AuthService
-  ) {}
+  ) { }
 
   ngOnInit() {
     const currentUser = this.authService.getCurrentUser();
@@ -69,16 +69,21 @@ export class HomeComponent implements OnInit {
   }
 
   transformPosts(posts: Post[]): Post[] {
-    return posts.map(post => ({
-      ...post,
-      media: post.imageUrl || post.media,
-      author: post.user?.fullName || post.author || 'Anonymous',
-      authorPic: post.user?.profileImageUrl || post.authorPic,
-      date: this.formatDate(post.createdAt || post.date),
-      likesCount: post.likes?.length || post.likesCount || 0,
-      commentsCount: post.comments?.length || post.commentsCount || 0,
-      isLiked: post.likes?.some((like: any) => like.user?.id === this.currentUserId) || false
-    }));
+    console.log('Transforming posts:', posts);
+    return posts.map(post => {
+      const media = post.mediaUrl || post.imageUrl || post.media;
+      console.log(`Post ${post.id} media:`, media);
+      return {
+        ...post,
+        media: media,
+        author: post.user?.fullName || post.author || 'Anonymous',
+        authorPic: post.user?.profileImageUrl || post.authorPic,
+        date: this.formatDate(post.createdAt || post.date),
+        likesCount: post.likes?.length || post.likesCount || 0,
+        commentsCount: post.comments?.length || post.commentsCount || 0,
+        isLiked: post.likes?.some((like: any) => like.user?.id === this.currentUserId) || false
+      };
+    });
   }
 
   formatDate(dateString?: string): string {
@@ -113,7 +118,7 @@ export class HomeComponent implements OnInit {
     if (!this.currentUserId || !post.id) return;
 
     const wasLiked = post.isLiked;
-    
+
     this.postService.toggleLike(post.id, this.currentUserId).subscribe({
       next: () => {
         post.isLiked = !wasLiked;
@@ -193,7 +198,7 @@ export class HomeComponent implements OnInit {
   sharePost(post: Post) {
     if (!post.id) return;
     const shareUrl = this.postService.sharePost(post.id);
-    
+
     if (navigator.share) {
       navigator.share({
         title: post.title || 'Check out this post',
@@ -225,7 +230,7 @@ export class HomeComponent implements OnInit {
   onTagClick(tag: string) {
     console.log('Tag clicked:', tag);
     // Filter posts by tag
-    this.posts = this.posts.filter(post => 
+    this.posts = this.posts.filter(post =>
       post.tags?.toLowerCase().includes(tag.toLowerCase())
     );
   }

@@ -12,9 +12,12 @@ public class UserController {
 
     private final UserService userService;
 
+    private final com.blog.service.FileStorageService fileStorageService;
+
     @Autowired
-    public UserController(UserService userService) {
+    public UserController(UserService userService, com.blog.service.FileStorageService fileStorageService) {
         this.userService = userService;
+        this.fileStorageService = fileStorageService;
     }
 
     @GetMapping("/{id}")
@@ -27,5 +30,21 @@ public class UserController {
     @PutMapping("/{id}")
     public ResponseEntity<User> updateUserProfile(@PathVariable Long id, @RequestBody User user) {
         return ResponseEntity.ok(userService.updateUserProfile(id, user));
+    }
+
+    @PutMapping(value = "/{id}/profile-image", consumes = "multipart/form-data")
+    public ResponseEntity<User> uploadProfileImage(@PathVariable Long id,
+            @RequestParam("file") org.springframework.web.multipart.MultipartFile file) {
+        String fileName = fileStorageService.storeFile(file);
+        String fileUrl = "/uploads/" + fileName;
+        return ResponseEntity.ok(userService.updateProfileImage(id, fileUrl));
+    }
+
+    @PutMapping(value = "/{id}/background-image", consumes = "multipart/form-data")
+    public ResponseEntity<User> uploadBackgroundImage(@PathVariable Long id,
+            @RequestParam("file") org.springframework.web.multipart.MultipartFile file) {
+        String fileName = fileStorageService.storeFile(file);
+        String fileUrl = "/uploads/" + fileName;
+        return ResponseEntity.ok(userService.updateBackgroundImage(id, fileUrl));
     }
 }

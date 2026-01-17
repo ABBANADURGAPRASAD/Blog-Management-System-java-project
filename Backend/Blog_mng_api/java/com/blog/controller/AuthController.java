@@ -17,16 +17,23 @@ public class AuthController {
         this.userService = userService;
     }
 
-    @PostMapping("/register")
-    public ResponseEntity<User> register(@RequestBody User user) {
-        return ResponseEntity.ok(userService.registerUser(user));
-    }
-
     @PostMapping("/login")
     public ResponseEntity<User> login(@RequestBody LoginRequest loginRequest) {
         return userService.loginUser(loginRequest.getEmail(), loginRequest.getPassword())
-                .map(ResponseEntity::ok)
+                .map(user -> {
+                    String token = userService.generateToken(user);
+                    user.setToken(token);
+                    return ResponseEntity.ok(user);
+                })
                 .orElse(ResponseEntity.status(401).build());
+    }
+
+    @PostMapping("/register")
+    public ResponseEntity<User> register(@RequestBody User user) {
+        User registeredUser = userService.registerUser(user);
+        String token = userService.generateToken(registeredUser);
+        registeredUser.setToken(token);
+        return ResponseEntity.ok(registeredUser);
     }
 
     // Simple DTO for login

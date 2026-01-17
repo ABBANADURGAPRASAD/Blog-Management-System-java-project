@@ -8,6 +8,8 @@ export interface Post {
   content: string;
   imageUrl?: string;
   media?: string;
+  mediaUrl?: string;
+  mediaType?: string;
   tags?: string;
   category?: string;
   user?: any;
@@ -43,7 +45,7 @@ export class PostService {
     const formData = new FormData();
     formData.append('post', JSON.stringify(postData));
     if (image) {
-      formData.append('image', image);
+      formData.append('file', image);
     }
     formData.append('userId', userId.toString());
 

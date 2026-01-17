@@ -41,6 +41,11 @@ public class User {
 
     private String profileImageUrl;
 
+    private String backgroundImageUrl;
+
+    @Transient
+    private String token;
+
     @com.fasterxml.jackson.annotation.JsonIgnore
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Post> posts = new ArrayList<>();

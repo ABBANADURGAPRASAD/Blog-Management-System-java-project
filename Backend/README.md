@@ -95,14 +95,41 @@ ORDER BY (like_count + comment_count) DESC;
     mvn spring-boot:run
     ```
 
-## API Summary
+## API Endpoints
 
-- **Auth**: `POST /api/auth/register`, `POST /api/auth/login`
-- **Users**: `GET /api/users/{id}`, `PUT /api/users/{id}`
-- **Posts**: 
-    - `GET /api/posts` (List all)
-    - `GET /api/posts/{id}` (Details)
-    - `POST /api/posts` (Create - Multipart)
-    - `GET /api/posts/popular` (Popular Posts)
-- **Comments**: `GET/POST /api/posts/{postId}/comments`
-- **Likes**: `POST /api/posts/{postId}/like`
+### Authentication
+- `POST /api/auth/register` - Register a new user
+    - **Body**: `{ "fullName": "John Doe", "email": "john@example.com", "password": "password123" }`
+- `POST /api/auth/login` - Login user
+    - **Body**: `{ "email": "john@example.com", "password": "password123" }`
+
+### Users
+- `GET /api/users/{id}` - Get user profile
+- `PUT /api/users/{id}` - Update user profile details
+    - **Body**: `{ "fullName": "...", "bio": "...", "phoneNumber": "...", "twitterUrl": "...", "linkedinUrl": "..." }`
+- `PUT /api/users/{id}/profile-image` - Upload/Update Profile Image
+    - **Form-Data**: `file` (Image)
+- `PUT /api/users/{id}/background-image` - Upload/Update Background Image
+    - **Form-Data**: `file` (Image)
+
+### Posts
+- `GET /api/posts` - Get all posts
+- `GET /api/posts/{id}` - Get specific post
+- `GET /api/posts/popular` - Get popular posts (sorted by likes + comments)
+- `POST /api/posts` - Create a new post (Supports Files)
+    - **Header**: `Content-Type: multipart/form-data`
+    - **Part `post` (JSON)**: `{ "title": "My Post", "content": "Content...", "category": "Tech", "tags": "java,spring", "user": { "id": 1 } }`
+    - **Part `file` (File)**: Image, Video, or PDF file (Optional)
+
+### Comments
+- `GET /api/posts/{postId}/comments` - Get comments for a post
+- `POST /api/posts/{postId}/comments` - Add a comment
+    - **Body**: `{ "content": "Nice post!", "user": { "id": 1 } }`
+
+### Likes
+- `POST /api/posts/{postId}/like` - Like/Unlike a post
+    - **Body**: `{ "user": { "id": 1 } }`
+
+### File Serving
+- `GET /uploads/{filename}` - Serve uploaded files (images, videos, pdfs)
+

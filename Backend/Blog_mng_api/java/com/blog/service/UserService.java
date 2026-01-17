@@ -11,4 +11,12 @@ public interface UserService {
     Optional<User> getUserProfile(Long userId);
 
     User updateUserProfile(Long userId, User userDetails);
+
+    User updateProfileImage(Long userId, String imageUrl);
+
+    User updateBackgroundImage(Long userId, String imageUrl);
+
+    String generateToken(User user);
+
+    boolean validateToken(String token);
 }

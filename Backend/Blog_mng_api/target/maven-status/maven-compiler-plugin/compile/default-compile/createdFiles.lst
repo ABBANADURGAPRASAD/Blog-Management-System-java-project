@@ -1,8 +1,10 @@
 com/blog/controller/UserController.class
 com/blog/config/WebConfig.class
+com/blog/config/AuthInterceptor.class
 com/blog/controller/CommentController.class
 com/blog/controller/LikeController.class
 com/blog/service/LikeService.class
+com/blog/controller/FileController.class
 com/blog/model/Comment$CommentBuilder.class
 com/blog/service/UserService.class
 com/blog/controller/HomeController.class
@@ -13,6 +15,7 @@ com/blog/model/Like.class
 com/blog/model/Post.class
 com/blog/service/PostService.class
 com/blog/model/Comment.class
+com/blog/service/FileStorageService.class
 com/blog/controller/PostController.class
 com/blog/model/User.class
 com/blog/controller/AuthController.class

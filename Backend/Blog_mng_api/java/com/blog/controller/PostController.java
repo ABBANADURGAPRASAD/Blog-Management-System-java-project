@@ -13,10 +13,12 @@ import java.util.List;
 public class PostController {
 
     private final PostService postService;
+    private final com.blog.service.FileStorageService fileStorageService;
 
     @Autowired
-    public PostController(PostService postService) {
+    public PostController(PostService postService, com.blog.service.FileStorageService fileStorageService) {
         this.postService = postService;
+        this.fileStorageService = fileStorageService;
     }
 
     @GetMapping
@@ -32,22 +34,28 @@ public class PostController {
     }
 
     @PostMapping(consumes = { "multipart/form-data" })
-    public ResponseEntity<?> createPost(@RequestPart("post") String postJson,
-            @RequestPart(value = "file", required = false) org.springframework.web.multipart.MultipartFile file,
-            @RequestParam Long userId) {
+    public ResponseEntity<?> createPost(
+            @RequestPart("post") String postJson,
+            @RequestParam(value = "file", required = false) org.springframework.web.multipart.MultipartFile file,
+            @RequestParam("userId") Long userId) {
         try {
             com.fasterxml.jackson.databind.ObjectMapper objectMapper = new com.fasterxml.jackson.databind.ObjectMapper();
             Post post = objectMapper.readValue(postJson, Post.class);
             if (file != null && !file.isEmpty()) {
                 String contentType = file.getContentType();
-                String fileName = System.currentTimeMillis() + "_" + file.getOriginalFilename();
-                // Save file logic here (e.g., to disk or cloud storage)
+                // Store file and get filename
+                String fileName = fileStorageService.storeFile(file);
+                // Construct URL (assuming server runs on port 8080 or is fronted by proxy)
+                // Better practice is to store just the relative path or use a helper to build
+                // absolute URL
+                // For now, storing relative path for serving via FileController
+                String fileUrl = "/uploads/" + fileName;
 
                 String mediaType = "unknown";
                 if (contentType != null) {
                     if (contentType.startsWith("image")) {
                         mediaType = "image";
-                        post.setImageUrl("/uploads/" + fileName); // Keep legacy field populated
+                        post.setImageUrl(fileUrl); // Keep legacy field populated
                     } else if (contentType.startsWith("video")) {
                         mediaType = "video";
                     } else if (contentType.equals("application/pdf")) {
@@ -55,7 +63,7 @@ public class PostController {
                     }
                 }
 
-                post.setMediaUrl("/uploads/" + fileName);
+                post.setMediaUrl(fileUrl);
                 post.setMediaType(mediaType);
             }
             return ResponseEntity.ok(postService.createPost(post, userId));

@@ -15,15 +15,22 @@ export class HeaderComponent implements OnInit {
   currentUser: User | null = null;
   isAuthenticated = false;
 
+  isHeaderHidden = false;
+
   constructor(
     private router: Router,
     private authService: AuthService
-  ) {}
+  ) { }
 
   ngOnInit() {
     this.authService.currentUser$.subscribe(user => {
       this.currentUser = user;
       this.isAuthenticated = !!user;
+    });
+
+    this.router.events.subscribe(() => {
+      const currentUrl = this.router.url;
+      this.isHeaderHidden = currentUrl === '/login' || currentUrl === '/register';
     });
   }
 
