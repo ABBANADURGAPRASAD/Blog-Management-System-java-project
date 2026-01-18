@@ -22,3 +22,19 @@
 # virtual machine crash logs, see http://www.java.com/en/download/help/error_hotspot.xml
 hs_err_pid*
 replay_pid*
+
+# ================================
+# SECURITY: Secret Files
+# ================================
+# Secret key files - NEVER commit these!
+secret.key
+*.key
+secrets.enc
+*.enc
+
+# External secret key location (production)
+/etc/myapp/secret.key
+
+# Local development secrets
+**/secret.key
+**/secrets.enc
