@@ -4,19 +4,26 @@
     <div class="posts-section">
       <div class="posts-grid">
         <div class="post-card" *ngFor="let post of getPaginatedPosts()">
-          <img *ngIf="post.media || post.imageUrl" [src]="post.media || post.imageUrl" [alt]="post.title"
-            class="post-image" onerror="this.src='assets/images/image.png'" />
-          <div class="post-content">
+          <div class="post-meta">
+            <img [src]="post.authorPic || 'assets/images/dp_profile.jpeg'" [alt]="post.author" class="post-author-pic"
+              onerror="this.src='assets/images/dp_profile.jpeg'" />
+            <div>
+              <div class="post-author-name">{{ post.author || 'Anonymous' }}</div>
+              <div class="post-date">{{ post.date || 'Unknown date' }}</div>
+            </div>
+
+          </div>
+          <div class="post-header">
             <h3 class="post-title">{{ post.title || 'Untitled Post' }}</h3>
             <p class="post-description">{{ post.content | slice:0:150 }}{{ post.content && post.content.length > 150 ?
               '...' : '' }}</p>
-            <div class="post-meta">
-              <img [src]="post.authorPic || 'assets/images/dp_profile.jpeg'" [alt]="post.author" class="post-author-pic"
-                onerror="this.src='assets/images/dp_profile.jpeg'" />
-              <div>
-                <div class="post-author-name">{{ post.author || 'Anonymous' }}</div>
-                <div class="post-date">{{ post.date || 'Unknown date' }}</div>
-              </div>
+          </div>
+
+          <div class="post-content">
+            <div class="post-image-container">
+              <img *ngIf="post.media || post.imageUrl" [src]="post.media || post.imageUrl" [alt]="post.title"
+              class="post-image" onerror="this.src='assets/images/image.png'" />
+
             </div>
 
             <!-- Post Actions -->
@@ -90,6 +97,13 @@
       <!-- Tags -->
       <div class="sidebar" *ngIf="tags.length > 0">
         <h3 class="sidebar-title">Tags</h3>
+        <div class="tags-container">
+          <span class="tag" *ngFor="let tag of tags" (click)="onTagClick(tag)">{{ tag }}</span>
+        </div>
+      </div>
+
+      <div class="sidebar" *ngIf="tags.length > 0">
+        <h3 class="sidebar-title">Suggentions</h3>
         <div class="tags-container">
           <span class="tag" *ngFor="let tag of tags" (click)="onTagClick(tag)">{{ tag }}</span>
         </div>

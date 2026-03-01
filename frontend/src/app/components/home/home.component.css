@@ -11,9 +11,19 @@
 
 .posts-grid {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
   gap: 20px;
   margin-bottom: 30px;
+}
+.post-header{
+  padding-left: 4em;
+  margin: -1em;
+}
+
+.post-image-container{
+
+  background-color: #999;
+  height: 30em;
+  width: fix;
 }
 
 @media (max-width: 1024px) {
