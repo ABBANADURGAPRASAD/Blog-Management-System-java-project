@@ -4,6 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
 import { PostService, Post, Comment } from '../../services/post.service';
 import { AuthService } from '../../services/auth.service';
+import { UserService } from 'src/app/services/user.service';
 
 @Component({
   selector: 'app-home',
@@ -26,9 +27,11 @@ export class HomeComponent implements OnInit {
   newComment: string = '';
   showCommentModal = false;
   postComments: Comment[] = [];
+  usersList: any[] = [];
 
   constructor(
     private postService: PostService,
+    private userService: UserService,
     private authService: AuthService
   ) { }
 
@@ -39,6 +42,7 @@ export class HomeComponent implements OnInit {
     }
     this.loadPosts();
     this.loadPopularPosts();
+    this.getUserAccount();
   }
 
   loadPosts() {
@@ -228,11 +232,18 @@ export class HomeComponent implements OnInit {
   }
 
   onTagClick(tag: string) {
-    console.log('Tag clicked:', tag);
-    // Filter posts by tag
     this.posts = this.posts.filter(post =>
       post.tags?.toLowerCase().includes(tag.toLowerCase())
     );
   }
+
+  getUserAccount() {
+    this.userService.getAllUser().subscribe({
+      next: (data: any[]) => {
+        this.usersList = data;
+      }
+    });
+  }
+  
 }
 

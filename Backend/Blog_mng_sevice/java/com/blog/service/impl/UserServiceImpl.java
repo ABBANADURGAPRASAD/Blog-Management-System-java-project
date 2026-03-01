@@ -6,6 +6,7 @@ import com.blog.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -81,6 +82,11 @@ public class UserServiceImpl implements UserService {
         String token = java.util.UUID.randomUUID().toString();
         activeTokens.put(token, user);
         return token;
+    }
+
+    @Override
+    public List<String> getAllUsers() {
+        return userRepository.findAllUserNames();
     }
 
     @Override

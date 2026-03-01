@@ -10,6 +10,7 @@ com/blog/controller/HomeController.class
 com/blog/model/User$UserBuilder.class
 com/blog/service/PostService.class
 com/blog/model/Comment.class
+com/blog/model/Size.class
 com/blog/service/FileStorageService.class
 com/blog/util/CryptoUtil$CryptoException.class
 com/blog/config/DataSourceConfig.class

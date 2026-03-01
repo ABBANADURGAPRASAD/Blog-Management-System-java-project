@@ -102,10 +102,11 @@
         </div>
       </div>
 
-      <div class="sidebar" *ngIf="tags.length > 0">
-        <h3 class="sidebar-title">Suggentions</h3>
+      <!-- userlist -->
+      <div class="sidebar" *ngIf="usersList && usersList.length > 0">
+        <h3 class="sidebar-title">Suggestions</h3>
         <div class="tags-container">
-          <span class="tag" *ngFor="let tag of tags" (click)="onTagClick(tag)">{{ tag }}</span>
+          <span class="tag" *ngFor="let user of usersList">{{ user }}</span>
         </div>
       </div>
     </div>

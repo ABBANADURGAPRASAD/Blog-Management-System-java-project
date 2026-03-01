@@ -9,6 +9,9 @@ import lombok.NoArgsConstructor;
 import java.util.ArrayList;
 import java.util.List;
 
+import io.micrometer.common.lang.Nullable;
+
+
 @Entity
 @Table(name = "users")
 @Data
@@ -42,6 +45,9 @@ public class User {
     private String profileImageUrl;
 
     private String backgroundImageUrl;
+
+    @Column(nullable = false, unique = true)
+    private String userName;
 
     @Transient
     private String token;

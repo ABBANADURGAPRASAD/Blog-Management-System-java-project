@@ -1,6 +1,8 @@
 package com.blog.service;
 
 import com.blog.model.User;
+
+import java.util.List;
 import java.util.Optional;
 
 public interface UserService {
@@ -16,6 +18,8 @@ public interface UserService {
 
     User updateBackgroundImage(Long userId, String imageUrl);
 
+    List<String> getAllUsers();
+    
     String generateToken(User user);
 
     boolean validateToken(String token);

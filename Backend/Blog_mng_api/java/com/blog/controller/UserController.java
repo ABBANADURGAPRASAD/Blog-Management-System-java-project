@@ -2,6 +2,9 @@ package com.blog.controller;
 
 import com.blog.model.User;
 import com.blog.service.UserService;
+
+import java.util.List;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -25,6 +28,11 @@ public class UserController {
         return userService.getUserProfile(id)
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
+    }
+
+    @GetMapping("/userNames")
+    public List<String> getUserList() {
+        return userService.getAllUsers();
     }
 
     @PutMapping("/{id}")
