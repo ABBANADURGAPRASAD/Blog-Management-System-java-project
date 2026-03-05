@@ -4,8 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
 import { PostService, Post, Comment } from '../../services/post.service';
 import { AuthService } from '../../services/auth.service';
-import { UserService } from 'src/app/services/user.service';
-
+import { User, UserService } from 'src/app/services/user.service';
 @Component({
   selector: 'app-home',
   standalone: true,
@@ -21,6 +20,8 @@ export class HomeComponent implements OnInit {
   currentPage = 1;
   totalPages = 1;
   currentUserId: number | null = null;
+  user: User | null = null;
+
 
   // Comment modal state
   selectedPostId: number | null = null;

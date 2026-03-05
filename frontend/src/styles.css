@@ -357,15 +357,6 @@ textarea.form-control {
   border-color: #4A90E2;
 }
 
-/* Sidebar Styles */
-.sidebar {
-  background: white;
-  border-radius: 12px;
-  padding: 20px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-  margin-bottom: 20px;
-}
-
 .sidebar-title {
   font-size: 18px;
   font-weight: 600;

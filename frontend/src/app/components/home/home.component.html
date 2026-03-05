@@ -80,36 +80,72 @@
       </div>
     </div>
 
-    <!-- Sidebar -->
-    <div class="sidebar-section">
-      <!-- Popular Posts -->
-      <div class="sidebar" *ngIf="popularPosts.length > 0">
-        <h3 class="sidebar-title">Popular Posts</h3>
-        <div class="sidebar-item" *ngFor="let post of popularPosts">
-          <img [src]="post.media || post.imageUrl || 'assets/images/image.png'" [alt]="post.title"
-            onerror="this.src='assets/images/image.png'" />
-          <div class="sidebar-item-content">
-            <div class="sidebar-item-title">{{ post.title }}</div>
+<!-- Sidebar -->
+<div class="sidebar-section">
+  <!-- Popular Posts -->
+  <div class="sidebar-posts" *ngIf="popularPosts.length > 0">
+    <div class="sidebar-title-container">
+      <h3 class="sidebar-title">Popular Posts</h3>
+    </div>
+    <div class="sidebar-item" *ngFor="let post of popularPosts">
+      <img [src]="post.media || post.imageUrl || 'assets/images/image.png'" [alt]="post.title"
+        onerror="this.src='assets/images/image.png'" />
+      <div class="sidebar-item-content">
+        <div class="sidebar-item-title">{{ post.title }}</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Tags -->
+  <div class="sidebar-tags" *ngIf="tags.length > 0">
+    <div class="sidebar-title-container"> <h3 class="sidebar-title">Tags</h3></div>
+    <div class="tags-container">
+      <span class="tag" *ngFor="let tag of tags" (click)="onTagClick(tag)">{{ tag }}</span>
+    </div>
+  </div>
+
+  <!-- userlist -->
+  <div class="sidebar-userlist" *ngIf="usersList && usersList.length > 0">
+    <div class="sidebar-title-container">  <h3 class="sidebar-title">Suggestions</h3></div>
+    <div class="tags-container">
+      <span class="tag" *ngFor="let user of usersList">{{ user }}</span>
+    </div>
+  </div>
+</div>
+
+  <!-- right Sidebar
+  <div class="profile-section-right">
+    <div class="profile-card">
+      <img 
+        [src]="user?.bannerPic || 'https://via.placeholder.com/800x200'" 
+        alt="Banner" 
+        class="profile-banner"
+      />
+      <div class="profile-header">
+        <img 
+          [src]="user?.profilePic || 'https://via.placeholder.com/120'" 
+          alt="Profile" 
+          class="profile-pic-large"
+        />
+        <div class="profile-info">
+          <div>
+            <h2 class="profile-name">{{ user?.fullName || user?.username || 'User' }}</h2>
+            <p class="profile-role">{{ user?.role || 'Member' }}</p>
           </div>
         </div>
       </div>
-
-      <!-- Tags -->
-      <div class="sidebar" *ngIf="tags.length > 0">
-        <h3 class="sidebar-title">Tags</h3>
-        <div class="tags-container">
-          <span class="tag" *ngFor="let tag of tags" (click)="onTagClick(tag)">{{ tag }}</span>
-        </div>
-      </div>
-
-      <!-- userlist -->
-      <div class="sidebar" *ngIf="usersList && usersList.length > 0">
-        <h3 class="sidebar-title">Suggestions</h3>
-        <div class="tags-container">
-          <span class="tag" *ngFor="let user of usersList">{{ user }}</span>
+      <div class="profile-body">
+        <h3>About Me</h3>
+        <p class="about-text">{{ user?.bio || 'No bio available.' }}</p>
+        <div class="social-links">
+          <a [href]="'mailto:' + user?.email" class="social-link" *ngIf="user?.email">Email</a>
+          <a [href]="user?.twitterUrl" target="_blank" class="social-link" *ngIf="user?.twitterUrl">Twitter</a>
+          <a [href]="user?.linkedInUrl" target="_blank" class="social-link" *ngIf="user?.linkedInUrl">LinkedIn</a>
         </div>
       </div>
     </div>
+  </div> -->
+
   </div>
 
   <!-- Comment Modal -->

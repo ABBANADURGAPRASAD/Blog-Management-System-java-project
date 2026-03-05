@@ -43,10 +43,43 @@
 }
 
 .sidebar-section {
+  /* position: fixed; */
   display: flex;
   flex-direction: column;
-  gap: 20px;
+  /* width: 77em;
+  padding-left: 53em; */
 }
+
+
+/* Common style (remove repetition) */
+.sidebar-posts,
+.sidebar-tags,
+.sidebar-userlist {
+  background: white;
+  border-radius: 12px;
+  padding: 20px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  margin-bottom: 20px;
+
+  width: 250px;             
+  box-sizing: border-box;
+  overflow-y: auto; 
+}
+
+
+/* Fixed Heights */
+.sidebar-posts {
+  height: 15em;             
+}
+
+.sidebar-tags {
+  height: 7em;              
+}
+
+.sidebar-userlist {
+  height: 8em;              
+}
+
 
 /* Post Actions */
 .post-actions {
@@ -261,3 +294,16 @@
 .login-prompt a:hover {
   text-decoration: underline;
 }
+
+/* .profile-section-right{
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  background-color: #f0f0f0;
+  padding: 20px;
+  border-radius: 10px;
+  box-shadow: 0 0 10px 0 rgba(0, 0, 0, 0.1);
+  width: 300px;
+  height: 100%;
+
+} */
