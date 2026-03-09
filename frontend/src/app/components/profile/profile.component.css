@@ -98,6 +98,15 @@
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
+.stat-card-clickable {
+  cursor: pointer;
+}
+
+.stat-card-clickable:hover {
+  background: #f8f9fa;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12);
+}
+
 .stat-number {
   font-size: 24px;
   font-weight: 600;
@@ -182,6 +191,107 @@
   object-fit: cover;
 }
 
+/* Photos / Videos / Tags section */
+.profile-content-tabs {
+  margin-top: 32px;
+  padding-top: 24px;
+  border-top: 1px solid #eee;
+}
+
+.profile-content-tabs .content-tabs {
+  display: flex;
+  gap: 0;
+  border-bottom: 1px solid #eee;
+}
+
+.profile-content-tabs .content-tab {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 16px 24px;
+  background: none;
+  border: none;
+  border-bottom: 2px solid transparent;
+  margin-bottom: -1px;
+  font-size: 14px;
+  color: #666;
+  cursor: pointer;
+}
+
+.profile-content-tabs .content-tab:hover {
+  color: #333;
+}
+
+.profile-content-tabs .content-tab.active {
+  color: #333;
+  font-weight: 600;
+  border-bottom-color: #333;
+}
+
+.profile-content-tabs .tab-icon {
+  font-size: 18px;
+}
+
+.profile-content-tabs .content-grid-wrap {
+  padding: 24px 0;
+}
+
+.profile-content-tabs .loading-msg,
+.profile-content-tabs .empty-msg {
+  text-align: center;
+  color: #999;
+  margin: 0;
+  padding: 40px;
+}
+
+.profile-content-tabs .content-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 4px;
+}
+
+.profile-content-tabs .grid-item {
+  aspect-ratio: 1;
+  display: block;
+  overflow: hidden;
+  background: #f0f0f0;
+}
+
+.profile-content-tabs .grid-thumb {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.profile-content-tabs .grid-thumb-video {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.profile-content-tabs .grid-thumb-video img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.profile-content-tabs .grid-thumb-video .play-icon {
+  position: absolute;
+  font-size: 36px;
+  color: rgba(255, 255, 255, 0.9);
+  text-shadow: 0 0 8px rgba(0, 0, 0, 0.5);
+}
+
+.profile-content-tabs .grid-thumb-placeholder {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 48px;
+  color: #ccc;
+}
+
 @media (max-width: 1024px) {
   .profile-layout {
     grid-template-columns: 1fr;
@@ -200,6 +310,10 @@
   
   .stats-grid {
     grid-template-columns: 1fr;
+  }
+
+  .profile-content-tabs .content-grid {
+    grid-template-columns: repeat(2, 1fr);
   }
 }
 

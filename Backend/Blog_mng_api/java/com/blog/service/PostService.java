@@ -9,6 +9,8 @@ public interface PostService {
 
     List<Post> getAllPosts();
 
+    List<Post> getPostsByUserId(Long userId);
+
     Optional<Post> getPostById(Long id);
 
     List<Post> getPopularPosts();

@@ -1,10 +1,92 @@
+/* Three-column layout: left fixed, center scroll, right fixed */
 .home-layout {
   display: grid;
-  grid-template-columns: 1fr 300px;
-  gap: 30px;
+  grid-template-columns: 280px 1fr 300px;
+  gap: 24px;
   margin-top: 30px;
+  align-items: start;
 }
 
+/* Left: profile card - sticky so it stays while center scrolls (below fixed header) */
+.left-profile-section {
+  position: sticky;
+  top: 114px; /* 24px below fixed header (~90px) */
+  align-self: start;
+}
+
+.profile-card-left {
+  background: white;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.profile-banner-wrap {
+  height: 72px;
+  background: linear-gradient(135deg, #4A90E2 0%, #357ABD 100%);
+  overflow: hidden;
+}
+
+.profile-banner-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.profile-card-body {
+  padding: 0 16px 16px;
+  text-align: center;
+  position: relative;
+}
+
+.profile-avatar {
+  width: 72px;
+  height: 72px;
+  border-radius: 50%;
+  border: 3px solid white;
+  margin-top: -36px;
+  object-fit: cover;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  display: block;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.profile-display-name {
+  font-size: 16px;
+  font-weight: 600;
+  color: #333;
+  margin: 12px 0 16px;
+  line-height: 1.3;
+}
+
+.profile-stats {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+  border-top: 1px solid #eee;
+  padding-top: 12px;
+}
+
+.profile-stat {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+}
+
+.profile-stat-value {
+  font-size: 16px;
+  font-weight: 600;
+  color: #4A90E2;
+}
+
+.profile-stat-label {
+  font-size: 12px;
+  color: #666;
+}
+
+/* Center: scrollable posts */
 .posts-section {
   min-width: 0;
 }
@@ -26,11 +108,22 @@
   width: fix;
 }
 
+@media (max-width: 1200px) {
+  .home-layout {
+    grid-template-columns: 1fr 300px;
+  }
+  .left-profile-section {
+    display: none;
+  }
+}
+
 @media (max-width: 1024px) {
   .home-layout {
     grid-template-columns: 1fr;
   }
-  
+  .sidebar-section {
+    position: static;
+  }
   .posts-grid {
     grid-template-columns: repeat(2, 1fr);
   }
@@ -42,12 +135,13 @@
   }
 }
 
+/* Right: sidebar - sticky so it stays while center scrolls (below fixed header) */
 .sidebar-section {
-  /* position: fixed; */
+  position: sticky;
+  top: 114px; /* 24px below fixed header (~90px) */
+  align-self: start;
   display: flex;
   flex-direction: column;
-  /* width: 77em;
-  padding-left: 53em; */
 }
 
 
@@ -69,15 +163,18 @@
 
 /* Fixed Heights */
 .sidebar-posts {
-  height: 15em;             
+  height: 15em;  
+  width:22em ;           
 }
 
 .sidebar-tags {
-  height: 7em;              
+  height: 7em;  
+  width:22em ;                       
 }
 
 .sidebar-userlist {
-  height: 8em;              
+  height: 8em; 
+  width:22em ;                        
 }
 
 

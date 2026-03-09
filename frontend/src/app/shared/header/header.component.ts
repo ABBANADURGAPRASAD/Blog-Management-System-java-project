@@ -21,8 +21,11 @@ export class HeaderComponent implements OnInit {
   isAuthenticated = false;
 
   isHeaderHidden = false;
-  usersList: any[] = [];
-  searchText: string = '';
+  showSearch = true;
+  usersList: User[] = [];
+  allUsers: User[] = [];
+  searchText = '';
+  showSearchDropdown = false;
 
   constructor(
     private router: Router,
@@ -36,10 +39,13 @@ export class HeaderComponent implements OnInit {
       this.isAuthenticated = !!user;
     });
 
-    this.router.events.subscribe(() => {
+    const updateFromUrl = () => {
       const currentUrl = this.router.url;
       this.isHeaderHidden = currentUrl === '/login' || currentUrl === '/register';
-    });
+      this.showSearch = !currentUrl.includes('/profile/edit');
+    };
+    updateFromUrl();
+    this.router.events.subscribe(updateFromUrl);
   }
 
   onNewPostClick() {
@@ -58,18 +64,52 @@ export class HeaderComponent implements OnInit {
     }
   }
 
-  searchUsers() {
-    if (!this.searchText.trim()) {
-      this.usersList = [];
+  onSearchFocus() {
+    this.showSearchDropdown = true;
+    if (this.allUsers.length === 0) {
+      this.userService.getAllUser().subscribe({
+        next: (data) => {
+          this.allUsers = data as User[];
+          this.filterUsers();
+        },
+        error: () => {}
+      });
+    } else {
+      this.filterUsers();
+    }
+  }
+
+  onSearchBlur() {
+    setTimeout(() => (this.showSearchDropdown = false), 200);
+  }
+
+  filterUsers() {
+    const q = (this.searchText || '').trim().toLowerCase();
+    if (!q) {
+      this.usersList = this.allUsers.slice(0, 10);
       return;
     }
-  
-    this.userService.searchAllUser(this.searchText).subscribe({
-      next: (data) => {
-        this.usersList = data;
-      },
-      error: (err) => console.error(err)
-    });
+    this.usersList = this.allUsers.filter(
+      (u) =>
+        (u.username || '').toLowerCase().includes(q) ||
+        (u.fullName || '').toLowerCase().includes(q) ||
+        (u.email || '').toLowerCase().includes(q)
+    ).slice(0, 10);
+  }
+
+  searchUsers() {
+    this.filterUsers();
+  }
+
+  selectUser(user: User) {
+    this.searchText = '';
+    this.showSearchDropdown = false;
+    if (!user?.id) return;
+    if (this.currentUser?.id === user.id) {
+      this.router.navigate(['/profile/edit']);
+    } else {
+      this.router.navigate(['/user', user.id]);
+    }
   }
 
 

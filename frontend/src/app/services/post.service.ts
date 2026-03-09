@@ -56,6 +56,10 @@ export class PostService {
     return this.http.get<Post[]>(this.apiUrl);
   }
 
+  getPostsByUserId(userId: number): Observable<Post[]> {
+    return this.http.get<Post[]>(this.apiUrl, { params: { userId: String(userId) } });
+  }
+
   getPostById(id: number): Observable<Post> {
     return this.http.get<Post>(`${this.apiUrl}/${id}`);
   }

@@ -1,13 +1,14 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
-import { Router } from '@angular/router';
+import { Router, RouterModule } from '@angular/router';
 import { UserService, User } from '../../services/user.service';
+import { PostService, Post } from '../../services/post.service';
 
 @Component({
   selector: 'app-profile-edit',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule],
+  imports: [CommonModule, ReactiveFormsModule, RouterModule],
   templateUrl: './profile-edit.component.html',
   styleUrls: ['./profile-edit.component.css']
 })
@@ -18,10 +19,14 @@ export class ProfileEditComponent implements OnInit {
   user: User | null = null;
   profilePicPreview: string | null = null;
   selectedProfilePic: File | null = null;
+  contentTab: 'photos' | 'videos' | 'tags' = 'photos';
+  allPosts: Post[] = [];
+  postsLoading = false;
 
   constructor(
     private fb: FormBuilder,
     private userService: UserService,
+    private postService: PostService,
     private router: Router
   ) {
     this.profileForm = this.fb.group({
@@ -60,6 +65,7 @@ export class ProfileEditComponent implements OnInit {
           username: data.username || ''
         });
         this.profilePicPreview = data.profileImageUrl || data.profilePic || null;
+        this.loadMyPosts();
       },
       error: (error) => {
         console.error('Error loading user data:', error);
@@ -146,6 +152,55 @@ export class ProfileEditComponent implements OnInit {
 
   cancel() {
     this.router.navigate(['/profile']);
+  }
+
+  loadMyPosts() {
+    if (!this.user?.id) return;
+    this.postsLoading = true;
+    this.postService.getPostsByUserId(this.user.id).subscribe({
+      next: (posts) => {
+        this.allPosts = posts;
+        this.postsLoading = false;
+      },
+      error: () => (this.postsLoading = false)
+    });
+  }
+
+  get photosPosts(): Post[] {
+    return this.allPosts.filter((p) => this.isPhotoPost(p));
+  }
+
+  get videosPosts(): Post[] {
+    return this.allPosts.filter((p) => this.isVideoPost(p));
+  }
+
+  get tagsPosts(): Post[] {
+    return this.allPosts.filter((p) => (p.tags || '').trim().length > 0);
+  }
+
+  get activePosts(): Post[] {
+    if (this.contentTab === 'photos') return this.photosPosts;
+    if (this.contentTab === 'videos') return this.videosPosts;
+    return this.tagsPosts;
+  }
+
+  setContentTab(tab: 'photos' | 'videos' | 'tags') {
+    this.contentTab = tab;
+  }
+
+  isPhotoPost(p: Post): boolean {
+    const type = (p.mediaType || '').toLowerCase();
+    const url = (p.mediaUrl || p.imageUrl || p.media || '').trim();
+    if (this.isVideoPost(p)) return false;
+    if (type === 'image' || url.length > 0) return true;
+    return /\.(jpe?g|png|gif|webp|bmp)(\?|$)/i.test(url);
+  }
+
+  isVideoPost(p: Post): boolean {
+    const type = (p.mediaType || '').toLowerCase();
+    const url = p.mediaUrl || p.media || '';
+    if (type === 'video') return true;
+    return /\.(mp4|webm|ogg|mov)(\?|$)/i.test(url);
   }
 }
 

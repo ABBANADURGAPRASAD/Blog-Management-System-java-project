@@ -22,7 +22,10 @@ public class PostController {
     }
 
     @GetMapping
-    public List<Post> getAllPosts() {
+    public List<Post> getAllPosts(@RequestParam(value = "userId", required = false) Long userId) {
+        if (userId != null) {
+            return postService.getPostsByUserId(userId);
+        }
         return postService.getAllPosts();
     }
 

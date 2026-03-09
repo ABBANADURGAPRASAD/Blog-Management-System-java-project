@@ -160,5 +160,37 @@
       </div>
     </div>
   </div>
+
+  <!-- Photos / Videos / Tags -->
+  <div class="profile-edit-posts">
+    <h3 class="posts-section-title">Your posts</h3>
+    <div class="content-tabs">
+      <button type="button" class="content-tab" [class.active]="contentTab === 'photos'" (click)="setContentTab('photos')">
+        <span class="tab-icon">▦</span> Photos
+      </button>
+      <button type="button" class="content-tab" [class.active]="contentTab === 'videos'" (click)="setContentTab('videos')">
+        <span class="tab-icon">▶</span> Videos
+      </button>
+      <button type="button" class="content-tab" [class.active]="contentTab === 'tags'" (click)="setContentTab('tags')">
+        <span class="tab-icon">⌖</span> Tags
+      </button>
+    </div>
+    <div class="content-grid-wrap">
+      <p class="loading-msg" *ngIf="postsLoading">Loading...</p>
+      <div class="content-grid" *ngIf="!postsLoading && activePosts.length > 0">
+        <a *ngFor="let post of activePosts" [routerLink]="['/posts', post.id]" class="grid-item">
+          <img *ngIf="isPhotoPost(post)" [src]="post.mediaUrl || post.imageUrl || post.media || 'assets/images/image.png'" [alt]="post.title" class="grid-thumb" onerror="this.src='assets/images/image.png'" />
+          <div *ngIf="isVideoPost(post)" class="grid-thumb grid-thumb-video">
+            <img [src]="post.mediaUrl || post.media || 'assets/images/image.png'" [alt]="post.title" onerror="this.src='assets/images/image.png'" />
+            <span class="play-icon">▶</span>
+          </div>
+          <div *ngIf="!isPhotoPost(post) && !isVideoPost(post)" class="grid-thumb grid-thumb-placeholder">
+            <span>#</span>
+          </div>
+        </a>
+      </div>
+      <p class="empty-msg" *ngIf="!postsLoading && activePosts.length === 0">No {{ contentTab }} yet.</p>
+    </div>
+  </div>
 </div>
 

@@ -1,6 +1,40 @@
 <div class="main-container">
   <div class="home-layout">
-    <!-- Main Content -->
+    <!-- Left: Profile card (fixed) -->
+    <aside class="left-profile-section">
+      <div class="profile-card-left">
+        <div class="profile-banner-wrap">
+          <img *ngIf="user?.backgroundImageUrl || user?.bannerPic"
+            [src]="user?.backgroundImageUrl || user?.bannerPic"
+            alt="Cover" class="profile-banner-img"
+            onerror="this.style.display='none'" />
+        </div>
+        <div class="profile-card-body">
+          <img [src]="user?.profileImageUrl || user?.profilePic || 'assets/images/dp_profile.jpeg'"
+            alt="Profile" class="profile-avatar"
+            onerror="this.src='assets/images/dp_profile.jpeg'" />
+          <h3 class="profile-display-name">{{ user?.fullName || user?.username || 'Guest' }}</h3>
+          <div>{{ user?.bio || 'No bio available.' }}</div>
+
+          <div class="profile-stats">
+            <div class="profile-stat">
+              <span class="profile-stat-value">{{ totalPosts }}</span>
+              <span class="profile-stat-label">Posts</span>
+            </div>
+            <div class="profile-stat">
+              <span class="profile-stat-value">{{ followersCount || 0 }}</span>
+              <span class="profile-stat-label">Followers</span>
+            </div>
+            <div class="profile-stat">
+              <span class="profile-stat-value">{{ followingCount || 0 }}</span>
+              <span class="profile-stat-label">Following</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </aside>
+
+    <!-- Center: Posts (scrollable) -->
     <div class="posts-section">
       <div class="posts-grid">
         <div class="post-card" *ngFor="let post of getPaginatedPosts()">
@@ -112,39 +146,6 @@
     </div>
   </div>
 </div>
-
-  <!-- right Sidebar
-  <div class="profile-section-right">
-    <div class="profile-card">
-      <img 
-        [src]="user?.bannerPic || 'https://via.placeholder.com/800x200'" 
-        alt="Banner" 
-        class="profile-banner"
-      />
-      <div class="profile-header">
-        <img 
-          [src]="user?.profilePic || 'https://via.placeholder.com/120'" 
-          alt="Profile" 
-          class="profile-pic-large"
-        />
-        <div class="profile-info">
-          <div>
-            <h2 class="profile-name">{{ user?.fullName || user?.username || 'User' }}</h2>
-            <p class="profile-role">{{ user?.role || 'Member' }}</p>
-          </div>
-        </div>
-      </div>
-      <div class="profile-body">
-        <h3>About Me</h3>
-        <p class="about-text">{{ user?.bio || 'No bio available.' }}</p>
-        <div class="social-links">
-          <a [href]="'mailto:' + user?.email" class="social-link" *ngIf="user?.email">Email</a>
-          <a [href]="user?.twitterUrl" target="_blank" class="social-link" *ngIf="user?.twitterUrl">Twitter</a>
-          <a [href]="user?.linkedInUrl" target="_blank" class="social-link" *ngIf="user?.linkedInUrl">LinkedIn</a>
-        </div>
-      </div>
-    </div>
-  </div> -->
 
   </div>
 

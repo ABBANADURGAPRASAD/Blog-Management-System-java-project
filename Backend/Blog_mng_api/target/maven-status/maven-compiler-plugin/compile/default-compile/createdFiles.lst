@@ -7,6 +7,7 @@ com/blog/controller/FileController.class
 com/blog/model/Comment$CommentBuilder.class
 com/blog/service/UserService.class
 com/blog/controller/HomeController.class
+com/blog/service/followersAndFollowingService.class
 com/blog/model/User$UserBuilder.class
 com/blog/service/PostService.class
 com/blog/model/Comment.class
@@ -16,14 +17,17 @@ com/blog/config/DataSourceConfig.class
 com/blog/controller/PostController.class
 com/blog/model/User.class
 com/blog/controller/AuthController$LoginRequest.class
+com/blog/controller/followersAndFollowingController.class
 com/blog/service/CryptoService.class
 com/blog/config/WebConfig.class
 com/blog/config/SecretsConfig.class
 com/blog/controller/LikeController.class
+com/blog/model/followsAndFollowing$followsAndFollowingBuilder.class
 com/blog/model/Like$LikeBuilder.class
 com/blog/service/CommentService.class
 com/blog/model/Like.class
 com/blog/model/Post.class
+com/blog/model/followsAndFollowing.class
 com/blog/util/CryptoUtil.class
 com/blog/controller/AuthController.class
 com/blog/model/Post$PostBuilder.class

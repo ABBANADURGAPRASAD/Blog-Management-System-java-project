@@ -18,7 +18,7 @@ public interface UserService {
 
     User updateBackgroundImage(Long userId, String imageUrl);
 
-    List<String> getAllUsers();
+    List<User> getAllUsers();
     
     String generateToken(User user);
 

@@ -4,15 +4,29 @@
       <img src="assets/images/Blog_mang_logo.png" alt="DP Blog Logo" class="logo-image" />
       <span class="logo-text">Feel free</span>
     </a>
-    <div class="search-bar">
+    <div class="search-bar search-wrapper" *ngIf="showSearch">
       <input 
         type="text"
         class="search-input"
         placeholder="Search users..."
         [(ngModel)]="searchText"
         (input)="searchUsers()"
+        (focus)="onSearchFocus()"
+        (blur)="onSearchBlur()"
       />
       <span class="search-icon">🔍</span>
+      <div class="search-dropdown" *ngIf="showSearchDropdown">
+        <div class="search-dropdown-list">
+          <a *ngFor="let u of usersList" class="search-dropdown-item" (click)="selectUser(u); $event.preventDefault()" href="">
+            <img [src]="u.profileImageUrl || u.profilePic || 'assets/images/dp_profile.jpeg'" [alt]="u.username" class="search-dropdown-pic" onerror="this.src='assets/images/dp_profile.jpeg'" />
+            <div class="search-dropdown-info">
+              <span class="search-dropdown-name">{{ u.fullName || u.username || 'User' }}</span>
+              <span class="search-dropdown-username">{{ u.username }}</span>
+            </div>
+          </a>
+          <p class="search-dropdown-empty" *ngIf="usersList.length === 0">No users found.</p>
+        </div>
+      </div>
     </div>
 
   </div>

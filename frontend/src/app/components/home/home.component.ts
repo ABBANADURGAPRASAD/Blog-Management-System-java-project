@@ -5,6 +5,7 @@ import { RouterModule } from '@angular/router';
 import { PostService, Post, Comment } from '../../services/post.service';
 import { AuthService } from '../../services/auth.service';
 import { User, UserService } from 'src/app/services/user.service';
+import { FollowersAndFollowingService } from 'src/app/services/followers-and-following.service';
 @Component({
   selector: 'app-home',
   standalone: true,
@@ -29,22 +30,44 @@ export class HomeComponent implements OnInit {
   showCommentModal = false;
   postComments: Comment[] = [];
   usersList: any[] = [];
+  followersCount :any;
+  followingCount: any;
 
   constructor(
     private postService: PostService,
     private userService: UserService,
-    private authService: AuthService
+    private authService: AuthService,
+    private followService: FollowersAndFollowingService,
+
   ) { }
 
   ngOnInit() {
     const currentUser = this.authService.getCurrentUser();
     if (currentUser?.id) {
       this.currentUserId = currentUser.id;
+      this.loadCurrentUserProfile();
     }
     this.loadPosts();
     this.loadPopularPosts();
     this.getUserAccount();
   }
+
+  loadCurrentUserProfile() {
+    this.userService.getCurrentUser().subscribe({
+      next: (data) => {
+        this.user = {
+          ...data,
+          profileImageUrl: data.profileImageUrl || data.profilePic,
+          backgroundImageUrl: data.backgroundImageUrl || data.bannerPic
+        };
+      },
+      error: () => {
+        this.user = null;
+      }
+    });
+  }
+
+  
 
   loadPosts() {
     this.postService.getAllPosts().subscribe({
@@ -111,6 +134,25 @@ export class HomeComponent implements OnInit {
       }
     });
     this.tags = Array.from(allTags).slice(0, 10);
+  }
+
+  loadFollowCounts() {
+    if (!this.user?.id) return;
+    this.followService.getCounts(this.user.id).subscribe({
+      next: (counts) => {
+        if (this.user) {
+          this.followersCount = counts.followersCount;
+          this.followingCount = counts.followingCount;
+        }
+      },
+      error: () => {}
+    });
+  }
+
+  get totalPosts(): number {
+    if (this.user?.postsCount != null) return this.user.postsCount;
+    if (!this.currentUserId) return 0;
+    return this.posts.filter(p => (p as any).userId === this.currentUserId || (p as any).user?.id === this.currentUserId).length;
   }
 
   getPaginatedPosts(): Post[] {
@@ -241,7 +283,7 @@ export class HomeComponent implements OnInit {
   getUserAccount() {
     this.userService.getAllUser().subscribe({
       next: (data: any[]) => {
-        this.usersList = data;
+        this.usersList = data.map((user: any) => user.userName);
       }
     });
   }

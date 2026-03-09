@@ -1,0 +1,65 @@
+<div class="main-container" *ngIf="user">
+  <div class="user-profile-header">
+    <div class="profile-avatar-wrap">
+      <img
+        [src]="user.profileImageUrl || user.profilePic || 'assets/images/dp_profile.jpeg'"
+        [alt]="user.username"
+        class="profile-avatar-large"
+        onerror="this.src='assets/images/dp_profile.jpeg'"
+      />
+    </div>
+    <div class="profile-meta">
+      <h1 class="profile-username">{{ user.username || user.fullName }}</h1>
+      <p class="profile-fullname">{{ user.fullName }}</p>
+      <div class="profile-stats-row">
+        <span class="stat-item"><strong>{{ allPosts.length }}</strong> posts</span>
+        <span class="stat-item stat-clickable" (click)="openFollowDialog('followers')"><strong>{{ user.followersCount ?? 0 }}</strong> followers</span>
+        <span class="stat-item stat-clickable" (click)="openFollowDialog('following')"><strong>{{ user.followingCount ?? 0 }}</strong> following</span>
+      </div>
+      <div class="profile-actions" *ngIf="currentUserId && currentUserId !== user.id">
+        <button type="button" class="btn-follow-toggle" [class.following]="isFollowing" (click)="toggleFollow()">
+          {{ isFollowing ? 'Following' : 'Follow' }}
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Content tabs: Photos | Videos | Tags -->
+  <div class="content-tabs">
+    <button type="button" class="content-tab" [class.active]="contentTab === 'photos'" (click)="setContentTab('photos')">
+      <span class="tab-icon">▦</span> Photos
+    </button>
+    <button type="button" class="content-tab" [class.active]="contentTab === 'videos'" (click)="setContentTab('videos')">
+      <span class="tab-icon">▶</span> Videos
+    </button>
+    <button type="button" class="content-tab" [class.active]="contentTab === 'tags'" (click)="setContentTab('tags')">
+      <span class="tab-icon">⌖</span> Tags
+    </button>
+  </div>
+
+  <div class="content-grid-wrap">
+    <p class="loading-msg" *ngIf="loading">Loading...</p>
+    <div class="content-grid" *ngIf="!loading && activePosts.length > 0">
+      <a *ngFor="let post of activePosts" [routerLink]="['/posts', post.id]" class="grid-item">
+        <img *ngIf="isPhotoPost(post)" [src]="post.mediaUrl || post.imageUrl || post.media || 'assets/images/image.png'" [alt]="post.title" class="grid-thumb" onerror="this.src='assets/images/image.png'" />
+        <div *ngIf="isVideoPost(post)" class="grid-thumb grid-thumb-video">
+          <img [src]="post.mediaUrl || post.media || 'assets/images/image.png'" [alt]="post.title" onerror="this.src='assets/images/image.png'" />
+          <span class="play-icon">▶</span>
+        </div>
+        <div *ngIf="!isPhotoPost(post) && !isVideoPost(post)" class="grid-thumb grid-thumb-placeholder">
+          <span>#</span>
+        </div>
+      </a>
+    </div>
+    <p class="empty-msg" *ngIf="!loading && activePosts.length === 0">No {{ contentTab }} yet.</p>
+  </div>
+</div>
+
+<app-followers-and-following
+  [visible]="followDialogVisible"
+  [mode]="followDialogMode"
+  [profileUserId]="user?.id ?? null"
+  [currentUserId]="currentUserId"
+  (close)="closeFollowDialog()"
+  (countsChanged)="onCountsChanged()"
+></app-followers-and-following>

@@ -1,27 +1,40 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { Router } from '@angular/router';
+import { Router, RouterModule } from '@angular/router';
 import { UserService, User } from '../../services/user.service';
 import { PostService, Post } from '../../services/post.service';
+import { AuthService } from '../../services/auth.service';
+import { FollowersAndFollowingService } from '../../services/followers-and-following.service';
+import { FollowersAndFollowingComponent } from '../followers-and-following/followers-and-following.component';
 
 @Component({
   selector: 'app-profile',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, RouterModule, FollowersAndFollowingComponent],
   templateUrl: './profile.component.html',
   styleUrls: ['./profile.component.css']
 })
 export class ProfileComponent implements OnInit {
   user: User | null = null;
   recentActivities: any[] = [];
+  followDialogVisible = false;
+  followDialogMode: 'followers' | 'following' = 'followers';
+  currentUserId: number | null = null;
+  contentTab: 'photos' | 'videos' | 'tags' = 'photos';
+  allPosts: Post[] = [];
+  postsLoading = false;
 
   constructor(
     private userService: UserService,
     private postService: PostService,
+    private authService: AuthService,
+    private followService: FollowersAndFollowingService,
     private router: Router
   ) { }
 
   ngOnInit() {
+    const current = this.authService.getCurrentUser();
+    if (current?.id) this.currentUserId = current.id;
     this.loadUserProfile();
   }
 
@@ -29,7 +42,9 @@ export class ProfileComponent implements OnInit {
     this.userService.getCurrentUser().subscribe({
       next: (data) => {
         this.user = this.transformUser(data);
+        this.loadFollowCounts();
         this.loadRecentActivities();
+        this.loadMyPosts();
       },
       error: (error) => {
         console.error('Error loading user profile:', error);
@@ -101,6 +116,77 @@ export class ProfileComponent implements OnInit {
     if (diffHours < 24) return `${diffHours} hours ago`;
     const diffDays = Math.floor(diffHours / 24);
     return `${diffDays} days ago`;
+  }
+
+  loadFollowCounts() {
+    if (!this.user?.id) return;
+    this.followService.getCounts(this.user.id).subscribe({
+      next: (counts) => {
+        if (this.user) {
+          this.user.followersCount = counts.followersCount;
+          this.user.followingCount = counts.followingCount;
+        }
+      },
+      error: () => {}
+    });
+  }
+
+  openFollowDialog(mode: 'followers' | 'following') {
+    this.followDialogMode = mode;
+    this.followDialogVisible = true;
+  }
+
+  closeFollowDialog() {
+    this.followDialogVisible = false;
+  }
+
+  loadMyPosts() {
+    if (!this.user?.id) return;
+    this.postsLoading = true;
+    this.postService.getPostsByUserId(this.user.id).subscribe({
+      next: (posts) => {
+        this.allPosts = posts;
+        this.postsLoading = false;
+      },
+      error: () => (this.postsLoading = false)
+    });
+  }
+
+  get photosPosts(): Post[] {
+    return this.allPosts.filter((p) => this.isPhotoPost(p));
+  }
+
+  get videosPosts(): Post[] {
+    return this.allPosts.filter((p) => this.isVideoPost(p));
+  }
+
+  get tagsPosts(): Post[] {
+    return this.allPosts.filter((p) => (p.tags || '').trim().length > 0);
+  }
+
+  get activePosts(): Post[] {
+    if (this.contentTab === 'photos') return this.photosPosts;
+    if (this.contentTab === 'videos') return this.videosPosts;
+    return this.tagsPosts;
+  }
+
+  setContentTab(tab: 'photos' | 'videos' | 'tags') {
+    this.contentTab = tab;
+  }
+
+  isPhotoPost(p: Post): boolean {
+    const type = (p.mediaType || '').toLowerCase();
+    const url = (p.mediaUrl || p.imageUrl || p.media || '').trim();
+    if (this.isVideoPost(p)) return false;
+    if (type === 'image' || url.length > 0) return true;
+    return /\.(jpe?g|png|gif|webp|bmp)(\?|$)/i.test(url);
+  }
+
+  isVideoPost(p: Post): boolean {
+    const type = (p.mediaType || '').toLowerCase();
+    const url = p.mediaUrl || p.media || '';
+    if (type === 'video') return true;
+    return /\.(mp4|webm|ogg|mov)(\?|$)/i.test(url);
   }
 
   editProfile() {

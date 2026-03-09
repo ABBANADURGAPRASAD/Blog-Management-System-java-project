@@ -1,0 +1,45 @@
+<div class="dialog-overlay" *ngIf="visible" (click)="closeDialog()">
+  <div class="dialog-box" (click)="stopPropagation($event)">
+    <div class="dialog-header">
+      <h2 class="dialog-title">{{ title }}</h2>
+      <button type="button" class="dialog-close" (click)="closeDialog()" aria-label="Close">×</button>
+    </div>
+    <div class="dialog-search">
+      <span class="search-icon">🔍</span>
+      <input
+        type="text"
+        class="search-input"
+        placeholder="Search"
+        [(ngModel)]="searchQuery"
+        (input)="onSearchInput()"
+      />
+    </div>
+    <div class="dialog-body">
+      <p class="error-msg" *ngIf="error">{{ error }}</p>
+      <p class="loading-msg" *ngIf="loading && !error">Loading...</p>
+      <div class="user-list" *ngIf="!loading && !error">
+        <div class="user-row" *ngFor="let user of filteredList">
+          <img
+            [src]="user.profileImageUrl || user.profilePic || 'assets/images/dp_profile.jpeg'"
+            [alt]="user.username"
+            class="user-avatar"
+            onerror="this.src='assets/images/dp_profile.jpeg'"
+          />
+          <div class="user-info">
+            <span class="user-username">{{ user.username || user.fullName || 'User' }}</span>
+            <span class="user-fullname">{{ user.fullName || user.username || '' }}</span>
+          </div>
+          <div class="user-action" *ngIf="currentUserId && user.id !== currentUserId">
+            <ng-container *ngIf="mode === 'following'">
+              <button type="button" class="btn-unfollow" (click)="unfollowUser(user)">Unfollow</button>
+            </ng-container>
+            <ng-container *ngIf="mode === 'followers'">
+              <button type="button" class="btn-follow" (click)="followUser(user)">Follow</button>
+            </ng-container>
+          </div>
+        </div>
+        <p class="empty-msg" *ngIf="filteredList.length === 0 && !loading">No {{ mode }} found.</p>
+      </div>
+    </div>
+  </div>
+</div>
