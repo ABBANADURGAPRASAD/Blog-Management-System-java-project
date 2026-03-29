@@ -14,7 +14,7 @@
         (focus)="onSearchFocus()"
         (blur)="onSearchBlur()"
       />
-      <span class="search-icon">🔍</span>
+      <span class="search-icon">𓍯𓂃𓏧♡</span>
       <div class="search-dropdown" *ngIf="showSearchDropdown">
         <div class="search-dropdown-list">
           <a *ngFor="let u of usersList" class="search-dropdown-item" (click)="selectUser(u); $event.preventDefault()" href="">
@@ -32,8 +32,24 @@
   </div>
   <div class="header-right">
     <ng-container *ngIf="isAuthenticated">
-      <button class="new-post-btn" (click)="onNewPostClick()">+ New_Post</button>
-      <span class="notification-bell">🔔</span>
+      <button
+        type="button"
+        class="chat-header-btn"
+        (click)="toggleChat()"
+        title="Messages"
+        aria-label="Open messages"
+      >
+        <svg class="chat-header-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+          <path
+            fill="currentColor"
+            d="M20 2H4a2 2 0 0 0-2 2v18l4-4h14a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2zm0 14H5.17L4 17.17V4h16v12z"
+          />
+        </svg>
+        <span class="chat-unread-badge" *ngIf="chatUnreadCount > 0">{{ chatUnreadCount > 99 ? '99+' : chatUnreadCount }}</span>
+      </button>
+      <button class="new-post-btn-text" (click)="onNewPostClick()">New Post
+      </button>
+      <span class="notification-bell">`♡´</span>
       <img [src]="currentUser?.profilePic || currentUser?.profileImageUrl || 'assets/images/dp_profile.jpeg'"
         alt="Profile" class="user-profile-pic" (click)="onProfileClick()"
         onerror="this.src='assets/images/dp_profile.jpeg'" />
@@ -41,3 +57,9 @@
     </ng-container>
   </div>
 </header>
+<app-chat-panel
+  *ngIf="isAuthenticated"
+  [open]="chatOpen"
+  (openChange)="onChatOpenChange($event)"
+  (unreadCountChange)="chatUnreadCount = $event"
+></app-chat-panel>

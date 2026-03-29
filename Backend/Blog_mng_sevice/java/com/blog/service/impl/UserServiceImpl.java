@@ -24,11 +24,41 @@ public class UserServiceImpl implements UserService {
         if (userRepository.existsByEmail(user.getEmail())) {
             throw new RuntimeException("Email already in use");
         }
+        ensureUserName(user);
         // Simple "hashing" for now as per requirements
         if (user.getPassword() != null) {
             user.setPasswordHash(user.getPassword());
         }
         return userRepository.save(user);
+    }
+
+    /**
+     * userName is required in DB; clients (e.g. Angular register) may omit it — derive a unique handle from email.
+     */
+    private void ensureUserName(User user) {
+        if (user.getUserName() != null && !user.getUserName().isBlank()) {
+            String un = user.getUserName().trim();
+            if (userRepository.existsByUserName(un)) {
+                throw new RuntimeException("Username already in use");
+            }
+            user.setUserName(un);
+            return;
+        }
+        String email = user.getEmail();
+        String base = "user";
+        if (email != null && email.contains("@")) {
+            base = email.substring(0, email.indexOf('@'));
+        }
+        base = base.replaceAll("[^a-zA-Z0-9_]", "").toLowerCase();
+        if (base.isEmpty()) {
+            base = "user";
+        }
+        String candidate = base;
+        int n = 0;
+        while (userRepository.existsByUserName(candidate)) {
+            candidate = base + (++n);
+        }
+        user.setUserName(candidate);
     }
 
     @Override

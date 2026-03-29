@@ -1,5 +1,8 @@
 package com.blog.model;
 
+import com.fasterxml.jackson.annotation.JsonAlias;
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -46,7 +49,10 @@ public class User {
 
     private String backgroundImageUrl;
 
+    /** Unique handle; JSON may use "userName" or "username". */
     @Column(nullable = false, unique = true)
+    @JsonProperty("userName")
+    @JsonAlias({ "username", "user_name" })
     private String userName;
 
     @Transient

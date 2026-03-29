@@ -288,7 +288,12 @@ CORS is enabled on the backend for all origins (`*`). In production, configure s
 ### Detailed Documentation
 
 - **[Backend README](./Backend/README.md)** - Backend setup, architecture, and API details
+- **[Backend docs index](./Backend/docs/README.md)** - Index of explanation-only Markdown (like READMEs per module)
+- **[blog-api explanations](./Backend/Blog_mng_api/README.md)** - File-by-file notes for the API module
+- **[blog-service explanations](./Backend/Blog_mng_sevice/README.md)** - File-by-file notes for the service module
+- **[blog-app explanations](./Backend/Blog_mng_app/README.md)** - Spring Boot entry module
 - **[Frontend README](./frontend/README.md)** - Frontend setup, components, and styling guide
+- **[Frontend docs overview](./frontend/docs/README.md)** - High-level frontend folder explanations
 - **[Backend API Guide](./Backend/UI_HANDOFF.md)** - Complete API reference for frontend developers
 
 ### Database Schema

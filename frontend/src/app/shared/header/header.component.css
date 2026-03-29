@@ -19,3 +19,10 @@
   text-decoration: none;
 }
 
+.new-post-btn-text{
+  color: rgb(255, 255, 255);
+  background: rgb(11, 58, 84);
+  border-radius: 1em;
+  padding: 0.4em;
+}
+

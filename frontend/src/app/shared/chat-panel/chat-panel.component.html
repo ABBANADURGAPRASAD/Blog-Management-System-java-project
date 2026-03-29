@@ -1,0 +1,167 @@
+<div class="chat-overlay" *ngIf="open" (click)="onOverlayClick()" role="presentation">
+  <div class="chat-shell" (click)="stopShellClick($event)">
+    <aside class="chat-sidebar">
+      <div class="chat-sidebar-top">
+        <span class="chat-account-name">{{ displayUsername }}</span>
+        <button
+          type="button"
+          class="chat-compose-btn"
+          title="Search someone to message"
+          aria-label="Search to start a chat"
+          (click)="focusSearch()"
+        >
+          ✎
+        </button>
+      </div>
+      <div class="chat-search-wrap">
+        <span class="chat-search-icon" aria-hidden="true"></span>
+        <input
+          #chatSearchInput
+          type="search"
+          class="chat-search-input"
+          placeholder="Search"
+          [(ngModel)]="searchQuery"
+          (input)="onSearchInput()"
+          autocomplete="off"
+        />
+      </div>
+      <div class="chat-messages-heading">
+        <span>Messages</span>
+      </div>
+      <div class="chat-conv-list" *ngIf="!loadingConv; else convLoading">
+        <ng-container *ngIf="searchQuery.trim(); else defaultList">
+          <button
+            type="button"
+            class="chat-conv-row"
+            *ngFor="let row of filteredConversations"
+            [class.active]="selectedOther?.id === row.otherUser.id"
+            (click)="selectConversation(row)"
+          >
+            <img
+              [src]="avatarUrl(row.otherUser)"
+              alt=""
+              class="chat-avatar"
+              onerror="this.src='assets/images/dp_profile.jpeg'"
+            />
+            <div class="chat-conv-body">
+              <div class="chat-conv-line1">
+                <span class="chat-conv-name">{{ displayName(row.otherUser) }}</span>
+                <span class="chat-conv-time">{{ relativeTime(row) }}</span>
+              </div>
+              <div class="chat-conv-preview">{{ previewText(row) }}</div>
+            </div>
+            <span class="chat-unread-dot" *ngIf="row.unreadCount > 0"></span>
+          </button>
+          <div class="chat-search-hint" *ngIf="searchUsers.length">Start a conversation</div>
+          <button
+            type="button"
+            class="chat-conv-row chat-conv-suggest"
+            *ngFor="let u of searchUsers"
+            (click)="selectFromSearch(u)"
+          >
+            <img
+              [src]="avatarUrl(u)"
+              alt=""
+              class="chat-avatar"
+              onerror="this.src='assets/images/dp_profile.jpeg'"
+            />
+            <div class="chat-conv-body">
+              <div class="chat-conv-line1">
+                <span class="chat-conv-name">{{ displayName(u) }}</span>
+              </div>
+              <div class="chat-conv-preview muted">{{ userHandle(u) }}</div>
+            </div>
+          </button>
+          <p class="chat-empty" *ngIf="filteredConversations.length === 0 && searchUsers.length === 0">
+            No matches.
+          </p>
+        </ng-container>
+        <ng-template #defaultList>
+          <button
+            type="button"
+            class="chat-conv-row"
+            *ngFor="let row of filteredConversations"
+            [class.active]="selectedOther?.id === row.otherUser.id"
+            (click)="selectConversation(row)"
+          >
+            <img
+              [src]="avatarUrl(row.otherUser)"
+              alt=""
+              class="chat-avatar"
+              onerror="this.src='assets/images/dp_profile.jpeg'"
+            />
+            <div class="chat-conv-body">
+              <div class="chat-conv-line1">
+                <span class="chat-conv-name">{{ displayName(row.otherUser) }}</span>
+                <span class="chat-conv-time">{{ relativeTime(row) }}</span>
+              </div>
+              <div class="chat-conv-preview">{{ previewText(row) }}</div>
+            </div>
+            <span class="chat-unread-dot" *ngIf="row.unreadCount > 0"></span>
+          </button>
+          <p class="chat-empty" *ngIf="conversations.length === 0">No messages yet. Search for someone above.</p>
+        </ng-template>
+      </div>
+      <ng-template #convLoading>
+        <div class="chat-loading">Loading…</div>
+      </ng-template>
+    </aside>
+
+    <section class="chat-main">
+      <ng-container *ngIf="selectedOther; else pickChat">
+        <header class="chat-thread-header">
+          <img
+            [src]="avatarUrl(selectedOther)"
+            alt=""
+            class="chat-avatar sm"
+            onerror="this.src='assets/images/dp_profile.jpeg'"
+          />
+          <span class="chat-thread-title">{{ displayName(selectedOther) }}</span>
+          <span class="chat-thread-spacer"></span>
+          <span class="chat-info-icon" title="Conversation">ⓘ</span>
+        </header>
+        <div class="chat-thread-scroll" #threadScroll>
+          <div class="chat-thread-inner" *ngIf="!loadingThread; else threadLoad">
+            <ng-container *ngFor="let item of threadItems">
+              <div class="chat-date-sep" *ngIf="item.type === 'date'">{{ item.label }}</div>
+              <div
+                class="chat-bubble-row"
+                *ngIf="item.type === 'msg'"
+                [class.from-me]="isSent(item.message)"
+              >
+                <div class="chat-bubble">
+                  {{ item.message.content }}
+                  <span class="chat-bubble-time">{{ messageTime(item.message) }}</span>
+                </div>
+              </div>
+            </ng-container>
+          </div>
+          <ng-template #threadLoad>
+            <div class="chat-loading pad">Loading messages…</div>
+          </ng-template>
+        </div>
+        <footer class="chat-composer">
+          <span class="chat-composer-emoji" aria-hidden="true">😊</span>
+          <textarea
+            class="chat-composer-input"
+            rows="1"
+            placeholder="Message..."
+            [(ngModel)]="draft"
+            (keydown)="onDraftKeydown($event)"
+          ></textarea>
+          <div class="chat-composer-actions">
+            <span class="chat-composer-icon muted" title="Voice (not available)">🎙️</span>
+            <span class="chat-composer-icon muted" title="Photos (not available)">🎞️</span>
+            <button type="button" class="chat-send-heart" (click)="send()" title="Send">⬆️</button>
+          </div>
+        </footer>
+        <p class="chat-send-err" *ngIf="sendError">{{ sendError }}</p>
+      </ng-container>
+      <ng-template #pickChat>
+        <div class="chat-placeholder">
+          <p>Select a conversation or search for someone to message.</p>
+        </div>
+      </ng-template>
+    </section>
+  </div>
+</div>

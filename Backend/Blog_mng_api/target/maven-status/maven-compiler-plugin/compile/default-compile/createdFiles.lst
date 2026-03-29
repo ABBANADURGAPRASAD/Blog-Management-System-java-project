@@ -1,5 +1,7 @@
 com/blog/controller/UserController.class
+com/blog/model/ConversationSummary.class
 com/blog/service/ExampleEncryptedConfigService.class
+com/blog/service/ChatService.class
 com/blog/config/AuthInterceptor.class
 com/blog/controller/CommentController.class
 com/blog/service/LikeService.class
@@ -7,8 +9,12 @@ com/blog/controller/FileController.class
 com/blog/model/Comment$CommentBuilder.class
 com/blog/service/UserService.class
 com/blog/controller/HomeController.class
+com/blog/controller/ChatController.class
 com/blog/service/followersAndFollowingService.class
 com/blog/model/User$UserBuilder.class
+com/blog/model/ChatMessage.class
+com/blog/model/SendMessageRequest.class
+com/blog/event/ChatMessageDeliveredEvent.class
 com/blog/service/PostService.class
 com/blog/model/Comment.class
 com/blog/service/FileStorageService.class
@@ -22,6 +28,8 @@ com/blog/service/CryptoService.class
 com/blog/config/WebConfig.class
 com/blog/config/SecretsConfig.class
 com/blog/controller/LikeController.class
+com/blog/model/ChatMessage$ChatMessageBuilder.class
+com/blog/model/ConversationSummary$ConversationSummaryBuilder.class
 com/blog/model/followsAndFollowing$followsAndFollowingBuilder.class
 com/blog/model/Like$LikeBuilder.class
 com/blog/service/CommentService.class
@@ -32,3 +40,4 @@ com/blog/util/CryptoUtil.class
 com/blog/controller/AuthController.class
 com/blog/model/Post$PostBuilder.class
 com/blog/util/GenerateEncryptedSecrets.class
+com/blog/model/UnreadCountResponse.class

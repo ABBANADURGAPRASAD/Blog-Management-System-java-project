@@ -4,6 +4,8 @@ import { CommonModule } from '@angular/common';
 import { AuthService } from '../../services/auth.service';
 import { User, UserService } from '../../services/user.service';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
+import { ChatPanelComponent } from '../chat-panel/chat-panel.component';
+import { ChatService } from '../../services/chat.service';
 
 @Component({
   selector: 'app-header',
@@ -11,7 +13,8 @@ import { FormsModule, ReactiveFormsModule } from '@angular/forms';
   imports: [CommonModule, RouterModule, FormsModule,
 
     FormsModule,
-    ReactiveFormsModule
+    ReactiveFormsModule,
+    ChatPanelComponent
   ],
   templateUrl: './header.component.html',
   styleUrls: ['./header.component.css']
@@ -27,16 +30,28 @@ export class HeaderComponent implements OnInit {
   searchText = '';
   showSearchDropdown = false;
 
+  chatOpen = false;
+  chatUnreadCount = 0;
+
   constructor(
     private router: Router,
     private authService: AuthService,
     private userService: UserService,
+    private chatService: ChatService,
   ) { }
 
   ngOnInit() {
     this.authService.currentUser$.subscribe(user => {
       this.currentUser = user;
       this.isAuthenticated = !!user;
+      if (user?.id) {
+        this.chatService.getUnreadCount(user.id).subscribe({
+          next: (r) => (this.chatUnreadCount = r?.unreadCount ?? 0),
+          error: () => (this.chatUnreadCount = 0),
+        });
+      } else {
+        this.chatUnreadCount = 0;
+      }
     });
 
     const updateFromUrl = () => {
@@ -127,7 +142,16 @@ export class HeaderComponent implements OnInit {
 
   onLogoutClick() {
     this.authService.logout();
+    this.chatOpen = false;
     this.router.navigate(['/home']);
+  }
+
+  toggleChat() {
+    this.chatOpen = !this.chatOpen;
+  }
+
+  onChatOpenChange(open: boolean) {
+    this.chatOpen = open;
   }
 }
 

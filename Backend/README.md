@@ -2,11 +2,22 @@
 
 This project is a multi-module Spring Boot application for managing a blog system.
 
+## Documentation (explanation-only Markdown)
+
+| Location | Contents |
+|----------|----------|
+| [docs/README.md](docs/README.md) | Index of all explanation docs |
+| [docs/CONFIG-AND-ROOT-FILES.md](docs/CONFIG-AND-ROOT-FILES.md) | `application.properties`, `UI_HANDOFF.md`, parent POM |
+| [Blog_mng_api/README.md](Blog_mng_api/README.md) | Every `blog-api` source file described |
+| [Blog_mng_sevice/README.md](Blog_mng_sevice/README.md) | Every `blog-service` source file described |
+| [Blog_mng_app/README.md](Blog_mng_app/README.md) | Spring Boot entry module |
+| [UI_HANDOFF.md](UI_HANDOFF.md) | REST API reference for UI developers |
+
 ## Project Structure
 
 - **Blog_mng_app**: Main application entry point (`BlogApplication`).
-- **Blog_mng_api**: REST Controllers (`com.blog.controller`).
-- **Blog_mng_sevice**: Business Logic, Entities, Repositories (`com.blog.service`, `com.blog.model`, `com.blog.repository`).
+- **Blog_mng_api**: REST controllers, service interfaces, JPA entities/models, config (`com.blog.controller`, `com.blog.service`, `com.blog.model`, …).
+- **Blog_mng_sevice**: Service implementations, repositories, Kafka (`com.blog.service.impl`, `com.blog.repository`, `com.blog.kafka`).
 
 ## Database Schema (DDL)
 

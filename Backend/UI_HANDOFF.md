@@ -172,7 +172,65 @@
 
 ---
 
-## 7. File / Uploads
+## 7. Direct messages (Chat)
+
+Instagram-style **user-to-user** DMs. The logged-in user is identified by `userId` (same pattern as likes and comments). After login, use the returned `User.id` as `userId`.
+
+### Send a message
+- **Endpoint**: `POST /api/chat/messages`
+- **Content-Type**: `application/json`
+- **Body**:
+  ```json
+  {
+    "senderId": 1,
+    "receiverId": 2,
+    "content": "Hey, how are you?"
+  }
+  ```
+- **Response**: Created `ChatMessage` object (`id`, `sender`, `receiver`, `content`, `createdAt`, `readAt`).
+- **Errors**: Cannot message yourself; empty content; missing sender/receiver.
+
+### Get conversation thread (with one user)
+- **Endpoint**: `GET /api/chat/messages`
+- **Query params**: `userId` (current user), `otherUserId` (the person you are chatting with).
+- **Response**: Array of `ChatMessage` objects, **oldest first** (full history between the two users).
+
+### Inbox (all conversations)
+- **Endpoint**: `GET /api/chat/conversations`
+- **Query param**: `userId` (current user).
+- **Response**: Array of `ConversationSummary` objects:
+  - `otherUser` — the other participant (`User`).
+  - `lastMessage` — latest message in that thread (`ChatMessage`).
+  - `unreadCount` — messages from `otherUser` you have not read yet (where you are the receiver and `readAt` is null).
+- Order: most recently active conversations first.
+
+### Mark conversation as read
+- **Endpoint**: `POST /api/chat/read`
+- **Query params**: `userId` (reader), `otherUserId` (the other person in the chat).
+- **Response**: `200 OK`. Marks all messages **from** `otherUserId` **to** `userId` as read (sets `readAt`). Call when the user opens the thread (like Instagram).
+
+### Unread message count (badge)
+- **Endpoint**: `GET /api/chat/unread-count`
+- **Query param**: `userId`.
+- **Response**:
+  ```json
+  { "unreadCount": 3 }
+  ```
+  Total DMs where this user is the receiver and the message is still unread.
+
+### Kafka message delivery (backend)
+
+Sending a message still goes through the **REST API** above. The backend then:
+
+1. Persists the row in **MySQL** (source of truth for the UI).
+2. After the database transaction **commits**, publishes a JSON event to the **Kafka** topic `chat.message.delivered` (key = message id).
+3. A **consumer** in the same application reads that topic so you can later plug in push notifications, WebSocket fan-out to the receiver, or analytics.
+
+Configure the broker in `application.properties`: `spring.kafka.bootstrap-servers` (default `localhost:9092`). For local development, run Kafka (for example Docker: `apache/kafka` or Confluent’s quick start) on that address. If the broker is unavailable, the HTTP response can still succeed while the Kafka publish is logged as an error—run Kafka for reliable delivery.
+
+---
+
+## 8. File / Uploads
 
 ### Serve Uploaded File
 - **Endpoint**: `GET /uploads/{fileName}`
@@ -181,7 +239,7 @@
 
 ---
 
-## Server-rendered pages (optional)
+## 9. Server-rendered pages (optional)
 
 These return HTML from the server (templates), not JSON:
 
