@@ -4,6 +4,7 @@ import com.blog.model.Post;
 import com.blog.model.User;
 import com.blog.repository.PostRepository;
 import com.blog.repository.UserRepository;
+import com.blog.service.NotificationService;
 import com.blog.service.PostService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -16,11 +17,14 @@ public class PostServiceImpl implements PostService {
 
     private final PostRepository postRepository;
     private final UserRepository userRepository;
+    private final NotificationService notificationService;
 
     @Autowired
-    public PostServiceImpl(PostRepository postRepository, UserRepository userRepository) {
+    public PostServiceImpl(PostRepository postRepository, UserRepository userRepository,
+            NotificationService notificationService) {
         this.postRepository = postRepository;
         this.userRepository = userRepository;
+        this.notificationService = notificationService;
     }
 
     @Override
@@ -28,7 +32,9 @@ public class PostServiceImpl implements PostService {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("User not found"));
         post.setUser(user);
-        return postRepository.save(post);
+        Post saved = postRepository.save(post);
+        notificationService.notifyNewPost(userId, saved.getId());
+        return saved;
     }
 
     @Override

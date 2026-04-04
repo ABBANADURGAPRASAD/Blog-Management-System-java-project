@@ -7,6 +7,7 @@ import com.blog.repository.LikeRepository;
 import com.blog.repository.PostRepository;
 import com.blog.repository.UserRepository;
 import com.blog.service.LikeService;
+import com.blog.service.NotificationService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -17,13 +18,15 @@ public class LikeServiceImpl implements LikeService {
     private final LikeRepository likeRepository;
     private final PostRepository postRepository;
     private final UserRepository userRepository;
+    private final NotificationService notificationService;
 
     @Autowired
     public LikeServiceImpl(LikeRepository likeRepository, PostRepository postRepository,
-            UserRepository userRepository) {
+            UserRepository userRepository, NotificationService notificationService) {
         this.likeRepository = likeRepository;
         this.postRepository = postRepository;
         this.userRepository = userRepository;
+        this.notificationService = notificationService;
     }
 
     @Override
@@ -42,6 +45,7 @@ public class LikeServiceImpl implements LikeService {
                     .user(user)
                     .build();
             likeRepository.save(like);
+            notificationService.notifyLike(userId, postId);
         }
     }
 

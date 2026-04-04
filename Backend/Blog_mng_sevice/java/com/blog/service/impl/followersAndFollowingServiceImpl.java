@@ -4,6 +4,7 @@ import com.blog.model.User;
 import com.blog.model.followsAndFollowing;
 import com.blog.repository.UserRepository;
 import com.blog.repository.followersAndFollowingRepository;
+import com.blog.service.NotificationService;
 import com.blog.service.followersAndFollowingService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -16,12 +17,15 @@ public class followersAndFollowingServiceImpl implements followersAndFollowingSe
 
     private final followersAndFollowingRepository followersAndFollowingRepository;
     private final UserRepository userRepository;
+    private final NotificationService notificationService;
 
     @Autowired
     public followersAndFollowingServiceImpl(followersAndFollowingRepository followersAndFollowingRepository,
-                                            UserRepository userRepository) {
+                                            UserRepository userRepository,
+                                            NotificationService notificationService) {
         this.followersAndFollowingRepository = followersAndFollowingRepository;
         this.userRepository = userRepository;
+        this.notificationService = notificationService;
     }
 
     @Override
@@ -68,6 +72,7 @@ public class followersAndFollowingServiceImpl implements followersAndFollowingSe
                 .followedUser(followingUserId)
                 .build();
         followersAndFollowingRepository.save(follow);
+        notificationService.notifyFollow(userId, followingUserId);
     }
 
     @Override
