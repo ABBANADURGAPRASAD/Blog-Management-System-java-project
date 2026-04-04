@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, ElementRef, OnInit, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
@@ -30,8 +30,21 @@ export class HomeComponent implements OnInit {
   showCommentModal = false;
   postComments: Comment[] = [];
   usersList: any[] = [];
+  /** Full user list for @mention autocomplete */
+  allMentionUsers: User[] = [];
+  mentionSuggestions: User[] = [];
+  showMentionDropdown = false;
+  mentionHighlightIndex = 0;
+  /** Start index of the active @mention token in newComment (inclusive of @). */
+  mentionTokenStart = 0;
+  /** Caret index when the mention state was last computed. */
+  mentionCaretIndex = 0;
+  /** Query fragment after @ for empty-state label */
+  mentionQueryLabel = '';
   followersCount :any;
   followingCount: any;
+
+  @ViewChild('commentTextarea') commentTextarea?: ElementRef<HTMLTextAreaElement>;
 
   constructor(
     private postService: PostService,
@@ -193,6 +206,7 @@ export class HomeComponent implements OnInit {
     this.selectedPostId = post.id;
     this.showCommentModal = true;
     this.newComment = '';
+    this.resetMentionAutocomplete();
     this.loadComments(post.id);
   }
 
@@ -202,6 +216,8 @@ export class HomeComponent implements OnInit {
         this.postComments = comments.map(comment => ({
           ...comment,
           author: comment.user?.fullName || comment.author || 'Anonymous',
+          authorId: comment.user?.id,
+          authorPic: comment.user?.profileImageUrl || comment.user?.profilePic,
           date: this.formatDate(comment.createdAt || comment.date)
         }));
       },
@@ -220,6 +236,8 @@ export class HomeComponent implements OnInit {
         this.postComments.push({
           ...comment,
           author: comment.user?.fullName || 'Anonymous',
+          authorId: comment.user?.id,
+          authorPic: comment.user?.profileImageUrl || comment.user?.profilePic,
           date: this.formatDate(comment.createdAt)
         });
         this.newComment = '';
@@ -240,6 +258,7 @@ export class HomeComponent implements OnInit {
     this.selectedPostId = null;
     this.postComments = [];
     this.newComment = '';
+    this.resetMentionAutocomplete();
   }
 
   sharePost(post: Post) {
@@ -283,9 +302,154 @@ export class HomeComponent implements OnInit {
   getUserAccount() {
     this.userService.getAllUser().subscribe({
       next: (data: any[]) => {
-        this.usersList = data.map((user: any) => user.userName);
+        this.allMentionUsers = (data || []).map((raw: any) => ({
+          ...raw,
+          username: raw.username || raw.userName,
+          email: raw.email || '',
+        })) as User[];
+        this.usersList = this.allMentionUsers.map((u) => this.getMentionHandle(u)).filter(Boolean);
       }
     });
+  }
+
+  getMentionHandle(u: User): string {
+    return (u.username || (u as any).userName || '').trim();
+  }
+
+  onCommentInput(event: Event): void {
+    const ta = event.target as HTMLTextAreaElement;
+    const text = ta.value;
+    this.newComment = text;
+    const caret = ta.selectionStart ?? text.length;
+    this.mentionCaretIndex = caret;
+    this.updateMentionState(text, caret);
+  }
+
+  private updateMentionState(text: string, caret: number): void {
+    const before = text.slice(0, caret);
+    const match = before.match(/@([a-zA-Z0-9_]*)$/);
+    if (!match) {
+      this.resetMentionAutocomplete();
+      return;
+    }
+    const query = (match[1] ?? '').toLowerCase();
+    this.mentionTokenStart = caret - match[0].length;
+    this.mentionQueryLabel = match[1] ?? '';
+
+    let list = this.allMentionUsers.filter((u) => {
+      const handle = this.getMentionHandle(u).toLowerCase();
+      const name = (u.fullName || '').toLowerCase();
+      if (!query) {
+        return true;
+      }
+      return handle.includes(query) || name.includes(query);
+    });
+    const currentId = this.currentUserId;
+    if (currentId != null) {
+      list = list.filter((u) => u.id !== currentId);
+    }
+    this.mentionSuggestions = list.slice(0, 12);
+    this.showMentionDropdown = true;
+    this.mentionHighlightIndex = 0;
+  }
+
+  private resetMentionAutocomplete(): void {
+    this.showMentionDropdown = false;
+    this.mentionSuggestions = [];
+    this.mentionHighlightIndex = 0;
+    this.mentionQueryLabel = '';
+  }
+
+  onCommentKeydown(event: KeyboardEvent): void {
+    if (!this.showMentionDropdown) {
+      return;
+    }
+    const len = this.mentionSuggestions.length;
+    if (len === 0) {
+      if (event.key === 'Escape') {
+        event.preventDefault();
+        this.resetMentionAutocomplete();
+      }
+      return;
+    }
+    if (event.key === 'ArrowDown') {
+      event.preventDefault();
+      this.mentionHighlightIndex = Math.min(this.mentionHighlightIndex + 1, len - 1);
+    } else if (event.key === 'ArrowUp') {
+      event.preventDefault();
+      this.mentionHighlightIndex = Math.max(this.mentionHighlightIndex - 1, 0);
+    } else if (event.key === 'Enter' && !event.shiftKey) {
+      event.preventDefault();
+      this.selectMention(this.mentionSuggestions[this.mentionHighlightIndex]);
+    } else if (event.key === 'Escape') {
+      event.preventDefault();
+      this.resetMentionAutocomplete();
+    } else if (event.key === 'Tab' && !event.shiftKey) {
+      event.preventDefault();
+      this.selectMention(this.mentionSuggestions[this.mentionHighlightIndex]);
+    }
+  }
+
+  selectMention(user: User): void {
+    const handle = this.getMentionHandle(user);
+    if (!handle) {
+      return;
+    }
+    const text = this.newComment;
+    const caret = this.mentionCaretIndex;
+    const start = this.mentionTokenStart;
+    const insert = '@' + handle + ' ';
+    this.newComment = text.slice(0, start) + insert + text.slice(caret);
+    this.resetMentionAutocomplete();
+    const pos = start + insert.length;
+    setTimeout(() => {
+      const ta = this.commentTextarea?.nativeElement;
+      if (ta) {
+        ta.focus();
+        ta.setSelectionRange(pos, pos);
+      }
+    });
+  }
+
+  /**
+   * Splits comment text so @handles can be styled and linked to profiles when known.
+   */
+  getCommentParts(comment: Comment): { text: string; mention: boolean; mentionUserId: number | null }[] {
+    const content = comment.content ?? '';
+    const segments = content.split(/(@[a-zA-Z0-9_]+)/g);
+    const out: { text: string; mention: boolean; mentionUserId: number | null }[] = [];
+    for (const seg of segments) {
+      if (seg === '') {
+        continue;
+      }
+      if (seg.startsWith('@')) {
+        const handle = seg.slice(1);
+        out.push({
+          text: seg,
+          mention: true,
+          mentionUserId: this.lookupUserIdByHandle(handle),
+        });
+      } else {
+        out.push({ text: seg, mention: false, mentionUserId: null });
+      }
+    }
+    return out;
+  }
+
+  /** Resolve user id for @handle using the loaded user directory (for links in comment body). */
+  lookupUserIdByHandle(handle: string): number | null {
+    const h = (handle || '').toLowerCase();
+    if (!h) {
+      return null;
+    }
+    const u = this.allMentionUsers.find(
+      (x) => this.getMentionHandle(x).toLowerCase() === h
+    );
+    return u?.id ?? null;
+  }
+
+  mentionChipUserId(username: string): number | null {
+    return this.lookupUserIdByHandle(username);
   }
   
 }

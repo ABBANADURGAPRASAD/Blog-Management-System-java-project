@@ -158,8 +158,52 @@
       </div>
       <div class="comment-list">
         <div class="comment-item" *ngFor="let comment of postComments">
-          <div class="comment-author">{{ comment.author || 'Anonymous' }}</div>
-          <div class="comment-text">{{ comment.content }}</div>
+          <div class="comment-author-row">
+            <img
+              class="comment-author-avatar"
+              [src]="comment.authorPic || 'assets/images/dp_profile.jpeg'"
+              alt=""
+              onerror="this.src='assets/images/dp_profile.jpeg'"
+            />
+            <div class="comment-author-meta">
+              <a
+                *ngIf="comment.authorId"
+                [routerLink]="['/user', comment.authorId]"
+                class="comment-author-link"
+                >{{ comment.author || 'Anonymous' }}</a
+              >
+              <span *ngIf="!comment.authorId" class="comment-author-plain">{{
+                comment.author || 'Anonymous'
+              }}</span>
+            </div>
+          </div>
+          <div class="comment-text">
+            <ng-container *ngFor="let part of getCommentParts(comment)">
+              <a
+                *ngIf="part.mention && part.mentionUserId"
+                [routerLink]="['/user', part.mentionUserId]"
+                class="comment-mention comment-mention-link"
+                >{{ part.text }}</a
+              >
+              <span *ngIf="part.mention && !part.mentionUserId" class="comment-mention">{{ part.text }}</span>
+              <span *ngIf="!part.mention">{{ part.text }}</span>
+            </ng-container>
+          </div>
+          <div
+            class="comment-mention-chips"
+            *ngIf="comment.mentionedUsernames?.length"
+            aria-label="Mentioned users"
+          >
+            <ng-container *ngFor="let name of comment.mentionedUsernames">
+              <a
+                *ngIf="mentionChipUserId(name) as chipUid"
+                [routerLink]="['/user', chipUid]"
+                class="mention-chip"
+                >@{{ name }}</a
+              >
+              <span *ngIf="!mentionChipUserId(name)" class="mention-chip mention-chip-plain">@{{ name }}</span>
+            </ng-container>
+          </div>
           <div class="comment-date">{{ comment.date }}</div>
         </div>
         <div *ngIf="postComments.length === 0" class="no-comments">
@@ -167,7 +211,48 @@
         </div>
       </div>
       <div class="comment-input-section" *ngIf="currentUserId">
-        <textarea [(ngModel)]="newComment" placeholder="Write a comment..." class="comment-input" rows="3"></textarea>
+        <div class="comment-input-wrap">
+          <textarea
+            #commentTextarea
+            [(ngModel)]="newComment"
+            placeholder="Write a comment… Type @ to mention someone."
+            class="comment-input"
+            rows="3"
+            (input)="onCommentInput($event)"
+            (keydown)="onCommentKeydown($event)"
+            autocomplete="off"
+            autocapitalize="off"
+          ></textarea>
+          <div
+            class="mention-autocomplete"
+            *ngIf="showMentionDropdown"
+            role="listbox"
+            aria-label="Mention users"
+          >
+            <button
+              type="button"
+              class="mention-option"
+              *ngFor="let u of mentionSuggestions; let i = index"
+              [class.active]="i === mentionHighlightIndex"
+              (mousedown)="selectMention(u); $event.preventDefault()"
+              role="option"
+            >
+              <img
+                class="mention-option-avatar"
+                [src]="u.profileImageUrl || u.profilePic || 'assets/images/dp_profile.jpeg'"
+                alt=""
+                onerror="this.src='assets/images/dp_profile.jpeg'"
+              />
+              <div class="mention-option-text">
+                <span class="mention-option-name">{{ u.fullName || getMentionHandle(u) || 'User' }}</span>
+                <span class="mention-option-handle">@{{ getMentionHandle(u) }}</span>
+              </div>
+            </button>
+            <div class="mention-empty" *ngIf="mentionSuggestions.length === 0">
+              No users match @{{ mentionQueryLabel || '…' }}
+            </div>
+          </div>
+        </div>
         <button class="add-comment-btn" (click)="addComment()" [disabled]="!newComment.trim()">
           Add Comment
         </button>

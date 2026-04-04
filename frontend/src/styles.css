@@ -211,12 +211,6 @@ body {
   box-shadow: 0 1px 4px rgba(0, 0, 0, 0.35);
 }
 
-.notification-bell {
-  font-size: 20px;
-  cursor: pointer;
-  color: #ff4444;
-}
-
 .new-post-btn {
   background: #4A90E2;
   color: white;

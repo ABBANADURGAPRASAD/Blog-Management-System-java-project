@@ -26,3 +26,111 @@
   padding: 0.4em;
 }
 
+.notification-wrap {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+}
+
+.notification-dropdown {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  width: min(360px, 92vw);
+  max-height: min(420px, 70vh);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  background: #0f2a3d;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 12px;
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.45);
+  z-index: 1000;
+}
+
+.notification-dropdown-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 12px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+  font-weight: 600;
+  color: #fff;
+  font-size: 14px;
+}
+
+.notification-mark-all {
+  background: transparent;
+  border: none;
+  color: #6eb5ff;
+  font-size: 12px;
+  cursor: pointer;
+  padding: 4px 6px;
+  border-radius: 6px;
+}
+
+.notification-mark-all:hover {
+  background: rgba(110, 181, 255, 0.15);
+}
+
+.notification-dropdown-body {
+  overflow-y: auto;
+  flex: 1;
+}
+
+.notification-loading,
+.notification-empty {
+  margin: 0;
+  padding: 16px 12px;
+  color: rgba(255, 255, 255, 0.65);
+  font-size: 13px;
+}
+
+.notification-item {
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+  width: 100%;
+  text-align: left;
+  padding: 10px 12px;
+  border: none;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  background: transparent;
+  color: #fff;
+  cursor: pointer;
+  font-size: 13px;
+  line-height: 1.35;
+}
+
+.notification-item:hover {
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.notification-item.unread {
+  background: rgba(74, 144, 226, 0.12);
+}
+
+.notification-avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  object-fit: cover;
+  flex-shrink: 0;
+}
+
+.notification-text {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+
+.notification-text span {
+  word-break: break-word;
+}
+
+.notification-text time {
+  font-size: 11px;
+  color: rgba(255, 255, 255, 0.5);
+}
+

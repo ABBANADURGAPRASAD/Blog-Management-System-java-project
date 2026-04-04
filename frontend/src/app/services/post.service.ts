@@ -29,8 +29,13 @@ export interface Comment {
   content: string;
   user?: any;
   author?: string;
+  /** Set in UI for linking to /user/:id */
+  authorId?: number;
+  authorPic?: string;
   createdAt?: string;
   date?: string;
+  /** Usernames @mentioned in this comment (from API). */
+  mentionedUsernames?: string[];
 }
 
 @Injectable({
