@@ -1,0 +1,126 @@
+<div class="anon-page">
+  <a routerLink="/home" class="nav-back">← Back to home</a>
+  <div class="anon-hero">
+    <h1>Anonymous chat</h1>
+    <p class="anon-sub">
+      Map finder & random match — identities stay hidden until both agree to reveal.
+    </p>
+    <button type="button" class="linkish" (click)="privacyOpen = !privacyOpen">
+      Privacy & safety
+    </button>
+    <div class="privacy-panel" *ngIf="privacyOpen">
+      <ul>
+        <li>Map pins show only a random id + color + location — not your profile.</li>
+        <li>Chat messages are scoped to an opaque session id (UUID).</li>
+        <li>Use HTTPS in production; do not share secrets in anonymous chat.</li>
+        <li>Reveal is optional and requires the other person to accept.</li>
+        <li>Set gender in your profile for better random matching (backend field).</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="anon-grid" *ngIf="!session">
+    <section class="card">
+      <h2>Random match</h2>
+      <p class="hint">Location + who you want to meet. Matching uses radius & gender rules on the server.</p>
+      <label>Latitude <input type="number" [(ngModel)]="randomLat" step="0.0001" /></label>
+      <label>Longitude <input type="number" [(ngModel)]="randomLng" step="0.0001" /></label>
+      <button type="button" class="secondary" (click)="useGeolocation()">Use my location</button>
+      <label>
+        Preference
+        <select [(ngModel)]="seeking">
+          <option value="ANY">Random / any</option>
+          <option value="MALE">Male</option>
+          <option value="FEMALE">Female</option>
+        </select>
+      </label>
+      <button type="button" class="primary" (click)="connectRandom()" [disabled]="!currentUserId">
+        Connect
+      </button>
+      <p class="status" *ngIf="randomHint">{{ randomHint }}</p>
+    </section>
+
+    <section class="card">
+      <h2>Map finder</h2>
+      <p class="hint">Uses your latitude/longitude above. Opens a list of colored pins nearby (same as map dots).</p>
+      <label>
+        Pin color
+        <input type="color" [(ngModel)]="pinColor" />
+      </label>
+      <button type="button" class="primary" (click)="openFinder()" [disabled]="!currentUserId">
+        Open finder
+      </button>
+    </section>
+  </div>
+
+  <div class="finder-overlay" *ngIf="showFinder">
+    <div class="finder-dialog">
+      <header>
+        <h3>Finder</h3>
+        <button type="button" class="icon-close" (click)="closeFinder()" aria-label="Close">×</button>
+      </header>
+      <p class="hint">
+        Your pin uses lat/lng from Random match. Shared only while this dialog is open. Click a row to select.
+      </p>
+      <button type="button" class="secondary" (click)="refreshFinderMarkers()">Refresh list</button>
+      <div class="finder-marker-list">
+        <button
+          type="button"
+          class="marker-row"
+          *ngFor="let m of mapMarkerList"
+          (click)="selectMarker(m)"
+          [class.selected]="selectedMarker?.markerPublicId === m.markerPublicId"
+        >
+          <span class="dot" [style.background-color]="m.colorHex"></span>
+          <span class="coords">{{ m.latitude | number : '1.2-2' }}, {{ m.longitude | number : '1.2-2' }}</span>
+        </button>
+        <p class="hint" *ngIf="mapMarkerList.length === 0">No other pins in this area. Try different lat/lng or wait.</p>
+      </div>
+      <div class="finder-actions" *ngIf="selectedMarker">
+        <span>Start anonymous chat with this pin?</span>
+        <button type="button" class="primary" (click)="startMapChat()">Start chat</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="chat-session" *ngIf="session">
+    <header class="chat-session-head">
+      <div>
+        <span class="badge">{{ session.mode }}</span>
+        <span *ngIf="session.revealed" class="revealed">
+          Revealed: {{ session.partnerUserName || 'Partner' }}
+        </span>
+        <span *ngIf="!session.revealed" class="anon-label">Anonymous partner</span>
+      </div>
+      <button type="button" class="secondary" (click)="endChat()">End chat</button>
+    </header>
+
+    <div class="messages" #msgBox>
+      <div
+        *ngFor="let m of messages"
+        class="msg-row"
+        [class.self]="m.fromSelf"
+      >
+        <span class="sender">{{ m.senderLabel }}</span>
+        <div class="bubble">{{ m.content }}</div>
+        <span class="time">{{ m.createdAt | date : 'short' }}</span>
+      </div>
+    </div>
+
+    <div class="composer">
+      <input
+        [(ngModel)]="draftMessage"
+        placeholder="Message…"
+        (keydown)="onDraftKeydown($event)"
+      />
+      <button type="button" class="primary" (click)="send()">Send</button>
+    </div>
+
+    <div class="reveal-bar" *ngIf="!session.revealed">
+      <button type="button" class="secondary" (click)="requestReveal()">Request reveal</button>
+      <button type="button" class="secondary" (click)="respondReveal(true)">Accept reveal</button>
+      <button type="button" class="ghost" (click)="respondReveal(false)">Decline</button>
+      <span class="hint">Partner must accept for identities to show.</span>
+    </div>
+  </div>
+</div>

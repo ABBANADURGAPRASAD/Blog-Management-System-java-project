@@ -6,6 +6,7 @@ import { ProfileEditComponent } from './components/profile-edit/profile-edit.com
 import { UserProfileComponent } from './components/user-profile/user-profile.component';
 import { LoginComponent } from './components/login/login.component';
 import { RegisterComponent } from './components/register/register.component';
+import { RandomChatComponent } from './components/random-chat/random-chat.component';
 import { authGuard } from './auth.guard';
 
 export const routes: Routes = [
@@ -16,6 +17,7 @@ export const routes: Routes = [
   { path: 'create', component: CreatePostComponent, canActivate: [authGuard] },
   { path: 'profile', component: ProfileComponent, canActivate: [authGuard] },
   { path: 'profile/edit', component: ProfileEditComponent, canActivate: [authGuard] },
-  { path: 'user/:id', component: UserProfileComponent, canActivate: [authGuard] }
+  { path: 'user/:id', component: UserProfileComponent, canActivate: [authGuard] },
+  { path: 'random-chat', component: RandomChatComponent, canActivate: [authGuard] }
 ];
 

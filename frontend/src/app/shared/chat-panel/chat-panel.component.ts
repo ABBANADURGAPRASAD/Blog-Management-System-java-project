@@ -5,6 +5,8 @@ import {
   HostListener,
   Input,
   OnChanges,
+  OnDestroy,
+  OnInit,
   Output,
   SimpleChanges,
   ViewChild,
@@ -17,7 +19,9 @@ import {
   ChatMessage,
   ConversationSummary,
 } from '../../services/chat.service';
-import { User, UserService } from '../../services/user.service';
+import { User, UserService, resolveProfileImageUrl } from '../../services/user.service';
+import { ChatLaunchService } from '../../services/chat-launch.service';
+import { Subscription } from 'rxjs';
 
 type ThreadItem =
   | { type: 'date'; label: string }
@@ -30,7 +34,7 @@ type ThreadItem =
   templateUrl: './chat-panel.component.html',
   styleUrls: ['./chat-panel.component.css'],
 })
-export class ChatPanelComponent implements OnChanges {
+export class ChatPanelComponent implements OnChanges, OnInit, OnDestroy {
   @ViewChild('chatSearchInput') chatSearchInput?: ElementRef<HTMLInputElement>;
   @ViewChild('threadScroll') threadScroll?: ElementRef<HTMLElement>;
 
@@ -55,15 +59,41 @@ export class ChatPanelComponent implements OnChanges {
   sendError = '';
 
   private allUsersCache: User[] = [];
+  private launchSub?: Subscription;
 
   constructor(
     private authService: AuthService,
     private chatService: ChatService,
-    private userService: UserService
+    private userService: UserService,
+    private chatLaunch: ChatLaunchService
   ) {
     const u = this.authService.getCurrentUser();
     this.applyCurrentUser(u);
     this.authService.currentUser$.subscribe((user) => this.applyCurrentUser(user));
+  }
+
+  ngOnInit(): void {
+    this.launchSub = this.chatLaunch.openChatRequests.subscribe((userId) => {
+      if (!this.currentUserId || !userId || userId === this.currentUserId) {
+        return;
+      }
+      this.openChange.emit(true);
+      this.userService.getUserById(userId).subscribe({
+        next: (u) => {
+          this.selectedOther = u as User & { userName?: string };
+          setTimeout(() => {
+            this.loadThread();
+            this.loadConversations();
+            this.focusSearch();
+          }, 0);
+        },
+        error: () => {},
+      });
+    });
+  }
+
+  ngOnDestroy(): void {
+    this.launchSub?.unsubscribe();
   }
 
   private applyCurrentUser(u: User | null) {
@@ -288,11 +318,7 @@ export class ChatPanelComponent implements OnChanges {
   }
 
   avatarUrl(user: User | undefined | null): string {
-    if (!user) return 'assets/images/dp_profile.jpeg';
-    const url = user.profileImageUrl || user.profilePic;
-    if (!url) return 'assets/images/dp_profile.jpeg';
-    if (url.startsWith('http')) return url;
-    return url.startsWith('/') ? url : '/' + url;
+    return resolveProfileImageUrl(user?.profileImageUrl || user?.profilePic);
   }
 
   displayName(user: User | undefined | null): string {

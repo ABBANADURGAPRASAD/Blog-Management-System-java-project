@@ -1,7 +1,8 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, RouterModule } from '@angular/router';
-import { UserService, User } from '../../services/user.service';
+import { forkJoin } from 'rxjs';
+import { UserService, User, resolveProfileImageUrl, resolveBannerImageUrl } from '../../services/user.service';
 import { PostService, Post } from '../../services/post.service';
 import { AuthService } from '../../services/auth.service';
 import { FollowersAndFollowingService } from '../../services/followers-and-following.service';
@@ -22,6 +23,8 @@ export class ProfileComponent implements OnInit {
   currentUserId: number | null = null;
   contentTab: 'photos' | 'videos' | 'tags' = 'photos';
   allPosts: Post[] = [];
+  /** Posts for Tags tab: yours with @mentions + posts where you were @mentioned */
+  tagsTabPosts: Post[] = [];
   postsLoading = false;
 
   constructor(
@@ -57,13 +60,21 @@ export class ProfileComponent implements OnInit {
   transformUser(user: User): User {
     return {
       ...user,
-      profilePic: user.profileImageUrl || user.profilePic || 'https://via.placeholder.com/150',
-      bannerPic: user.backgroundImageUrl || user.bannerPic || 'https://via.placeholder.com/800x200',
+      profilePic: user.profileImageUrl || user.profilePic,
+      bannerPic: user.backgroundImageUrl || user.bannerPic,
       linkedInUrl: user.linkedinUrl || user.linkedInUrl,
       postsCount: user.postsCount || 0,
       followersCount: user.followersCount || 0,
       followingCount: user.followingCount || 0
     };
+  }
+
+  profileAvatarSrc(): string {
+    return resolveProfileImageUrl(this.user?.profileImageUrl || this.user?.profilePic);
+  }
+
+  bannerSrc(): string | null {
+    return resolveBannerImageUrl(this.user?.backgroundImageUrl || this.user?.bannerPic);
   }
 
   loadRecentActivities() {
@@ -143,12 +154,17 @@ export class ProfileComponent implements OnInit {
   loadMyPosts() {
     if (!this.user?.id) return;
     this.postsLoading = true;
-    this.postService.getPostsByUserId(this.user.id).subscribe({
-      next: (posts) => {
-        this.allPosts = posts;
+    const uid = this.user.id;
+    forkJoin({
+      all: this.postService.getPostsByUserId(uid),
+      tags: this.postService.getPostsByUserId(uid, { tagsTab: true }),
+    }).subscribe({
+      next: ({ all, tags }) => {
+        this.allPosts = all;
+        this.tagsTabPosts = tags;
         this.postsLoading = false;
       },
-      error: () => (this.postsLoading = false)
+      error: () => (this.postsLoading = false),
     });
   }
 
@@ -161,7 +177,7 @@ export class ProfileComponent implements OnInit {
   }
 
   get tagsPosts(): Post[] {
-    return this.allPosts.filter((p) => (p.tags || '').trim().length > 0);
+    return this.tagsTabPosts;
   }
 
   get activePosts(): Post[] {

@@ -9,7 +9,7 @@ import {
 import { Router, RouterModule } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { AuthService } from '../../services/auth.service';
-import { User, UserService } from '../../services/user.service';
+import { User, UserService, resolveProfileImageUrl } from '../../services/user.service';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { ChatPanelComponent } from '../chat-panel/chat-panel.component';
 import { ChatService } from '../../services/chat.service';
@@ -267,12 +267,20 @@ export class HeaderComponent implements OnInit, OnDestroy {
       this.usersList = this.allUsers.slice(0, 10);
       return;
     }
-    this.usersList = this.allUsers.filter(
-      (u) =>
-        (u.username || '').toLowerCase().includes(q) ||
+    this.usersList = this.allUsers.filter((u) => {
+      const handle = (u as User & { userName?: string }).userName || u.username || '';
+      return (
+        handle.toLowerCase().includes(q) ||
         (u.fullName || '').toLowerCase().includes(q) ||
         (u.email || '').toLowerCase().includes(q)
-    ).slice(0, 10);
+      );
+    }).slice(0, 10);
+  }
+
+  headerProfileSrc(): string {
+    return resolveProfileImageUrl(
+      this.currentUser?.profileImageUrl || this.currentUser?.profilePic
+    );
   }
 
   searchUsers() {

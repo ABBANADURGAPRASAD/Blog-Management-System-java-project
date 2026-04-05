@@ -160,6 +160,21 @@ body {
   gap: 20px;
 }
 
+.anon-header-link {
+  color: #fff;
+  font-weight: 600;
+  font-size: 14px;
+  text-decoration: none;
+  padding: 6px 12px;
+  border-radius: 999px;
+  background: rgba(74, 144, 226, 0.35);
+  border: 1px solid rgba(255, 255, 255, 0.35);
+}
+
+.anon-header-link:hover {
+  background: rgba(74, 144, 226, 0.55);
+}
+
 .user-profile-pic {
   width: 40px;
   height: 40px;

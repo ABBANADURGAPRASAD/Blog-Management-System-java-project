@@ -22,18 +22,55 @@
       <!-- Profile Tab Content -->
       <div *ngIf="activeTab === 'profile'" class="tab-content">
         <form [formGroup]="profileForm" (ngSubmit)="saveChanges()">
-          <!-- Profile Picture -->
+          <div class="banner-edit-section">
+            <label class="section-label">Cover / background</label>
+            <div class="banner-preview-wrap">
+              <img
+                *ngIf="bannerDisplay()"
+                [src]="bannerDisplay()!"
+                alt="Cover preview"
+                class="banner-preview-img"
+              />
+              <div *ngIf="!bannerDisplay()" class="banner-preview-placeholder">
+                No cover image yet — add a wide photo below
+              </div>
+            </div>
+            <div class="banner-edit-actions">
+              <label class="btn btn-outline banner-file-btn">
+                <input
+                  type="file"
+                  accept="image/*"
+                  (change)="onBannerChange($event)"
+                  style="display: none;"
+                />
+                Choose cover image
+              </label>
+              <button
+                type="button"
+                class="btn btn-outline"
+                *ngIf="selectedBannerFile"
+                (click)="clearBannerSelection()"
+              >
+                Undo cover change
+              </button>
+            </div>
+            <p class="banner-hint">
+              Preview updates as you pick an image. Saved to your account when you click
+              <strong>Save Changes</strong> (stored on the server under your username).
+            </p>
+          </div>
+
           <div class="profile-pic-section">
             <div class="profile-pic-container">
-              <img 
-                [src]="profilePicPreview || 'https://via.placeholder.com/120'" 
-                alt="Profile" 
+              <img
+                [src]="profilePicDisplay()"
+                alt="Profile"
                 class="profile-pic-edit"
               />
               <label class="camera-overlay">
-                <input 
-                  type="file" 
-                  accept="image/*" 
+                <input
+                  type="file"
+                  accept="image/*"
                   (change)="onProfilePicChange($event)"
                   style="display: none;"
                 />
@@ -46,12 +83,11 @@
             </div>
           </div>
 
-          <!-- Form Fields -->
-          <div class="form-fields">
+          <div class="form-fields form-fields-grid">
             <div class="form-group">
               <label>Full Name</label>
-              <input 
-                type="text" 
+              <input
+                type="text"
                 formControlName="fullName"
                 class="form-control"
                 placeholder="Enter full name"
@@ -59,8 +95,18 @@
             </div>
 
             <div class="form-group">
+              <label>Phone Number</label>
+              <input
+                type="tel"
+                formControlName="phoneNumber"
+                class="form-control"
+                placeholder="Enter phone number"
+              />
+            </div>
+
+            <div class="form-group form-group-span-2">
               <label>Bio</label>
-              <textarea 
+              <textarea
                 formControlName="bio"
                 class="form-control"
                 rows="4"
@@ -69,19 +115,9 @@
             </div>
 
             <div class="form-group">
-              <label>Phone Number</label>
-              <input 
-                type="tel" 
-                formControlName="phoneNumber"
-                class="form-control"
-                placeholder="Enter phone number"
-              />
-            </div>
-
-            <div class="form-group">
               <label>Twitter URL</label>
-              <input 
-                type="url" 
+              <input
+                type="url"
                 formControlName="twitterUrl"
                 class="form-control"
                 placeholder="https://twitter.com/username"
@@ -90,8 +126,8 @@
 
             <div class="form-group">
               <label>Linkedin URL</label>
-              <input 
-                type="url" 
+              <input
+                type="url"
                 formControlName="linkedInUrl"
                 class="form-control"
                 placeholder="https://linkedin.com/in/username"
@@ -110,11 +146,11 @@
       <!-- Account Settings Tab Content -->
       <div *ngIf="activeTab === 'account'" class="tab-content">
         <form [formGroup]="accountForm" (ngSubmit)="saveChanges()">
-          <div class="form-fields">
+          <div class="form-fields form-fields-grid">
             <div class="form-group">
               <label>Email</label>
-              <input 
-                type="email" 
+              <input
+                type="email"
                 formControlName="email"
                 class="form-control"
                 placeholder="Enter email"
@@ -123,8 +159,8 @@
 
             <div class="form-group">
               <label>Username</label>
-              <input 
-                type="text" 
+              <input
+                type="text"
                 formControlName="username"
                 class="form-control"
                 placeholder="Enter username"
@@ -133,8 +169,8 @@
 
             <div class="form-group">
               <label>New Password</label>
-              <input 
-                type="password" 
+              <input
+                type="password"
                 formControlName="password"
                 class="form-control"
                 placeholder="Enter new password"
@@ -143,8 +179,8 @@
 
             <div class="form-group">
               <label>Confirm Password</label>
-              <input 
-                type="password" 
+              <input
+                type="password"
                 formControlName="confirmPassword"
                 class="form-control"
                 placeholder="Confirm new password"
@@ -164,7 +200,7 @@
   <!-- Photos / Videos / Tags -->
   <div class="profile-edit-posts">
     <h3 class="posts-section-title">Your posts</h3>
-    <div class="content-tabs">
+    <div class="content-tabs content-tabs-spread">
       <button type="button" class="content-tab" [class.active]="contentTab === 'photos'" (click)="setContentTab('photos')">
         <span class="tab-icon">▦</span> Photos
       </button>

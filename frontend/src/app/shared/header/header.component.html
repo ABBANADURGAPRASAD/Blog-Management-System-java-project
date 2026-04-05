@@ -47,6 +47,8 @@
         </svg>
         <span class="chat-unread-badge" *ngIf="chatUnreadCount > 0">{{ chatUnreadCount > 99 ? '99+' : chatUnreadCount }}</span>
       </button>
+      <a routerLink="/random-chat" class="anon-header-link" title="Anonymous map & random chat"
+        >Finder</a>
       <button class="new-post-btn-text" (click)="onNewPostClick()">New Post
       </button>
       <div class="notification-wrap" #notificationWrap>
@@ -106,7 +108,7 @@
           </div>
         </div>
       </div>
-      <img [src]="currentUser?.profilePic || currentUser?.profileImageUrl || 'assets/images/dp_profile.jpeg'"
+      <img [src]="headerProfileSrc()"
         alt="Profile" class="user-profile-pic" (click)="onProfileClick()"
         onerror="this.src='assets/images/dp_profile.jpeg'" />
       <button class="logout-btn" (click)="onLogoutClick()">Logout</button>

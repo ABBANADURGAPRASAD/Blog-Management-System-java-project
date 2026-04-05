@@ -1,9 +1,16 @@
 import { Component, OnInit } from '@angular/core';
+import { forkJoin } from 'rxjs';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
-import { UserService, User } from '../../services/user.service';
+import {
+  UserService,
+  User,
+  resolveProfileImageUrl,
+  resolveBannerImageUrl,
+} from '../../services/user.service';
 import { PostService, Post } from '../../services/post.service';
+import { AuthService } from '../../services/auth.service';
 
 @Component({
   selector: 'app-profile-edit',
@@ -19,15 +26,20 @@ export class ProfileEditComponent implements OnInit {
   user: User | null = null;
   profilePicPreview: string | null = null;
   selectedProfilePic: File | null = null;
+  /** Data URL or existing server path for cover preview */
+  bannerPreview: string | null = null;
+  selectedBannerFile: File | null = null;
   contentTab: 'photos' | 'videos' | 'tags' = 'photos';
   allPosts: Post[] = [];
+  tagsTabPosts: Post[] = [];
   postsLoading = false;
 
   constructor(
     private fb: FormBuilder,
     private userService: UserService,
     private postService: PostService,
-    private router: Router
+    private router: Router,
+    private authService: AuthService
   ) {
     this.profileForm = this.fb.group({
       fullName: ['', Validators.required],
@@ -60,11 +72,16 @@ export class ProfileEditComponent implements OnInit {
           twitterUrl: data.twitterUrl || '',
           linkedInUrl: data.linkedinUrl || data.linkedInUrl || ''
         });
+        const handle =
+          (data as User & { userName?: string }).userName || data.username || '';
         this.accountForm.patchValue({
           email: data.email || '',
-          username: data.username || ''
+          username: handle
         });
         this.profilePicPreview = data.profileImageUrl || data.profilePic || null;
+        this.bannerPreview =
+          data.backgroundImageUrl || data.bannerPic || null;
+        this.selectedBannerFile = null;
         this.loadMyPosts();
       },
       error: (error) => {
@@ -78,8 +95,31 @@ export class ProfileEditComponent implements OnInit {
     return {
       ...user,
       profilePic: user.profileImageUrl || user.profilePic,
-      linkedInUrl: user.linkedinUrl || user.linkedInUrl
+      bannerPic: user.backgroundImageUrl || user.bannerPic,
+      linkedInUrl: user.linkedinUrl || user.linkedInUrl,
     };
+  }
+
+  profilePicDisplay(): string {
+    const p = this.profilePicPreview;
+    if (!p) {
+      return resolveProfileImageUrl(null);
+    }
+    if (p.startsWith('data:') || p.startsWith('blob:')) {
+      return p;
+    }
+    return resolveProfileImageUrl(p);
+  }
+
+  bannerDisplay(): string | null {
+    const b = this.bannerPreview;
+    if (b == null || String(b).trim() === '') {
+      return null;
+    }
+    if (b.startsWith('data:') || b.startsWith('blob:')) {
+      return b;
+    }
+    return resolveBannerImageUrl(b);
   }
 
   onProfilePicChange(event: any) {
@@ -94,6 +134,26 @@ export class ProfileEditComponent implements OnInit {
     }
   }
 
+  onBannerChange(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    const file = input.files?.[0];
+    if (file) {
+      this.selectedBannerFile = file;
+      const reader = new FileReader();
+      reader.onload = (e: ProgressEvent<FileReader>) => {
+        this.bannerPreview = (e.target?.result as string) || null;
+      };
+      reader.readAsDataURL(file);
+    }
+    input.value = '';
+  }
+
+  clearBannerSelection(): void {
+    this.selectedBannerFile = null;
+    this.bannerPreview =
+      this.user?.backgroundImageUrl || this.user?.bannerPic || null;
+  }
+
   switchTab(tab: 'profile' | 'account') {
     this.activeTab = tab;
   }
@@ -104,24 +164,55 @@ export class ProfileEditComponent implements OnInit {
         const userData: User = {
           ...this.user,
           ...this.profileForm.value,
-          email: this.user.email // Ensure email is preserved
+          email: this.user.email
         };
 
-        // Note: Profile picture upload would need a separate endpoint
-        // For now, we only update text fields
-        if (this.selectedProfilePic) {
-          console.warn('Profile picture upload not yet implemented. Image will not be uploaded.');
-        }
-
         this.userService.updateUser(this.user.id, userData).subscribe({
-          next: (response) => {
-            console.log('Profile updated successfully:', response);
-            this.router.navigate(['/profile']);
+          next: () => {
+            const uid = this.user!.id!;
+            const finish = () => {
+              this.userService.getUserById(uid).subscribe({
+                next: (full) => {
+                  const cur = this.authService.getCurrentUser();
+                  const token = (full as User & { token?: string }).token || cur?.token;
+                  this.authService.setCurrentUser({ ...full, token });
+                  this.selectedProfilePic = null;
+                  this.selectedBannerFile = null;
+                  this.router.navigate(['/profile']);
+                },
+                error: () => this.router.navigate(['/profile'])
+              });
+            };
+            const uploadBanner = () => {
+              if (this.selectedBannerFile) {
+                this.userService
+                  .uploadBackgroundImage(uid, this.selectedBannerFile)
+                  .subscribe({
+                    next: () => finish(),
+                    error: () => {
+                      alert(
+                        'Profile saved, but the cover image could not be uploaded.'
+                      );
+                      finish();
+                    },
+                  });
+              } else {
+                finish();
+              }
+            };
+            if (this.selectedProfilePic) {
+              this.userService.uploadProfileImage(uid, this.selectedProfilePic).subscribe({
+                next: () => uploadBanner(),
+                error: () => {
+                  alert('Profile saved, but the profile photo could not be uploaded.');
+                  uploadBanner();
+                }
+              });
+            } else {
+              uploadBanner();
+            }
           },
-          error: (error) => {
-            console.error('Error updating profile:', error);
-            alert('Failed to update profile. Please try again.');
-          }
+          error: () => alert('Failed to update profile. Please try again.')
         });
       }
     } else {
@@ -131,20 +222,23 @@ export class ProfileEditComponent implements OnInit {
           ...this.accountForm.value
         };
 
-        // Don't send password if not changed
         if (!userData.password || userData.password === '') {
           delete userData.password;
         }
 
         this.userService.updateUser(this.user.id, userData).subscribe({
-          next: (response) => {
-            console.log('Account settings updated successfully:', response);
-            this.router.navigate(['/profile']);
+          next: () => {
+            this.userService.getUserById(this.user!.id!).subscribe({
+              next: (full) => {
+                const cur = this.authService.getCurrentUser();
+                const token = (full as User & { token?: string }).token || cur?.token;
+                this.authService.setCurrentUser({ ...full, token });
+                this.router.navigate(['/profile']);
+              },
+              error: () => this.router.navigate(['/profile'])
+            });
           },
-          error: (error) => {
-            console.error('Error updating account settings:', error);
-            alert('Failed to update account settings. Please try again.');
-          }
+          error: () => alert('Failed to update account settings. Please try again.')
         });
       }
     }
@@ -157,12 +251,17 @@ export class ProfileEditComponent implements OnInit {
   loadMyPosts() {
     if (!this.user?.id) return;
     this.postsLoading = true;
-    this.postService.getPostsByUserId(this.user.id).subscribe({
-      next: (posts) => {
-        this.allPosts = posts;
+    const uid = this.user.id;
+    forkJoin({
+      all: this.postService.getPostsByUserId(uid),
+      tags: this.postService.getPostsByUserId(uid, { tagsTab: true }),
+    }).subscribe({
+      next: ({ all, tags }) => {
+        this.allPosts = all;
+        this.tagsTabPosts = tags;
         this.postsLoading = false;
       },
-      error: () => (this.postsLoading = false)
+      error: () => (this.postsLoading = false),
     });
   }
 
@@ -175,7 +274,7 @@ export class ProfileEditComponent implements OnInit {
   }
 
   get tagsPosts(): Post[] {
-    return this.allPosts.filter((p) => (p.tags || '').trim().length > 0);
+    return this.tagsTabPosts;
   }
 
   get activePosts(): Post[] {

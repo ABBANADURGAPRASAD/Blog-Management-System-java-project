@@ -1,12 +1,13 @@
 <div class="main-container" *ngIf="user">
   <div class="user-profile-header">
     <div class="profile-avatar-wrap">
-      <img
-        [src]="user.profileImageUrl || user.profilePic || 'assets/images/dp_profile.jpeg'"
-        [alt]="user.username"
-        class="profile-avatar-large"
-        onerror="this.src='assets/images/dp_profile.jpeg'"
-      />
+      <button type="button" class="avatar-preview-trigger" (click)="openAvatarPreview()" title="View profile photo">
+        <img
+          [src]="avatarSrc()"
+          [alt]="user.username || user.fullName || 'Profile'"
+          class="profile-avatar-large"
+        />
+      </button>
     </div>
     <div class="profile-meta">
       <h1 class="profile-username">{{ user.username || user.fullName }}</h1>
@@ -20,12 +21,12 @@
         <button type="button" class="btn-follow-toggle" [class.following]="isFollowing" (click)="toggleFollow()">
           {{ isFollowing ? 'Following' : 'Follow' }}
         </button>
+        <button type="button" class="btn-message" (click)="openMessage()">Message</button>
       </div>
     </div>
   </div>
 
-  <!-- Content tabs: Photos | Videos | Tags -->
-  <div class="content-tabs">
+  <div class="content-tabs content-tabs-spread">
     <button type="button" class="content-tab" [class.active]="contentTab === 'photos'" (click)="setContentTab('photos')">
       <span class="tab-icon">▦</span> Photos
     </button>
@@ -53,6 +54,11 @@
     </div>
     <p class="empty-msg" *ngIf="!loading && activePosts.length === 0">No {{ contentTab }} yet.</p>
   </div>
+</div>
+
+<div class="avatar-preview-overlay" *ngIf="avatarPreviewOpen && user" (click)="closeAvatarPreview()" role="dialog" aria-modal="true" aria-label="Profile photo">
+  <button type="button" class="avatar-preview-close" (click)="closeAvatarPreview()" aria-label="Close">×</button>
+  <img [src]="avatarSrc()" [alt]="user.username || user.fullName || 'Profile'" class="avatar-preview-img" (click)="$event.stopPropagation()" />
 </div>
 
 <app-followers-and-following

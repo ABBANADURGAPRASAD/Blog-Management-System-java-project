@@ -58,6 +58,12 @@ export class AuthService {
     return this.currentUserSubject.value;
   }
 
+  /** Update session user (e.g. after profile image upload). */
+  setCurrentUser(user: User): void {
+    this.setStoredUser(user);
+    this.currentUserSubject.next(user);
+  }
+
   isAuthenticated(): boolean {
     return !!this.getCurrentUser();
   }

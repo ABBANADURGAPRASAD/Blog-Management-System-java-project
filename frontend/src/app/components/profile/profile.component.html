@@ -3,23 +3,29 @@
     <!-- Left Column - Profile Section -->
     <div class="profile-section">
       <div class="card profile-card">
-        <img 
-          [src]="user?.bannerPic || 'https://via.placeholder.com/800x200'" 
-          alt="Banner" 
-          class="profile-banner"
-        />
+        <div class="profile-banner-wrap">
+          <img
+            *ngIf="bannerSrc()"
+            [src]="bannerSrc()"
+            alt=""
+            class="profile-banner"
+          />
+          <div *ngIf="!bannerSrc()" class="profile-banner-placeholder" aria-hidden="true"></div>
+        </div>
         <div class="profile-header">
-          <img 
-            [src]="user?.profilePic || 'https://via.placeholder.com/120'" 
-            alt="Profile" 
+          <img
+            [src]="profileAvatarSrc()"
+            alt="Profile"
             class="profile-pic-large"
           />
-          <div class="profile-info">
-            <div>
+          <div class="profile-header-main">
+            <div class="profile-name-block">
               <h2 class="profile-name">{{ user?.fullName || user?.username || 'User' }}</h2>
               <p class="profile-role">{{ user?.role || 'Member' }}</p>
             </div>
-            <button class="btn btn-primary" (click)="editProfile()">Edit Profile</button>
+            <div class="profile-header-actions">
+              <button type="button" class="btn btn-primary" (click)="editProfile()">Edit Profile</button>
+            </div>
           </div>
         </div>
         <div class="profile-body">
@@ -27,8 +33,8 @@
           <p class="about-text">{{ user?.bio || 'No bio available.' }}</p>
           <div class="social-links">
             <a [href]="'mailto:' + user?.email" class="social-link" *ngIf="user?.email">Email</a>
-            <a [href]="user?.twitterUrl" target="_blank" class="social-link" *ngIf="user?.twitterUrl">Twitter</a>
-            <a [href]="user?.linkedInUrl" target="_blank" class="social-link" *ngIf="user?.linkedInUrl">LinkedIn</a>
+            <a [href]="user?.twitterUrl" target="_blank" rel="noopener noreferrer" class="social-link" *ngIf="user?.twitterUrl">Twitter</a>
+            <a [href]="user?.linkedInUrl" target="_blank" rel="noopener noreferrer" class="social-link" *ngIf="user?.linkedInUrl">LinkedIn</a>
           </div>
         </div>
       </div>
@@ -36,7 +42,6 @@
 
     <!-- Right Column - Stats and Activity -->
     <div class="activity-section">
-      <!-- Stats Section -->
       <div class="stats-section">
         <h3 class="section-title">Stats</h3>
         <div class="stats-grid">
@@ -55,19 +60,18 @@
         </div>
       </div>
 
-      <!-- Recent Activity Section -->
       <div class="activity-section-content">
         <h3 class="section-title">Recent Activity</h3>
-        <div class="activity-timeline">
+        <div class="activity-timeline" *ngIf="recentActivities.length > 0">
           <div class="activity-item" *ngFor="let activity of recentActivities">
             <div class="activity-icon">{{ activity.icon }}</div>
             <div class="activity-content">
               <div class="activity-text">{{ activity.text }}</div>
               <div class="activity-meta">
-                <img 
-                  *ngIf="activity.authorPic" 
-                  [src]="activity.authorPic" 
-                  [alt]="activity.author" 
+                <img
+                  *ngIf="activity.authorPic"
+                  [src]="activity.authorPic"
+                  [alt]="activity.author"
                   class="activity-author-pic"
                 />
                 <span *ngIf="activity.author">{{ activity.author }}</span>
@@ -77,13 +81,14 @@
             </div>
           </div>
         </div>
+        <p class="activity-empty" *ngIf="recentActivities.length === 0">No recent activity yet.</p>
       </div>
     </div>
   </div>
 
   <!-- Photos / Videos / Tags -->
   <div class="profile-content-tabs">
-    <div class="content-tabs" fxLayoutAlign="space-between end">
+    <div class="content-tabs content-tabs-row content-tabs-spread">
       <button type="button" class="content-tab" [class.active]="contentTab === 'photos'" (click)="setContentTab('photos')">
         <span class="tab-icon">▦</span> Photos
       </button>

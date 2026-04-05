@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { HttpClient, HttpHeaders } from '@angular/common/http';
+import { HttpClient, HttpHeaders, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 
 export interface Post {
@@ -12,6 +12,8 @@ export interface Post {
   mediaType?: string;
   tags?: string;
   category?: string;
+  /** User ids @mentioned in post body (from API). */
+  mentionedUserIds?: number[];
   user?: any;
   author?: string;
   authorPic?: string;
@@ -61,8 +63,12 @@ export class PostService {
     return this.http.get<Post[]>(this.apiUrl);
   }
 
-  getPostsByUserId(userId: number): Observable<Post[]> {
-    return this.http.get<Post[]>(this.apiUrl, { params: { userId: String(userId) } });
+  getPostsByUserId(userId: number, options?: { tagsTab?: boolean }): Observable<Post[]> {
+    let params = new HttpParams().set('userId', String(userId));
+    if (options?.tagsTab) {
+      params = params.set('tagsTab', 'true');
+    }
+    return this.http.get<Post[]>(this.apiUrl, { params });
   }
 
   getPostById(id: number): Observable<Post> {

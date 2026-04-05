@@ -47,14 +47,40 @@
         <button type="button" class="toolbar-btn" (click)="formatText('redo')" title="Redo">↷</button>
       </div>
 
-      <!-- Text Area -->
-      <div class="form-group">
-        <textarea 
+      <!-- Text Area + @mentions -->
+      <div class="form-group mention-compose-wrap">
+        <label class="content-label">Write your post — type <strong>@</strong> to mention someone</label>
+        <textarea
+          #contentTextarea
           formControlName="content"
           class="form-control post-content-area"
-          placeholder="What's your mind?"
+          placeholder="What's on your mind? Use @username to tag people."
           rows="8"
+          autocomplete="off"
+          (input)="onContentInput($event)"
+          (keydown)="onContentKeydown($event)"
         ></textarea>
+        <div
+          class="mention-autocomplete"
+          *ngIf="showMentionDropdown && mentionSuggestions.length > 0"
+          role="listbox"
+        >
+          <button
+            type="button"
+            class="mention-option"
+            *ngFor="let u of mentionSuggestions; let i = index"
+            [class.active]="i === mentionHighlightIndex"
+            (mousedown)="$event.preventDefault(); selectMention(u)"
+          >
+            <span class="mention-option-text">
+              <span class="mention-option-name">{{ u.fullName || getMentionHandle(u) || 'User' }}</span>
+              <span class="mention-option-handle">@{{ getMentionHandle(u) }}</span>
+            </span>
+          </button>
+        </div>
+        <div class="mention-empty" *ngIf="showMentionDropdown && mentionSuggestions.length === 0">
+          No users match @{{ mentionQueryLabel || '…' }}
+        </div>
       </div>
 
       <!-- Tags and Category -->
