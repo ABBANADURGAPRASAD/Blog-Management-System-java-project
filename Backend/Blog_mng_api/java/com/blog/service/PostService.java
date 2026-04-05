@@ -11,6 +11,9 @@ public interface PostService {
 
     List<Post> getPostsByUserId(Long userId);
 
+    /** Posts authored by user with at least one @mention, or posts where user was @mentioned. */
+    List<Post> getPostsForTagsTab(Long userId);
+
     Optional<Post> getPostById(Long id);
 
     List<Post> getPopularPosts();

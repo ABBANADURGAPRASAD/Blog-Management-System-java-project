@@ -43,7 +43,11 @@ public class UserController {
     @PutMapping(value = "/{id}/profile-image", consumes = "multipart/form-data")
     public ResponseEntity<User> uploadProfileImage(@PathVariable Long id,
             @RequestParam("file") org.springframework.web.multipart.MultipartFile file) {
-        String fileName = fileStorageService.storeFile(file);
+        User existing = userService.getUserProfile(id).orElse(null);
+        if (existing == null) {
+            return ResponseEntity.notFound().build();
+        }
+        String fileName = fileStorageService.storeProfileImage(file, existing.getUserName());
         String fileUrl = "/uploads/" + fileName;
         return ResponseEntity.ok(userService.updateProfileImage(id, fileUrl));
     }
@@ -51,7 +55,11 @@ public class UserController {
     @PutMapping(value = "/{id}/background-image", consumes = "multipart/form-data")
     public ResponseEntity<User> uploadBackgroundImage(@PathVariable Long id,
             @RequestParam("file") org.springframework.web.multipart.MultipartFile file) {
-        String fileName = fileStorageService.storeFile(file);
+        User existing = userService.getUserProfile(id).orElse(null);
+        if (existing == null) {
+            return ResponseEntity.notFound().build();
+        }
+        String fileName = fileStorageService.storeBackgroundImage(file, existing.getUserName());
         String fileUrl = "/uploads/" + fileName;
         return ResponseEntity.ok(userService.updateBackgroundImage(id, fileUrl));
     }

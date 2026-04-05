@@ -46,4 +46,54 @@ public class FileStorageService {
             throw new RuntimeException("Could not store file " + fileName + ". Please try again!", ex);
         }
     }
+
+    /**
+     * Store a profile image keyed by username so each user has a stable file (re-upload replaces it).
+     */
+    public String storeProfileImage(MultipartFile file, String userName) {
+        String safeBase = (userName == null || userName.isBlank()) ? "user" : userName.replaceAll("[^a-zA-Z0-9._-]", "_");
+        String ext = extensionOf(file.getOriginalFilename());
+        String fileName = safeBase + "_profile" + ext;
+        try {
+            if (fileName.contains("..")) {
+                throw new RuntimeException("Sorry! Filename contains invalid path sequence " + fileName);
+            }
+            Path targetLocation = this.fileStorageLocation.resolve(fileName);
+            Files.copy(file.getInputStream(), targetLocation, StandardCopyOption.REPLACE_EXISTING);
+            return fileName;
+        } catch (IOException ex) {
+            throw new RuntimeException("Could not store profile image " + fileName + ". Please try again!", ex);
+        }
+    }
+
+    public String storeBackgroundImage(MultipartFile file, String userName) {
+        String safeBase = (userName == null || userName.isBlank()) ? "user" : userName.replaceAll("[^a-zA-Z0-9._-]", "_");
+        String ext = extensionOf(file.getOriginalFilename());
+        String fileName = safeBase + "_banner" + ext;
+        try {
+            if (fileName.contains("..")) {
+                throw new RuntimeException("Sorry! Filename contains invalid path sequence " + fileName);
+            }
+            Path targetLocation = this.fileStorageLocation.resolve(fileName);
+            Files.copy(file.getInputStream(), targetLocation, StandardCopyOption.REPLACE_EXISTING);
+            return fileName;
+        } catch (IOException ex) {
+            throw new RuntimeException("Could not store background image " + fileName + ". Please try again!", ex);
+        }
+    }
+
+    private static String extensionOf(String originalFileName) {
+        if (originalFileName == null || originalFileName.isBlank()) {
+            return ".jpg";
+        }
+        int i = originalFileName.lastIndexOf('.');
+        if (i <= 0 || i >= originalFileName.length() - 1) {
+            return ".jpg";
+        }
+        String ext = originalFileName.substring(i);
+        if (ext.length() > 8) {
+            return ".jpg";
+        }
+        return ext;
+    }
 }

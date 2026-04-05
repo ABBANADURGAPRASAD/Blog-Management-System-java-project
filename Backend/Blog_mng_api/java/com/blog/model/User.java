@@ -12,8 +12,6 @@ import lombok.NoArgsConstructor;
 import java.util.ArrayList;
 import java.util.List;
 
-import io.micrometer.common.lang.Nullable;
-
 
 @Entity
 @Table(name = "users")
@@ -54,6 +52,24 @@ public class User {
     @JsonProperty("userName")
     @JsonAlias({ "username", "user_name" })
     private String userName;
+
+    /** Used for anonymous matchmaking; optional. */
+    @Enumerated(EnumType.STRING)
+    @Column(length = 16)
+    private Gender gender;
+
+    /** Hex color for map pins, e.g. #4A90E2 */
+    @Column(length = 16)
+    private String favoriteColor;
+
+    /** Last position shared for map finder / random match (user consent). */
+    private Double mapLatitude;
+
+    private Double mapLongitude;
+
+    /** When true, user appears on anonymous world map (Finder). */
+    @Builder.Default
+    private Boolean mapVisible = Boolean.FALSE;
 
     @Transient
     private String token;

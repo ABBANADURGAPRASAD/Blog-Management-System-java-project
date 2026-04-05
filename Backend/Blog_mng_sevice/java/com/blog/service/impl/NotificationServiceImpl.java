@@ -127,6 +127,33 @@ public class NotificationServiceImpl implements NotificationService {
 
     @Override
     @Transactional
+    public void notifyPostMention(Long actorUserId, Long postId, Long mentionedUserId, String content) {
+        if (mentionedUserId.equals(actorUserId)) {
+            return;
+        }
+        Post post = postRepository.findById(postId).orElse(null);
+        if (post == null) {
+            return;
+        }
+        User recipient = userRepository.findById(mentionedUserId).orElse(null);
+        User actor = userRepository.findById(actorUserId).orElse(null);
+        if (recipient == null || actor == null) {
+            return;
+        }
+        String preview = truncatePreview(content);
+        Notification n = Notification.builder()
+                .recipient(recipient)
+                .actor(actor)
+                .type(NotificationType.MENTION)
+                .post(post)
+                .previewText(preview)
+                .isRead(false)
+                .build();
+        notificationRepository.save(n);
+    }
+
+    @Override
+    @Transactional
     public void notifyNewPost(Long authorUserId, Long postId) {
         Post post = postRepository.findById(postId).orElse(null);
         if (post == null) {

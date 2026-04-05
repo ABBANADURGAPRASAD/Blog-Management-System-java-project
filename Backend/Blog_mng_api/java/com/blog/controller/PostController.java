@@ -22,8 +22,13 @@ public class PostController {
     }
 
     @GetMapping
-    public List<Post> getAllPosts(@RequestParam(value = "userId", required = false) Long userId) {
+    public List<Post> getAllPosts(
+            @RequestParam(value = "userId", required = false) Long userId,
+            @RequestParam(value = "tagsTab", required = false, defaultValue = "false") boolean tagsTab) {
         if (userId != null) {
+            if (tagsTab) {
+                return postService.getPostsForTagsTab(userId);
+            }
             return postService.getPostsByUserId(userId);
         }
         return postService.getAllPosts();

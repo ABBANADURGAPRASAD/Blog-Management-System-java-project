@@ -13,6 +13,9 @@ public interface NotificationService {
     /** Notifies a user @mentioned in a comment (post author only receives the regular comment notification). */
     void notifyCommentMention(Long actorUserId, Long postId, Long commentId, Long mentionedUserId, String content);
 
+    /** Notifies a user @mentioned in a post body. */
+    void notifyPostMention(Long actorUserId, Long postId, Long mentionedUserId, String content);
+
     void notifyNewPost(Long authorUserId, Long postId);
 
     void notifyFollow(Long followerUserId, Long followedUserId);
