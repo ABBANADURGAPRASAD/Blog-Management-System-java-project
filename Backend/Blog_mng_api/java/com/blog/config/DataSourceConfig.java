@@ -55,21 +55,22 @@ public class DataSourceConfig {
     public DataSource dataSource() {
         logger.info("Configuring DataSource with encrypted password support...");
 
-        // Get decrypted credentials from SecretsConfig
-        String username = secretsConfig.getDecryptedProperty("spring.datasource.username");
-        String password = secretsConfig.getDecryptedProperty("spring.datasource.password");
+        // Prefer *.encrypted-derived values; otherwise plain spring.datasource.* from config
+        String username = secretsConfig.getFromDecryptedCache("spring.datasource.username");
+        String password = secretsConfig.getFromDecryptedCache("spring.datasource.password");
 
-        // Fallback to plain properties if decrypted values are not available
         if (username == null) {
             username = environment.getProperty("spring.datasource.username", "root");
             logger.warn("Using plain username from properties (consider using encrypted property)");
+        } else {
+            logger.info("Using decrypted database username");
         }
 
         if (password == null) {
             password = environment.getProperty("spring.datasource.password", "");
             logger.warn("Using plain password from properties (consider using encrypted property)");
         } else {
-            logger.info("✅ Using decrypted database password");
+            logger.info("Using decrypted database password");
         }
 
         // Configure HikariCP

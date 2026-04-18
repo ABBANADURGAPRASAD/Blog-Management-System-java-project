@@ -27,6 +27,7 @@ com/blog/model/ChatMessage$ChatMessageBuilder.class
 com/blog/controller/AnonymousChatController.class
 com/blog/model/ConversationSummary$ConversationSummaryBuilder.class
 com/blog/model/followsAndFollowing$followsAndFollowingBuilder.class
+com/blog/model/MapMarkerStatus.class
 com/blog/model/Like$LikeBuilder.class
 com/blog/model/dto/RandomQueueResponse$RandomQueueResponseBuilder.class
 com/blog/model/RevealRequestEntity.class

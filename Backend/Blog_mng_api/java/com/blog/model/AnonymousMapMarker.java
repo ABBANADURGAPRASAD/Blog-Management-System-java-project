@@ -43,6 +43,10 @@ public class AnonymousMapMarker {
     @Column(nullable = false, length = 16)
     private String colorHex;
 
+    @Enumerated(EnumType.STRING)
+    @Column(length = 16)
+    private MapMarkerStatus status;
+
     private LocalDateTime updatedAt;
 
     public static String newToken() {

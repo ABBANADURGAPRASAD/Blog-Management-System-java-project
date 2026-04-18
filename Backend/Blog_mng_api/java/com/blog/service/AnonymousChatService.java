@@ -10,7 +10,8 @@ public interface AnonymousChatService {
 
     void clearMapPresence(Long userId);
 
-    List<MapMarkerResponse> listMarkers(double minLat, double maxLat, double minLng, double maxLng);
+    List<MapMarkerResponse> listMarkers(Long viewerUserId, double minLat, double maxLat, double minLng,
+            double maxLng);
 
     AnonymousSessionResponse startMapChat(Long requesterUserId, MapChatStartRequest request);
 

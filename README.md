@@ -155,7 +155,10 @@ Before running this project, ensure you have the following installed:
    mvn clean install
    ```
 
-3. **Run the Spring Boot application**:
+3. **Add export Key =**
+   ```export APP_SECRET_KEY="oAxGuIhSpp8OSIlTUs1FwdmWy4XvvY7yQMQ/OwIgUVg" ```
+
+4. **Run the Spring Boot application**:
    ```bash
    cd Blog_mng_app
    mvn spring-boot:run

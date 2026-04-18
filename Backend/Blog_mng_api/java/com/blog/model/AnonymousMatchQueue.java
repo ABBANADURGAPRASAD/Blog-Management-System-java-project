@@ -42,6 +42,9 @@ public class AnonymousMatchQueue {
     @Column(nullable = false, length = 16)
     private Gender myGender;
 
+    /** Radius used when this ticket was enqueued (km). */
+    private Double maxDistanceKm;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "matched_session_id")
     private AnonymousChatSession matchedSession;

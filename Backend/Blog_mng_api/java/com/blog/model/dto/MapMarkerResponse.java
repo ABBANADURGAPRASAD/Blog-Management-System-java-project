@@ -1,5 +1,6 @@
 package com.blog.model.dto;
 
+import com.blog.model.MapMarkerStatus;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -15,4 +16,9 @@ public class MapMarkerResponse {
     private double latitude;
     private double longitude;
     private String colorHex;
+    private MapMarkerStatus status;
+    /** e.g. User #2847 — derived from token, not the real user id. */
+    private String displayLabel;
+    /** True when the requesting viewer owns this marker. */
+    private boolean self;
 }

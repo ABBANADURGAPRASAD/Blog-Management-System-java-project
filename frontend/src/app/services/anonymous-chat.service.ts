@@ -4,11 +4,16 @@ import { Observable } from 'rxjs';
 
 export type GenderPreference = 'MALE' | 'FEMALE' | 'ANY';
 
+export type MapMarkerStatus = 'AVAILABLE' | 'BUSY' | 'IN_CHAT';
+
 export interface MapMarker {
   markerPublicId: string;
   latitude: number;
   longitude: number;
   colorHex: string;
+  status: MapMarkerStatus;
+  displayLabel: string;
+  self: boolean;
 }
 
 export interface AnonymousSession {
@@ -48,6 +53,7 @@ export class AnonymousChatService {
       longitude?: number | null;
       colorHex?: string;
       visible?: boolean;
+      mapStatus?: MapMarkerStatus;
     }
   ): Observable<void> {
     const params = new HttpParams().set('userId', String(userId));
@@ -60,16 +66,20 @@ export class AnonymousChatService {
   }
 
   getMarkers(
+    viewerUserId: number | null,
     minLat: number,
     maxLat: number,
     minLng: number,
     maxLng: number
   ): Observable<MapMarker[]> {
-    const params = new HttpParams()
+    let params = new HttpParams()
       .set('minLat', String(minLat))
       .set('maxLat', String(maxLat))
       .set('minLng', String(minLng))
       .set('maxLng', String(maxLng));
+    if (viewerUserId != null) {
+      params = params.set('viewerUserId', String(viewerUserId));
+    }
     return this.http.get<MapMarker[]>(`${this.base}/map/markers`, { params });
   }
 
@@ -84,7 +94,7 @@ export class AnonymousChatService {
 
   joinRandom(
     userId: number,
-    body: { latitude: number; longitude: number; seeking: GenderPreference }
+    body: { latitude: number; longitude: number; seeking: GenderPreference; maxDistanceKm?: number }
   ): Observable<RandomQueueResponse> {
     const params = new HttpParams().set('userId', String(userId));
     return this.http.post<RandomQueueResponse>(`${this.base}/random/join`, body, { params });

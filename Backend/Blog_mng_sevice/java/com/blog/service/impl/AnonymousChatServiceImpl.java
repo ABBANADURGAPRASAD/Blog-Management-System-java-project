@@ -17,7 +17,8 @@ import java.util.stream.Collectors;
 public class AnonymousChatServiceImpl implements AnonymousChatService {
 
     private static final int MAX_MESSAGE_LEN = 2000;
-    private static final double MATCH_RADIUS_KM = 100;
+    private static final double DEFAULT_MATCH_RADIUS_KM = 100;
+    private static final double MAX_ALLOWED_MATCH_RADIUS_KM = 500;
     private static final int QUEUE_MAX_AGE_MINUTES = 30;
 
     private final UserRepository userRepository;
@@ -70,6 +71,7 @@ public class AnonymousChatServiceImpl implements AnonymousChatService {
             marker.setLatitude(request.getLatitude());
             marker.setLongitude(request.getLongitude());
             marker.setColorHex(color);
+            marker.setStatus(normalizeClientMapStatus(request.getMapStatus()));
             marker.setUpdatedAt(LocalDateTime.now());
             mapMarkerRepository.save(marker);
         } else {
@@ -91,13 +93,17 @@ public class AnonymousChatServiceImpl implements AnonymousChatService {
 
     @Override
     @Transactional(readOnly = true)
-    public List<MapMarkerResponse> listMarkers(double minLat, double maxLat, double minLng, double maxLng) {
+    public List<MapMarkerResponse> listMarkers(Long viewerUserId, double minLat, double maxLat, double minLng,
+            double maxLng) {
         return mapMarkerRepository.findInBounds(minLat, maxLat, minLng, maxLng).stream()
                 .map(m -> MapMarkerResponse.builder()
                         .markerPublicId(m.getPublicToken())
                         .latitude(m.getLatitude())
                         .longitude(m.getLongitude())
                         .colorHex(m.getColorHex())
+                        .status(normalizeMapStatus(m.getStatus()))
+                        .displayLabel(displayLabelFromToken(m.getPublicToken()))
+                        .self(viewerUserId != null && m.getUser().getId().equals(viewerUserId))
                         .build())
                 .collect(Collectors.toList());
     }
@@ -116,6 +122,13 @@ public class AnonymousChatServiceImpl implements AnonymousChatService {
         if (target.getId().equals(requesterUserId)) {
             throw new IllegalArgumentException("Cannot chat with yourself");
         }
+        MapMarkerStatus st = normalizeMapStatus(marker.getStatus());
+        if (st == MapMarkerStatus.BUSY) {
+            throw new IllegalStateException("User offline");
+        }
+        if (st == MapMarkerStatus.IN_CHAT) {
+            throw new IllegalStateException("User in chat");
+        }
         AnonymousChatSession session = AnonymousChatSession.builder()
                 .publicId(AnonymousChatSession.newPublicId())
                 .userA(requester)
@@ -124,12 +137,7 @@ public class AnonymousChatServiceImpl implements AnonymousChatService {
                 .revealed(false)
                 .build();
         session = sessionRepository.save(session);
-        mapMarkerRepository.deleteByUser_Id(requesterUserId);
-        mapMarkerRepository.deleteByUser_Id(target.getId());
-        requester.setMapVisible(false);
-        target.setMapVisible(false);
-        userRepository.save(requester);
-        userRepository.save(target);
+        markUsersInChatOnMap(requester, target);
         return toSessionResponse(requesterUserId, session);
     }
 
@@ -156,7 +164,9 @@ public class AnonymousChatServiceImpl implements AnonymousChatService {
             double d = haversineKm(request.getLatitude(), request.getLongitude(),
                     peer.getLatitude() != null ? peer.getLatitude() : request.getLatitude(),
                     peer.getLongitude() != null ? peer.getLongitude() : request.getLongitude());
-            if (d > MATCH_RADIUS_KM) {
+            double rJoiner = effectiveRadiusKm(request.getMaxDistanceKm());
+            double rPeer = effectiveRadiusKm(peer.getMaxDistanceKm());
+            if (d > Math.min(rJoiner, rPeer)) {
                 continue;
             }
             AnonymousChatSession session = AnonymousChatSession.builder()
@@ -170,6 +180,9 @@ public class AnonymousChatServiceImpl implements AnonymousChatService {
             peer.setMatchedSession(session);
             queueRepository.save(peer);
             queueRepository.deleteByUser_Id(userId);
+            markRandomPairInChatOnMap(user, peer.getUser(),
+                    request.getLatitude(), request.getLongitude(),
+                    peer.getLatitude(), peer.getLongitude());
             return RandomQueueResponse.builder()
                     .matched(true)
                     .sessionPublicId(session.getPublicId())
@@ -186,6 +199,7 @@ public class AnonymousChatServiceImpl implements AnonymousChatService {
                 .longitude(request.getLongitude())
                 .seeking(seek)
                 .myGender(myG)
+                .maxDistanceKm(effectiveRadiusKm(request.getMaxDistanceKm()))
                 .build();
         queueRepository.save(row);
         return RandomQueueResponse.builder()
@@ -316,6 +330,65 @@ public class AnonymousChatServiceImpl implements AnonymousChatService {
         session.setEndedAt(LocalDateTime.now());
         sessionRepository.save(session);
         queueRepository.findByUser_Id(userId).ifPresent(queueRepository::delete);
+        restoreMapMarkersAfterChat(session.getUserA().getId(), session.getUserB().getId());
+    }
+
+    private void markUsersInChatOnMap(User requester, User target) {
+        requester.setMapVisible(true);
+        target.setMapVisible(true);
+        userRepository.save(requester);
+        userRepository.save(target);
+        mapMarkerRepository.findByUser_Id(requester.getId()).ifPresent(m -> {
+            m.setStatus(MapMarkerStatus.IN_CHAT);
+            m.setUpdatedAt(LocalDateTime.now());
+            mapMarkerRepository.save(m);
+        });
+        mapMarkerRepository.findByUser_Id(target.getId()).ifPresent(m -> {
+            m.setStatus(MapMarkerStatus.IN_CHAT);
+            m.setUpdatedAt(LocalDateTime.now());
+            mapMarkerRepository.save(m);
+        });
+    }
+
+    private void markRandomPairInChatOnMap(User a, User b, double latA, double lngA, Double latB, Double lngB) {
+        double bLat = latB != null ? latB : latA;
+        double bLng = lngB != null ? lngB : lngA;
+        upsertInChatMarker(a, latA, lngA);
+        upsertInChatMarker(b, bLat, bLng);
+    }
+
+    private void upsertInChatMarker(User user, double lat, double lng) {
+        String color = sanitizeColor(user.getFavoriteColor());
+        user.setMapLatitude(lat);
+        user.setMapLongitude(lng);
+        user.setMapVisible(true);
+        user.setFavoriteColor(color);
+        userRepository.save(user);
+        AnonymousMapMarker marker = mapMarkerRepository.findByUser_Id(user.getId()).orElse(null);
+        if (marker == null) {
+            marker = AnonymousMapMarker.builder()
+                    .publicToken(AnonymousMapMarker.newToken())
+                    .user(user)
+                    .build();
+        }
+        marker.setLatitude(lat);
+        marker.setLongitude(lng);
+        marker.setColorHex(color);
+        marker.setStatus(MapMarkerStatus.IN_CHAT);
+        marker.setUpdatedAt(LocalDateTime.now());
+        mapMarkerRepository.save(marker);
+    }
+
+    private void restoreMapMarkersAfterChat(Long userId1, Long userId2) {
+        for (Long uid : Arrays.asList(userId1, userId2)) {
+            mapMarkerRepository.findByUser_Id(uid).ifPresent(m -> {
+                if (m.getStatus() == MapMarkerStatus.IN_CHAT) {
+                    m.setStatus(MapMarkerStatus.AVAILABLE);
+                    m.setUpdatedAt(LocalDateTime.now());
+                    mapMarkerRepository.save(m);
+                }
+            });
+        }
     }
 
     private AnonymousChatSession loadSessionForParticipant(String sessionPublicId, Long userId) {
@@ -400,6 +473,33 @@ public class AnonymousChatServiceImpl implements AnonymousChatService {
                 * Math.sin(dLon / 2) * Math.sin(dLon / 2);
         double c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
         return R * c;
+    }
+
+    private static MapMarkerStatus normalizeMapStatus(MapMarkerStatus s) {
+        return s != null ? s : MapMarkerStatus.AVAILABLE;
+    }
+
+    /** Clients may only set AVAILABLE or BUSY; IN_CHAT is server-controlled. */
+    private static MapMarkerStatus normalizeClientMapStatus(MapMarkerStatus s) {
+        if (s == null || s == MapMarkerStatus.IN_CHAT) {
+            return MapMarkerStatus.AVAILABLE;
+        }
+        return s;
+    }
+
+    private static String displayLabelFromToken(String publicToken) {
+        if (publicToken == null || publicToken.isBlank()) {
+            return "User #????";
+        }
+        int n = Math.floorMod(publicToken.hashCode(), 9000) + 1000;
+        return "User #" + n;
+    }
+
+    private static double effectiveRadiusKm(Double requestedKm) {
+        if (requestedKm == null || requestedKm <= 0) {
+            return DEFAULT_MATCH_RADIUS_KM;
+        }
+        return Math.min(requestedKm, MAX_ALLOWED_MATCH_RADIUS_KM);
     }
 
     private static String sanitizeColor(String hex) {

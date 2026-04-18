@@ -3,6 +3,7 @@ package com.blog.controller;
 import com.blog.model.dto.*;
 import com.blog.service.AnonymousChatService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -42,17 +43,20 @@ public class AnonymousChatController {
 
     @GetMapping("/map/markers")
     public List<MapMarkerResponse> markers(
+            @RequestParam(required = false) Long viewerUserId,
             @RequestParam double minLat,
             @RequestParam double maxLat,
             @RequestParam double minLng,
             @RequestParam double maxLng) {
-        return anonymousChatService.listMarkers(minLat, maxLat, minLng, maxLng);
+        return anonymousChatService.listMarkers(viewerUserId, minLat, maxLat, minLng, maxLng);
     }
 
     @PostMapping("/map/chat")
     public ResponseEntity<?> startMapChat(@RequestParam Long userId, @RequestBody MapChatStartRequest body) {
         try {
             return ResponseEntity.ok(anonymousChatService.startMapChat(userId, body));
+        } catch (IllegalStateException e) {
+            return ResponseEntity.status(HttpStatus.CONFLICT).body(Map.of("error", e.getMessage()));
         } catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
         }

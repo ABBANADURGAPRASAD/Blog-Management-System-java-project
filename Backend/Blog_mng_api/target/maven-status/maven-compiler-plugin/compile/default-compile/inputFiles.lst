@@ -31,6 +31,7 @@
 /Users/ent-00210/Desktop/Project Documents/Blog-Management-System-java-project/Backend/Blog_mng_api/java/com/blog/service/ChatService.java
 /Users/ent-00210/Desktop/Project Documents/Blog-Management-System-java-project/Backend/Blog_mng_api/java/com/blog/service/followersAndFollowingService.java
 /Users/ent-00210/Desktop/Project Documents/Blog-Management-System-java-project/Backend/Blog_mng_api/java/com/blog/service/CommentService.java
+/Users/ent-00210/Desktop/Project Documents/Blog-Management-System-java-project/Backend/Blog_mng_api/java/com/blog/model/MapMarkerStatus.java
 /Users/ent-00210/Desktop/Project Documents/Blog-Management-System-java-project/Backend/Blog_mng_api/java/com/blog/model/AnonymousMatchQueue.java
 /Users/ent-00210/Desktop/Project Documents/Blog-Management-System-java-project/Backend/Blog_mng_api/java/com/blog/model/AnonymousSessionMode.java
 /Users/ent-00210/Desktop/Project Documents/Blog-Management-System-java-project/Backend/Blog_mng_api/java/com/blog/model/dto/MapPresenceRequest.java

@@ -1,13 +1,46 @@
-<div class="anon-page">
-  <a routerLink="/home" class="nav-back">← Back to home</a>
-  <div class="anon-hero">
+<div class="feel-page">
+  <header class="feel-topnav" role="banner">
+    <a routerLink="/home" class="feel-brand" aria-label="Feel Free home">Feel Free</a>
+    <div class="feel-nav-search-wrap">
+      <input
+        type="search"
+        class="feel-nav-search"
+        placeholder="Search users…"
+        disabled
+        aria-disabled="true"
+        title="Preview only"
+      />
+    </div>
+    <div class="feel-nav-actions">
+      <span class="feel-nav-icon" title="Messages (preview)" aria-hidden="true">
+        <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true">
+          <path
+            fill="currentColor"
+            d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm0 14H6l-2 2V4h16v12z"
+          />
+        </svg>
+      </span>
+      <span class="feel-nav-icon" title="Notifications (preview)" aria-hidden="true">
+        <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true">
+          <path
+            fill="currentColor"
+            d="M12 22c1.1 0 2-.9 2-2h-4c0 1.1.89 2 2 2zm6-6V11c0-3.07-1.64-5.64-4.5-6.32V4c0-.83-.67-1.5-1.5-1.5s-1.5.67-1.5 1.5v.68C7.63 5.36 6 7.92 6 11v5l-2 2v1h16v-1l-2-2z"
+          />
+        </svg>
+      </span>
+      <span class="feel-avatar-mini" title="Account">FF</span>
+    </div>
+  </header>
+
+  <main class="feel-main">
+  <a routerLink="/home" class="nav-back feel-nav-back">← Back to home</a>
+
+  <div class="feel-hero">
     <h1>Anonymous chat</h1>
-    <p class="anon-sub">
-      Map finder & random match — identities stay hidden until both agree to reveal.
+       <p class="feel-sub">
+      Connect with strangers anonymously using random match or explore the map in Mr. Map Zone to find people nearby.
     </p>
-    <button type="button" class="linkish" (click)="privacyOpen = !privacyOpen">
-      Privacy & safety
-    </button>
+    <button type="button" class="linkish" (click)="privacyOpen = !privacyOpen">Privacy &amp; safety</button>
     <div class="privacy-panel" *ngIf="privacyOpen">
       <ul>
         <li>Map pins show only a random id + color + location — not your profile.</li>
@@ -19,71 +52,292 @@
     </div>
   </div>
 
-  <div class="anon-grid" *ngIf="!session">
-    <section class="card">
+  <div class="feel-dashboard" *ngIf="!session">
+    <section class="feel-card feel-card-random">
       <h2>Random match</h2>
-      <p class="hint">Location + who you want to meet. Matching uses radius & gender rules on the server.</p>
-      <label>Latitude <input type="number" [(ngModel)]="randomLat" step="0.0001" /></label>
-      <label>Longitude <input type="number" [(ngModel)]="randomLng" step="0.0001" /></label>
-      <button type="button" class="secondary" (click)="useGeolocation()">Use my location</button>
-      <label>
-        Preference
-        <select [(ngModel)]="seeking">
-          <option value="ANY">Random / any</option>
-          <option value="MALE">Male</option>
-          <option value="FEMALE">Female</option>
-        </select>
-      </label>
-      <button type="button" class="primary" (click)="connectRandom()" [disabled]="!currentUserId">
-        Connect
+      <p class="hint">Location + who you want to meet. Matching uses radius &amp; gender rules on the server.</p>
+
+      <button
+        type="button"
+        class="btn-click-match"
+        (click)="connectRandom()"
+        [disabled]="!currentUserId"
+      >
+        CLICK TO MATCH
+        <span class="btn-click-sub">(Random / Any)</span>
       </button>
+
+      <div class="feel-toggle-row">
+        <span class="feel-toggle-label">Set location</span>
+        <label class="feel-switch" aria-label="Use live location">
+          <input type="checkbox" [(ngModel)]="locationLive" (change)="onLocationLiveChange()" />
+          <span class="feel-switch-slider"></span>
+        </label>
+        <span class="feel-coords"
+          >{{ randomLat | number : '1.4-4' }} / {{ randomLng | number : '1.4-4' }}</span
+        >
+      </div>
+
+      <div class="feel-manual-loc" *ngIf="!locationLive">
+        <label>Latitude <input type="number" [(ngModel)]="randomLat" step="0.0001" /></label>
+        <label>Longitude <input type="number" [(ngModel)]="randomLng" step="0.0001" /></label>
+        <button type="button" class="secondary feel-inline-btn" (click)="useGeolocation()">
+          Use my location once
+        </button>
+      </div>
+
+      <label class="feel-field-label">Gender preference</label>
+      <select class="feel-select-full" [(ngModel)]="seeking">
+        <option [ngValue]="'ANY'">Any</option>
+        <option [ngValue]="'MALE'">Male</option>
+        <option [ngValue]="'FEMALE'">Female</option>
+      </select>
+
+      <label class="feel-field-label">Max distance</label>
+      <select class="feel-select-full" [(ngModel)]="maxDistanceKm">
+        <option [ngValue]="5">5 km</option>
+        <option [ngValue]="25">25 km</option>
+        <option [ngValue]="50">50 km</option>
+        <option [ngValue]="100">100 km</option>
+        <option [ngValue]="200">200 km</option>
+      </select>
+
       <p class="status" *ngIf="randomHint">{{ randomHint }}</p>
     </section>
 
-    <section class="card">
+    <section class="feel-card feel-card-map">
       <h2>Map finder</h2>
-      <p class="hint">Uses your latitude/longitude above. Opens a list of colored pins nearby (same as map dots).</p>
-      <label>
-        Pin color
-        <input type="color" [(ngModel)]="pinColor" />
-      </label>
-      <button type="button" class="primary" (click)="openFinder()" [disabled]="!currentUserId">
-        Open finder
+      <p class="hint">Mr. Map Game Zone — colored pins nearby (same coordinates as Random match).</p>
+
+      <button type="button" class="btn-map-zone" (click)="openFinder()" [disabled]="!currentUserId">
+        <svg class="btn-map-ico" viewBox="0 0 24 24" width="20" height="20" aria-hidden="true">
+          <path
+            fill="currentColor"
+            d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"
+          />
+        </svg>
+        OPEN MR. MAP ZONE
       </button>
+
+      <label class="feel-field-label">Your map status</label>
+      <select
+        class="feel-select-full"
+        [(ngModel)]="mapAvailability"
+        (ngModelChange)="onMapAvailabilityChange()"
+      >
+        <option [ngValue]="'AVAILABLE'">Available — others can connect</option>
+        <option [ngValue]="'BUSY'">Offline — yellow pin, cannot connect</option>
+      </select>
+
+      <p class="feel-pin-label feel-legend-title">Pin colors on the map</p>
+      <div class="feel-legend-row">
+        <span class="feel-legend-item"><span class="feel-leg-dot feel-leg-av"></span> Green — Available</span>
+        <span class="feel-legend-item"><span class="feel-leg-dot feel-leg-busy"></span> Yellow — Offline</span>
+        <span class="feel-legend-item"><span class="feel-leg-dot feel-leg-inchat"></span> Red — In chat</span>
+      </div>
+
+      <div class="feel-pin-row">
+        <span class="feel-pin-label">Accent (saved to profile pin)</span>
+        <span class="feel-pin-swatch" [style.background-color]="pinColor"></span>
+        <input type="color" [(ngModel)]="pinColor" class="feel-color-input" title="Pin accent" />
+      </div>
     </section>
   </div>
 
+  <section class="feel-concept" *ngIf="!session" aria-label="Product concept">
+    <p class="feel-concept-label">UI / UX concept — overworld, streets &amp; proximity</p>
+    <img
+      src="assets/images/feel-free-concept-board.png"
+      alt="Four-panel Feel Free concept: dashboard, Mr. Map Zone, street navigation, proximity chat"
+      class="feel-concept-img"
+      width="1200"
+      height="675"
+      loading="lazy"
+    />
+  </section>
+
   <div class="finder-overlay" *ngIf="showFinder">
-    <div class="finder-dialog">
-      <header>
-        <h3>Finder</h3>
+    <div class="finder-dialog finder-map-zone map-zone-shell">
+      <header class="map-zone-header">
+        <div>
+          <h3>Mr. Map Zone</h3>
+          <p class="map-zone-coords">
+            {{ randomLat | number : '1.4-4' }}°, {{ randomLng | number : '1.4-4' }}°
+            <span class="map-user-count"
+              >· <strong>{{ otherPlayersOnMap }}</strong> other users on map</span
+            >
+          </p>
+        </div>
         <button type="button" class="icon-close" (click)="closeFinder()" aria-label="Close">×</button>
       </header>
-      <p class="hint">
-        Your pin uses lat/lng from Random match. Shared only while this dialog is open. Click a row to select.
+
+      <p class="map-hint-bar" *ngIf="mapHint">{{ mapHint }}</p>
+
+      <div class="map-zone-stage">
+        <div
+          #mapPane
+          class="map-zone-map"
+          role="application"
+          aria-label="Map: click to move your pin, or use arrow keys when Navigate is selected"
+        ></div>
+
+        <aside class="map-legend-float" aria-label="Map legend">
+          <strong>Legend</strong>
+          <div class="leg-row"><span class="leg-dot av"></span> Available</div>
+          <div class="leg-row"><span class="leg-dot busy"></span> Offline</div>
+          <div class="leg-row"><span class="leg-dot inchat"></span> In chat</div>
+        </aside>
+
+        <div class="street-layer" *ngIf="streetViewOpen && streetTarget">
+          <div class="street-scene" aria-hidden="true">
+            <div class="street-sky"></div>
+            <div class="street-buildings">
+              <span class="bld b1"></span>
+              <span class="bld b2"></span>
+              <span class="bld b3"></span>
+            </div>
+            <div class="street-ground"></div>
+            <div class="street-avatar-feet"></div>
+          </div>
+          <div class="street-head">
+            <button type="button" class="street-back" (click)="skipStreet()" aria-label="Back to map">←</button>
+            <div>
+              <h4 class="street-title">Street level view</h4>
+              <p class="street-approach">You are approaching {{ streetTarget.displayLabel }}</p>
+            </div>
+          </div>
+          <div class="street-modal">
+            <div class="street-modal-icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" width="28" height="28">
+                <path
+                  fill="currentColor"
+                  d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2z"
+                />
+              </svg>
+            </div>
+            <h4>User nearby</h4>
+            <p class="street-line">
+              You are within range of <strong>{{ streetTarget.displayLabel }}</strong>
+            </p>
+            <p class="street-distance">Distance: {{ streetDistanceLabel }}</p>
+            <div class="street-actions">
+              <button
+                type="button"
+                class="btn-connect-chat"
+                (click)="startMapChat()"
+                [disabled]="streetTarget.status === 'BUSY' || streetTarget.status === 'IN_CHAT'"
+              >
+                CONNECT TO CHAT
+              </button>
+              <button type="button" class="btn-move-past" (click)="skipStreet()">SKIP</button>
+            </div>
+            <p class="street-footnote">Your conversation will remain anonymous.</p>
+          </div>
+          <div class="street-footer-nav">
+            <span class="street-pos">{{ streetLocationLabel }}</span>
+            <div class="street-move-btns">
+              <button type="button" class="secondary street-nudge" (click)="setMapTool('navigate')">
+                ← Map
+              </button>
+              <button type="button" class="secondary street-nudge" (click)="skipStreet()">Skip →</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="picker-card" *ngIf="selectedMarker && !selectedMarker.self && !streetViewOpen">
+        <button type="button" class="picker-close" (click)="clearSelectedMarker()" aria-label="Close">×</button>
+        <h4>{{ selectedMarker.displayLabel }}</h4>
+        <p
+          class="picker-status"
+          [class.busy]="selectedMarker.status === 'BUSY'"
+          [class.inchat]="selectedMarker.status === 'IN_CHAT'"
+        >
+          <span
+            class="picker-dot"
+            [class.busy]="selectedMarker.status === 'BUSY'"
+            [class.inchat]="selectedMarker.status === 'IN_CHAT'"
+          ></span>
+          {{ markerStatusLabel(selectedMarker) }}
+        </p>
+        <button
+          type="button"
+          class="btn-connect-chat full"
+          (click)="startMapChat()"
+          [disabled]="selectedMarker.status === 'BUSY' || selectedMarker.status === 'IN_CHAT'"
+        >
+          {{
+            selectedMarker.status === 'BUSY'
+              ? 'Offline'
+              : selectedMarker.status === 'IN_CHAT'
+                ? 'In chat'
+                : 'CONNECT TO CHAT'
+          }}
+        </button>
+      </div>
+
+      <div class="map-zone-bottom">
+        <button
+          type="button"
+          class="map-tab"
+          [class.active]="mapTool === 'navigate'"
+          (click)="setMapTool('navigate')"
+        >
+          Navigate me
+        </button>
+        <button
+          type="button"
+          class="map-tab"
+          [class.active]="mapTool === 'locate'"
+          (click)="setMapTool('locate')"
+        >
+          My location
+        </button>
+        <button
+          type="button"
+          class="map-tab"
+          [class.active]="mapTool === 'street'"
+          (click)="setMapTool('street')"
+        >
+          Street view
+        </button>
+      </div>
+      <p class="map-zone-help">
+        <strong>Navigate me</strong> centers on you and counts available people nearby.
+        <strong>My location</strong> uses GPS. <strong>Street view</strong>: tap another user on the map or list — then
+        <strong>Connect</strong> or <strong>Skip</strong>.
       </p>
-      <button type="button" class="secondary" (click)="refreshFinderMarkers()">Refresh list</button>
-      <div class="finder-marker-list">
+
+      <div class="map-side-list">
+        <div class="map-side-head">
+          <span class="map-side-title">Pins in this view</span>
+          <button type="button" class="linkish small" (click)="refreshFinderMarkers()">Refresh</button>
+        </div>
         <button
           type="button"
           class="marker-row"
           *ngFor="let m of mapMarkerList"
-          (click)="selectMarker(m)"
+          (click)="onMarkerRowClick(m)"
           [class.selected]="selectedMarker?.markerPublicId === m.markerPublicId"
         >
-          <span class="dot" [style.background-color]="m.colorHex"></span>
-          <span class="coords">{{ m.latitude | number : '1.2-2' }}, {{ m.longitude | number : '1.2-2' }}</span>
+          <span
+            class="dot"
+            [class.leg-me]="m.self"
+            [class.leg-busy]="!m.self && m.status === 'BUSY'"
+            [class.leg-av]="!m.self && m.status === 'AVAILABLE'"
+            [class.leg-inchat]="!m.self && m.status === 'IN_CHAT'"
+          ></span>
+          <span class="marker-meta">
+            {{ m.self ? 'You' : m.displayLabel }} · {{ m.latitude | number : '1.2-2' }},
+            {{ m.longitude | number : '1.2-2' }}
+          </span>
         </button>
-        <p class="hint" *ngIf="mapMarkerList.length === 0">No other pins in this area. Try different lat/lng or wait.</p>
-      </div>
-      <div class="finder-actions" *ngIf="selectedMarker">
-        <span>Start anonymous chat with this pin?</span>
-        <button type="button" class="primary" (click)="startMapChat()">Start chat</button>
+        <p class="hint" *ngIf="mapMarkerList.length === 0">No pins in this view — pan the map or wait.</p>
       </div>
     </div>
   </div>
 
-  <div class="chat-session" *ngIf="session">
+  <div class="chat-session feel-chat-session" *ngIf="session">
     <header class="chat-session-head">
       <div>
         <span class="badge">{{ session.mode }}</span>
@@ -96,24 +350,25 @@
     </header>
 
     <div class="messages" #msgBox>
-      <div
-        *ngFor="let m of messages"
-        class="msg-row"
-        [class.self]="m.fromSelf"
-      >
+      <div *ngFor="let m of messages" class="msg-row" [class.self]="m.fromSelf">
         <span class="sender">{{ m.senderLabel }}</span>
         <div class="bubble">{{ m.content }}</div>
         <span class="time">{{ m.createdAt | date : 'short' }}</span>
       </div>
     </div>
 
-    <div class="composer">
+    <div class="composer feel-composer">
       <input
         [(ngModel)]="draftMessage"
-        placeholder="Message…"
+        placeholder="Text to chat…"
         (keydown)="onDraftKeydown($event)"
+        aria-label="Message"
       />
-      <button type="button" class="primary" (click)="send()">Send</button>
+      <button type="button" class="primary feel-send" (click)="send()" aria-label="Send">
+        <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true">
+          <path fill="currentColor" d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z" />
+        </svg>
+      </button>
     </div>
 
     <div class="reveal-bar" *ngIf="!session.revealed">
@@ -123,4 +378,5 @@
       <span class="hint">Partner must accept for identities to show.</span>
     </div>
   </div>
+  </main>
 </div>

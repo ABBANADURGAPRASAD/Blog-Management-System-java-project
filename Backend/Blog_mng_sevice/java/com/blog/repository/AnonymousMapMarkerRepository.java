@@ -21,7 +21,7 @@ public interface AnonymousMapMarkerRepository extends JpaRepository<AnonymousMap
 
     void deleteByUser_Id(Long userId);
 
-    @Query("SELECT m FROM AnonymousMapMarker m WHERE m.latitude BETWEEN :minLat AND :maxLat "
+    @Query("SELECT DISTINCT m FROM AnonymousMapMarker m JOIN FETCH m.user WHERE m.latitude BETWEEN :minLat AND :maxLat "
             + "AND m.longitude BETWEEN :minLng AND :maxLng")
     List<AnonymousMapMarker> findInBounds(@Param("minLat") double minLat, @Param("maxLat") double maxLat,
             @Param("minLng") double minLng, @Param("maxLng") double maxLng);

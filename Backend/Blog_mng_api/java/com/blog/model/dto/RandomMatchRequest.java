@@ -8,4 +8,6 @@ public class RandomMatchRequest {
     private Double latitude;
     private Double longitude;
     private GenderPreference seeking;
+    /** Max distance in km to match (default 100 server-side if null). */
+    private Double maxDistanceKm;
 }

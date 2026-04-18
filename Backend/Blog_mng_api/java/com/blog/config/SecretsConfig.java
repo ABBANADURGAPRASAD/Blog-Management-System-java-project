@@ -72,13 +72,25 @@ public class SecretsConfig {
                     decryptedProperties.put(plainKey, decryptedValue);
                     logger.info("Decrypted property: {} -> {} (hidden)", plainKey, "***");
                 } catch (Exception e) {
-                    logger.error("Failed to decrypt property: " + encryptedKey, e);
-                    throw new IllegalStateException("Failed to decrypt encrypted property: " + encryptedKey, e);
+                    // Wrong APP_SECRET_KEY, corrupted ciphertext, or legacy algorithm mismatch.
+                    // Do not fail startup: callers (e.g. DataSourceConfig) can fall back to plain properties.
+                    logger.error(
+                        "Failed to decrypt {}. Ciphertext must be produced with the same key as APP_SECRET_KEY "
+                            + "(re-run GenerateEncryptedSecrets or remove this property to use plain values).",
+                        encryptedKey,
+                        e);
                 }
             }
         }
 
         logger.info("Encrypted secrets decryption completed. {} properties decrypted.", decryptedProperties.size());
+    }
+
+    /**
+     * Value only if it came from a successful *.encrypted property at startup (not plain env fallback).
+     */
+    public String getFromDecryptedCache(String key) {
+        return decryptedProperties.get(key);
     }
 
     /**
@@ -138,13 +150,19 @@ public class SecretsConfig {
 
     /**
      * Bean to provide decrypted JWT secret.
+     * Never returns null (Spring would otherwise register a NullBean and break @Value("#{@jwtSecret}")).
      */
     @Bean
     public String jwtSecret() {
         String secret = getDecryptedProperty("jwt.secret");
         if (secret == null) {
-            // Fallback to plain property if no encrypted version
             secret = environment.getProperty("jwt.secret");
+        }
+        if (secret == null) {
+            logger.warn(
+                "jwt.secret is unset and jwt.secret.encrypted could not be decrypted. "
+                    + "Set jwt.secret or fix APP_SECRET_KEY / ciphertext; using empty string for the jwtSecret bean.");
+            return "";
         }
         return secret;
     }
