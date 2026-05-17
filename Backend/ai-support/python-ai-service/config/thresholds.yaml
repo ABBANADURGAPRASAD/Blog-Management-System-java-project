@@ -1,0 +1,27 @@
+thresholds:
+  NSFW:
+    block: 0.85
+    warn: 0.55
+    review_low: 0.45
+  HATE_SPEECH:
+    block: 0.80
+    warn: 0.50
+  TOXICITY:
+    block: 0.88
+    warn: 0.60
+  THREAT:
+    block: 0.75
+    warn: 0.45
+  SPAM:
+    block: 0.90
+    warn: 0.70
+  VIOLENCE:
+    block: 0.82
+    warn: 0.52
+
+aggregation:
+  strategy: max_weighted
+  block_if_any_critical: true
+  critical_labels:
+    - THREAT
+    - ILLEGAL

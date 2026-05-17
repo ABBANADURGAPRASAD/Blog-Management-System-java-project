@@ -1,351 +1,318 @@
 # Blog Management System
 
-A full-stack blog management system built with **Spring Boot** (Java) and **Angular**. This application provides a complete platform for users to create, manage, and interact with blog posts, including features like comments, likes, user profiles, and file uploads.
-
-## 📋 Table of Contents
-
-- [Features](#features)
-- [Tech Stack](#tech-stack)
-- [Project Structure](#project-structure)
-- [Prerequisites](#prerequisites)
-- [Getting Started](#getting-started)
-  - [Database Setup](#database-setup)
-  - [Backend Setup](#backend-setup)
-  - [Frontend Setup](#frontend-setup)
-- [API Documentation](#api-documentation)
-- [Architecture](#architecture)
-- [Development](#development)
-- [Documentation](#documentation)
-
-## ✨ Features
-
-### User Management
-- User registration and authentication
-- User profile management with bio, social links, and profile images
-- Profile editing with image upload support
-
-### Blog Post Management
-- Create, read, update, and delete blog posts
-- Rich text content with categories and tags
-- Image, video, and PDF file upload support
-- Popular posts ranking based on likes and comments
-
-### Social Features
-- Like/unlike posts
-- Comment on posts
-- View popular posts
-- Recent comments sidebar
-- Tag-based content discovery
-
-### Frontend Features
-- Responsive design with modern UI
-- Authentication guards for protected routes
-- Pagination for blog posts
-- Real-time interactions (likes, comments)
-- Image upload with drag-and-drop support
-
-## 🛠 Tech Stack
-
-### Backend
-- **Java 17**
-- **Spring Boot 3.1.1**
-- **Spring Data JPA / Hibernate**
-- **MySQL** database
-- **Maven** for dependency management
-- **Lombok** for reducing boilerplate code
-
-### Frontend
-- **Angular 20**
-- **TypeScript 5.8**
-- **RxJS** for reactive programming
-- **Angular Router** for navigation
-- **Angular Forms** (Reactive Forms)
-
-## 📁 Project Structure
-
-```
-Blog-Management-System-java-project/
-├── Backend/                          # Spring Boot multi-module project
-│   ├── Blog_mng_app/                # Main application entry point
-│   │   └── java/com/bolg/
-│   │       └── BlogApplication.java
-│   ├── Blog_mng_api/                # REST Controllers layer
-│   │   └── java/com/blog/
-│   │       ├── controller/          # API endpoints
-│   │       ├── config/              # Configuration (CORS, interceptors)
-│   │       └── annotation/          # Custom annotations
-│   ├── Blog_mng_sevice/             # Business logic layer
-│   │   └── java/com/blog/
-│   │       ├── model/               # Entity models (User, Post, Comment, Like)
-│   │       ├── repository/          # JPA repositories
-│   │       └── service/impl/        # Service implementations
-│   ├── database_schema.sql          # Database schema DDL
-│   ├── application.properties       # Application configuration
-│   ├── pom.xml                      # Parent POM
-│   └── README.md                    # Backend documentation
-│
-├── frontend/                         # Angular application
-│   ├── src/
-│   │   ├── app/
-│   │   │   ├── components/          # Feature components
-│   │   │   │   ├── home/           # Home page with posts grid
-│   │   │   │   ├── create-post/    # Create/edit posts
-│   │   │   │   ├── post-detail/    # Individual post view
-│   │   │   │   ├── profile/        # User profile view
-│   │   │   │   ├── profile-edit/   # Edit profile
-│   │   │   │   ├── login/          # Login page
-│   │   │   │   └── register/       # Registration page
-│   │   │   ├── services/           # API services
-│   │   │   │   ├── auth.service.ts
-│   │   │   │   ├── post.service.ts
-│   │   │   │   └── user.service.ts
-│   │   │   ├── shared/
-│   │   │   │   └── header/         # Navigation header
-│   │   │   ├── auth.guard.ts       # Route protection
-│   │   │   ├── auth.interceptor.ts # HTTP interceptor
-│   │   │   └── app-routing.module.ts
-│   │   └── assets/                  # Static assets
-│   ├── package.json
-│   ├── angular.json
-│   └── README.md                    # Frontend documentation
-│
-└── README.md                         # This file
-```
-
-## 📋 Prerequisites
-
-Before running this project, ensure you have the following installed:
-
-- **Java Development Kit (JDK) 17** or higher
-- **Maven 3.6+**
-- **Node.js 16+** and **npm 8+**
-- **Angular CLI 16+** (or use npx)
-- **MySQL 8.0+** database server
-- **Git** (for cloning the repository)
-
-## 🚀 Getting Started
-
-### Database Setup
-
-1. **Start MySQL server** on your local machine
-
-2. **Create the database** by running the SQL script:
-   ```bash
-   mysql -u root -p < Backend/database_schema.sql
-   ```
-   
-   Or manually create the database and run the SQL commands from `Backend/database_schema.sql`
-
-3. **Update database credentials** in `Backend/application.properties`:
-   ```properties
-   spring.datasource.url=jdbc:mysql://localhost:3306/blog_db
-   spring.datasource.username=your_username
-   spring.datasource.password=your_password
-   ```
-
-### Backend Setup
-
-1. **Navigate to the Backend directory**:
-   ```bash
-   cd Backend
-   ```
-
-2. **Build the project**:
-   ```bash
-   mvn clean install
-   ```
-
-3. **Add export Key =**
-   ```export APP_SECRET_KEY="oAxGuIhSpp8OSIlTUs1FwdmWy4XvvY7yQMQ/OwIgUVg" ```
-
-4. **Run the Spring Boot application**:
-   ```bash
-   cd Blog_mng_app
-   mvn spring-boot:run
-   ```
-
-   The backend API will be available at `http://localhost:8080`
-
-   > **Note**: Make sure MySQL is running and the database `blog_db` exists before starting the backend.
-
-### Frontend Setup
-
-1. **Navigate to the frontend directory**:
-   ```bash
-   cd frontend
-   ```
-
-2. **Install dependencies**:
-   ```bash
-   npm install
-   ```
-
-3. **Start the development server**:
-   ```bash
-   ng serve
-   # or
-   npm start
-   ```
-
-   The frontend application will be available at `http://localhost:4200`
-
-   > **Note**: Ensure the backend is running on port 8080 for the frontend to work properly.
-
-## 📚 API Documentation
-
-### Base URL
-```
-http://localhost:8080
-```
-
-### Key Endpoints
-
-#### Authentication
-- `POST /api/auth/register` - Register a new user
-- `POST /api/auth/login` - User login
-
-#### Posts
-- `GET /api/posts` - Get all posts
-- `GET /api/posts/{id}` - Get specific post
-- `GET /api/posts/popular` - Get popular posts
-- `POST /api/posts` - Create a new post (multipart/form-data)
-
-#### Comments
-- `GET /api/posts/{postId}/comments` - Get comments for a post
-- `POST /api/posts/{postId}/comments` - Add a comment
-
-#### Likes
-- `POST /api/posts/{postId}/like` - Toggle like/unlike a post
-
-#### Users
-- `GET /api/users/{id}` - Get user profile
-- `PUT /api/users/{id}` - Update user profile
-- `PUT /api/users/{id}/profile-image` - Upload profile image
-- `PUT /api/users/{id}/background-image` - Upload background image
-
-#### File Serving
-- `GET /uploads/{filename}` - Serve uploaded files
-
-For detailed API documentation, see:
-- [Backend API Guide](./Backend/UI_HANDOFF.md) - Comprehensive API reference for UI developers
-- [Backend README](./Backend/README.md) - Backend-specific documentation
-
-## 🏗 Architecture
-
-### Backend Architecture (Multi-Module Maven Project)
-
-The backend follows a **layered architecture** with clear separation of concerns:
-
-1. **Blog_mng_app** - Application entry point and configuration
-2. **Blog_mng_api** - REST API layer (controllers, request handling)
-3. **Blog_mng_sevice** - Business logic layer (services, repositories, entities)
-
-### Frontend Architecture
-
-The frontend follows **Angular best practices**:
-
-- **Component-based architecture** - Feature modules and reusable components
-- **Service layer** - Centralized API communication
-- **Route guards** - Authentication protection for routes
-- **HTTP interceptors** - Request/response handling
-
-### Database Schema
-
-The system uses the following main entities:
-
-- **Users** - User accounts with profile information
-- **Posts** - Blog posts with content, images, categories, and tags
-- **Comments** - Comments on posts
-- **Likes** - Like relationships between users and posts
-
-See `Backend/database_schema.sql` for complete schema definition.
-
-## 💻 Development
-
-### Backend Development
-
-- **Port**: 8080
-- **Database**: MySQL (`blog_db`)
-- **Auto-reload**: Use Spring Boot DevTools or IDE hot reload
-- **Logging**: SQL queries are logged (set `spring.jpa.show-sql=false` in production)
-
-### Frontend Development
-
-- **Port**: 4200
-- **Proxy**: Configured in `proxy.conf.json` for API calls
-- **Hot reload**: Enabled by default with `ng serve`
-
-### CORS Configuration
-
-CORS is enabled on the backend for all origins (`*`). In production, configure specific allowed origins.
-
-### File Uploads
-
-- **Maximum file size**: 10MB
-- **Supported formats**: Images, videos, PDFs
-- **Storage**: Local file system (`Backend/uploads/`)
-- **URL pattern**: `/uploads/{filename}`
-
-## 📖 Documentation
-
-### Detailed Documentation
-
-- **[Backend README](./Backend/README.md)** - Backend setup, architecture, and API details
-- **[Backend docs index](./Backend/docs/README.md)** - Index of explanation-only Markdown (like READMEs per module)
-- **[blog-api explanations](./Backend/Blog_mng_api/README.md)** - File-by-file notes for the API module
-- **[blog-service explanations](./Backend/Blog_mng_sevice/README.md)** - File-by-file notes for the service module
-- **[blog-app explanations](./Backend/Blog_mng_app/README.md)** - Spring Boot entry module
-- **[Frontend README](./frontend/README.md)** - Frontend setup, components, and styling guide
-- **[Frontend docs overview](./frontend/docs/README.md)** - High-level frontend folder explanations
-- **[Backend API Guide](./Backend/UI_HANDOFF.md)** - Complete API reference for frontend developers
-
-### Database Schema
-
-The complete database schema with DDL statements is available in:
-- `Backend/database_schema.sql` - SQL script to create all tables
-
-## 🔒 Security Notes
-
-- Passwords are hashed before storage
-- Authentication is required for protected routes (frontend guards)
-- CORS is configured but should be restricted in production
-- File upload validation should be enhanced for production use
-
-## 🤝 Contributing
-
-1. Fork the repository
-2. Create a feature branch
-3. Make your changes
-4. Test thoroughly
-5. Submit a pull request
-
-## 📝 License
-
-See [LICENSE](./Backend/LICENSE) file for details.
-
-## 🐛 Troubleshooting
-
-### Common Issues
-
-1. **Database Connection Error**
-   - Verify MySQL is running
-   - Check database credentials in `application.properties`
-   - Ensure `blog_db` database exists
-
-2. **CORS Errors**
-   - Verify backend CORS configuration
-   - Check that backend is running on port 8080
-
-3. **Port Already in Use**
-   - Backend: Change `server.port` in `application.properties`
-   - Frontend: Use `ng serve --port <port-number>`
-
-4. **Build Errors**
-   - Backend: Run `mvn clean install` from the Backend directory
-   - Frontend: Delete `node_modules` and run `npm install` again
-
-For more troubleshooting tips, refer to the [Frontend README](./frontend/README.md#troubleshooting).
+A full-stack **social blog platform** built with **Spring Boot 3** (Java) and **Angular 20**. Users can publish posts with rich media, comment, like, follow each other, exchange direct messages, use anonymous chat, and—via the optional **AI Safety module**—have content automatically moderated for policy violations.
 
 ---
 
-**Happy Blogging! 📝✨**
+## Table of contents
+
+- [Overview](#overview)
+- [Key features](#key-features)
+- [Technology stack](#technology-stack)
+- [System architecture](#system-architecture)
+- [Project structure](#project-structure)
+- [Quick start](#quick-start)
+- [Documentation map](#documentation-map)
+- [Ports & URLs](#ports--urls)
+- [Security](#security)
+- [License](#license)
+
+---
+
+## Overview
+
+This repository is a **multi-module Maven backend** + **Angular SPA frontend**, designed for learning and production-style extension:
+
+| Layer | Path | Role |
+|-------|------|------|
+| **Backend API** | `Backend/` | REST, JPA, MySQL, Kafka, WebSocket, email |
+| **AI moderation** | `Backend/ai-support/` | Python FastAPI + Kafka + PostgreSQL audit |
+| **Frontend** | `frontend/` | Angular UI, proxy to API |
+| **Runbook** | [`ExcutionInfofile.md`](ExcutionInfofile.md) | **Complete step-by-step execution guide** |
+
+---
+
+## Key features
+
+### Blogging & content
+
+- Create, read, update posts with **categories**, **tags**, and **@mentions**
+- Upload **images, video, and PDF** (multipart)
+- **Comments** and **likes** on posts
+- **Popular posts** ranked by engagement
+
+### Social & identity
+
+- **Registration & login** with secure password storage
+- **User profiles** — bio, social links, profile & background images
+- **Follow / unfollow** with follower lists and counts
+- **In-app notifications** for social activity
+
+### Messaging & real-time
+
+- **Direct messages (DM)** — inbox, threads, read receipts, unread badges
+- **Kafka-backed** message delivery pipeline (optional, for scale-out notifications)
+- **Anonymous / random chat** with WebSocket support
+- **Map-based presence** (finder / matchmaking metadata)
+
+### AI content moderation (module)
+
+- Enterprise **AI Safety platform** under `Backend/ai-support/`
+- Automatic analysis of posts, comments, profiles, bios, and media
+- Detects NSFW, hate speech, toxicity, spam, threats, violence, impersonation, and more
+- **Multilingual** support (English, Hindi, Telugu, Tamil, Malayalam, Kannada, Bengali, Arabic, …)
+- Async **Kafka** workflow: Java orchestrates → Python infers → status `APPROVED` / `WARNING` / `BLOCKED`
+- Human review queue and full audit trail (PostgreSQL)
+
+Details: [`Backend/ai-support/README.md`](Backend/ai-support/README.md) · Java bridge: [`Backend/ai-support/java-integration/README.md`](Backend/ai-support/java-integration/README.md)
+
+### Platform & security
+
+- **AES-encrypted** secrets in configuration (`APP_SECRET_KEY`)
+- **CORS** and dev **proxy** for seamless Angular ↔ Spring communication
+- Local **file storage** with `/uploads` serving
+
+---
+
+## Technology stack
+
+### Backend
+
+| Technology | Purpose |
+|------------|---------|
+| Java 17 | Language |
+| Spring Boot 3.1.1 | Framework |
+| Spring Data JPA / Hibernate | ORM |
+| MySQL 8 | Primary database |
+| Spring Kafka | Chat & moderation events |
+| Spring WebSocket | Anonymous chat |
+| Spring Mail | Email notifications |
+| Maven | Multi-module build |
+| Lombok | Boilerplate reduction |
+
+### AI module (`ai-support`)
+
+| Technology | Purpose |
+|------------|---------|
+| Python 3.11 + FastAPI | AI inference API |
+| Apache Kafka | Async moderation pipeline |
+| PostgreSQL | Moderation audit & scores |
+| Redis | Inference cache |
+| FFmpeg / ONNX / Transformers | Video & ML (production) |
+| Docker / Kubernetes | Deployment |
+
+### Frontend
+
+| Technology | Purpose |
+|------------|---------|
+| Angular 20 | SPA framework |
+| TypeScript 5.8 | Language |
+| RxJS | Async streams |
+| HttpClient + interceptors | API & auth |
+| Leaflet | Map UI |
+| proxy.conf.json | Dev API proxy |
+
+---
+
+## System architecture
+
+```text
+                    ┌─────────────────┐
+                    │  Angular UI     │
+                    │  :4400          │
+                    └────────┬────────┘
+                             │ HTTP /api, /uploads, /ws
+                    ┌────────▼────────┐
+                    │  Spring Boot    │
+                    │  Blog_mng_*     │
+                    │  :8080          │
+                    └────────┬────────┘
+              ┌──────────────┼──────────────┐
+              │              │              │
+       ┌──────▼──────┐ ┌─────▼─────┐ ┌─────▼─────┐
+       │   MySQL     │ │   Kafka   │ │ ai-support│
+       │   blog_db   │ │  events   │ │ Python AI │
+       └─────────────┘ └───────────┘ └─────┬─────┘
+                                           │
+                                    ┌──────▼──────┐
+                                    │ PostgreSQL  │
+                                    │ moderation  │
+                                    └─────────────┘
+```
+
+**Backend layering:** `Blog_mng_app` (boot) → `Blog_mng_sevice` (business + repos + Kafka) → `Blog_mng_api` (controllers + entities).
+
+**Why it scales:** API stays fast; Kafka offloads chat delivery and AI work; Python workers scale horizontally; moderation data isolated in PostgreSQL.
+
+---
+
+## Project structure
+
+```text
+Blog-Management-System-java-project/
+├── README.md                          # This file — project overview
+├── ExcutionInfofile.md                # Full run steps (DB, Docker, Java, AI, Angular)
+├── LICENSE
+│
+├── Backend/
+│   ├── pom.xml                        # Parent Maven POM
+│   ├── application.properties         # DB, Kafka, mail, secrets
+│   ├── database_schema.sql
+│   ├── Blog_mng_app/                  # Spring Boot entry
+│   ├── Blog_mng_api/                  # Controllers, models, config
+│   ├── Blog_mng_sevice/               # Services, repositories, Kafka
+│   ├── ai-support/                    # AI moderation platform
+│   │   ├── python-ai-service/         # FastAPI + workers
+│   │   ├── java-integration/        # Spring integration samples
+│   │   ├── database/                  # PostgreSQL schema
+│   │   ├── docker/                    # Compose stack
+│   │   └── docs/                      # Architecture & guides
+│   ├── uploads/                       # Media files
+│   ├── UI_HANDOFF.md                  # REST API reference
+│   └── README.md                      # Backend deep-dive
+│
+└── frontend/
+    ├── src/app/                       # Components, services, routes
+    ├── proxy.conf.json
+    ├── package.json
+    └── README.md                      # Frontend deep-dive
+```
+
+---
+
+## Quick start
+
+> **For every command and troubleshooting step, use [`ExcutionInfofile.md`](ExcutionInfofile.md).**
+
+### 1. Database (MySQL)
+
+```bash
+mysql -u root -p < Backend/database_schema.sql
+```
+
+Update `Backend/application.properties` with your MySQL username/password.
+
+### 2. Backend (Java)
+
+```bash
+cd Backend
+export APP_SECRET_KEY="oAxGuIhSpp8OSIlTUs1FwdmWy4XvvY7yQMQ/OwIgUVg"
+mvn clean install
+cd Blog_mng_app
+mvn spring-boot:run -Dspring-boot.run.arguments="--spring.config.location=file:../application.properties"
+```
+
+API: **http://localhost:8080**
+
+### 3. Frontend (Angular)
+
+```bash
+cd frontend
+npm install
+npm start
+```
+
+UI: **http://localhost:4400**
+
+### 4. AI moderation (optional)
+
+```bash
+cd Backend/ai-support/docker
+cp .env.example .env
+docker compose up -d
+```
+
+AI API: **http://localhost:8090** — see [`Backend/ai-support/README.md`](Backend/ai-support/README.md).
+
+---
+
+## Documentation map
+
+| Document | What you’ll find |
+|----------|------------------|
+| **[ExcutionInfofile.md](ExcutionInfofile.md)** | Complete execution: MySQL, Docker, Java, AI, Angular, ports, troubleshooting |
+| **[Backend/README.md](Backend/README.md)** | Backend technologies, architecture, how/why it works, features |
+| **[Backend/UI_HANDOFF.md](Backend/UI_HANDOFF.md)** | Full REST API for UI developers |
+| **[Backend/ai-support/README.md](Backend/ai-support/README.md)** | AI moderation platform overview |
+| **[Backend/ai-support/java-integration/README.md](Backend/ai-support/java-integration/README.md)** | **AI-only** tech & Java↔Python integration |
+| **[Backend/ai-support/docs/ARCHITECTURE.md](Backend/ai-support/docs/ARCHITECTURE.md)** | Enterprise AI architecture |
+| **[frontend/README.md](frontend/README.md)** | Frontend technologies, routes, services, UX |
+| [Backend/docs/README.md](Backend/docs/README.md) | Backend docs index |
+| [Backend/SECURITY_ENCRYPTION_GUIDE.md](Backend/SECURITY_ENCRYPTION_GUIDE.md) | Encrypted secrets setup |
+
+### Module-level guides
+
+- [Blog_mng_api/README.md](Backend/Blog_mng_api/README.md)
+- [Blog_mng_sevice/README.md](Backend/Blog_mng_sevice/README.md)
+- [Blog_mng_app/README.md](Backend/Blog_mng_app/README.md)
+
+---
+
+## Ports & URLs
+
+| Service | URL |
+|---------|-----|
+| Angular dev server | http://localhost:4400 |
+| Spring Boot API | http://localhost:8080 |
+| AI moderation API | http://localhost:8090 |
+| MySQL | localhost:3306 |
+| Kafka (optional) | localhost:9092 |
+| PostgreSQL moderation (Docker) | localhost:5433 |
+
+---
+
+## API summary
+
+**Base URL:** `http://localhost:8080`
+
+| Area | Endpoints |
+|------|-----------|
+| Auth | `POST /api/auth/register`, `POST /api/auth/login` |
+| Posts | `GET/POST /api/posts`, `GET /api/posts/popular` |
+| Comments | `GET/POST /api/posts/{id}/comments` |
+| Likes | `POST /api/posts/{id}/like` |
+| Users | `GET/PUT /api/users/{id}`, image uploads |
+| Follow | `/api/followersAndFollowing/*` |
+| Chat | `/api/chat/*` |
+| Files | `GET /uploads/{filename}` |
+
+Full contract: **[Backend/UI_HANDOFF.md](Backend/UI_HANDOFF.md)**
+
+---
+
+## Security
+
+- Passwords stored as **hashes** (never plain text in API responses)
+- **Encrypted** DB/mail/JWT properties with `APP_SECRET_KEY`
+- Route **guards** on frontend; validate `userId` on backend for actions
+- **CORS** open in dev — restrict origins in production
+- Enable **AI moderation** and file validation before public deployment
+- Do not commit `secrets.enc` or production credentials
+
+---
+
+## Prerequisites
+
+- JDK 17+, Maven 3.6+
+- Node.js 18+, npm 8+
+- MySQL 8.0+
+- Optional: Docker, Python 3.11 (AI module), Kafka
+
+---
+
+## Contributing
+
+1. Fork the repository  
+2. Create a feature branch  
+3. Test backend (`mvn test`) and frontend (`npm test` if configured)  
+4. Submit a pull request  
+
+---
+
+## License
+
+See [LICENSE](Backend/LICENSE).
+
+---
+
+**Happy building — and see [ExcutionInfofile.md](ExcutionInfofile.md) to run the full stack end to end.**

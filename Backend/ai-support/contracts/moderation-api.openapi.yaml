@@ -1,0 +1,137 @@
+openapi: 3.0.3
+info:
+  title: AI Moderation Service API
+  version: 1.0.0
+  description: Python FastAPI moderation engine (ai-support/python-ai-service)
+
+servers:
+  - url: http://localhost:8090
+    description: Local dev
+
+security:
+  - bearerAuth: []
+
+paths:
+  /api/v1/health:
+    get:
+      security: []
+      summary: Health check
+      responses:
+        '200':
+          description: OK
+
+  /api/v1/moderate/sync:
+    post:
+      summary: Synchronous moderation (username, short bio)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SyncModerationRequest'
+      responses:
+        '200':
+          description: Result
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ModerationResult'
+
+  /api/v1/moderate/batch:
+    post:
+      summary: Batch text moderation (admin/backfill)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                items:
+                  type: array
+                  items:
+                    $ref: '#/components/schemas/SyncModerationRequest'
+      responses:
+        '200':
+          description: Batch results
+
+  /api/v1/moderate/analyze:
+    post:
+      summary: Full analyze (internal — same as worker pipeline)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AnalyzeRequest'
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ModerationResult'
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  schemas:
+    SyncModerationRequest:
+      type: object
+      required: [contentType, text]
+      properties:
+        contentType:
+          type: string
+          enum: [USER_PROFILE, USER_BIO, COMMENT]
+        text:
+          type: string
+        userName:
+          type: string
+        languageHint:
+          type: string
+
+    AnalyzeRequest:
+      type: object
+      required: [requestId, contentType, contentId, userId, payload]
+      properties:
+        requestId:
+          type: string
+          format: uuid
+        contentType:
+          type: string
+        contentId:
+          type: integer
+        userId:
+          type: integer
+        payload:
+          type: object
+
+    ModerationResult:
+      type: object
+      properties:
+        finalStatus:
+          type: string
+          enum: [APPROVED, WARNING, BLOCKED]
+        commentClass:
+          type: string
+          enum: [SAFE, WARNING, BLOCKED]
+        confidence:
+          type: number
+        needsHumanReview:
+          type: boolean
+        detectedLanguage:
+          type: string
+        scores:
+          type: array
+          items:
+            type: object
+            properties:
+              label:
+                type: string
+              score:
+                type: number
+              model:
+                type: string

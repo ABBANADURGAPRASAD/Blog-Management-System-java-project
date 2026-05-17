@@ -2,8 +2,13 @@ package com.blog.service.impl;
 
 import com.blog.model.Comment;
 import com.blog.model.CommentMention;
+import com.blog.model.ModerationStatus;
 import com.blog.model.Post;
 import com.blog.model.User;
+import com.blog.moderation.CommentContentModerator;
+import com.blog.moderation.CommentModerationDecision;
+import com.blog.moderation.CommentModerationException;
+import com.blog.moderation.ModerationEmailService;
 import com.blog.repository.CommentMentionRepository;
 import com.blog.repository.CommentRepository;
 import com.blog.repository.PostRepository;
@@ -29,18 +34,24 @@ public class CommentServiceImpl implements CommentService {
     private final PostRepository postRepository;
     private final UserRepository userRepository;
     private final NotificationService notificationService;
+    private final CommentContentModerator commentContentModerator;
+    private final ModerationEmailService moderationEmailService;
 
     @Autowired
     public CommentServiceImpl(CommentRepository commentRepository,
             CommentMentionRepository commentMentionRepository,
             PostRepository postRepository,
             UserRepository userRepository,
-            NotificationService notificationService) {
+            NotificationService notificationService,
+            CommentContentModerator commentContentModerator,
+            ModerationEmailService moderationEmailService) {
         this.commentRepository = commentRepository;
         this.commentMentionRepository = commentMentionRepository;
         this.postRepository = postRepository;
         this.userRepository = userRepository;
         this.notificationService = notificationService;
+        this.commentContentModerator = commentContentModerator;
+        this.moderationEmailService = moderationEmailService;
     }
 
     @Override
@@ -51,13 +62,34 @@ public class CommentServiceImpl implements CommentService {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
+        CommentModerationDecision decision = commentContentModerator.analyze(content);
+
+        if (decision.isBlocked()) {
+            moderationEmailService.sendModerationAlerts(
+                    user, postId, null, content, decision, false);
+            throw new CommentModerationException(
+                    "Your comment was not published because it violates our community guidelines.",
+                    ModerationStatus.BLOCKED,
+                    decision.getDetectedLabels());
+        }
+
+        ModerationStatus status = decision.getStatus();
         Comment comment = Comment.builder()
                 .content(content)
                 .post(post)
                 .user(user)
+                .moderationStatus(status)
                 .build();
         Comment saved = commentRepository.save(comment);
-        notificationService.notifyComment(userId, postId, saved.getId(), content);
+
+        if (decision.requiresEmail()) {
+            moderationEmailService.sendModerationAlerts(
+                    user, postId, saved.getId(), content, decision, true);
+        }
+
+        if (status == ModerationStatus.APPROVED) {
+            notificationService.notifyComment(userId, postId, saved.getId(), content);
+        }
 
         Long postOwnerId = post.getUser().getId();
         List<String> tokens = MentionParser.parseUsernames(content);
@@ -103,9 +135,14 @@ public class CommentServiceImpl implements CommentService {
             String uname = row.getMentionedUser().getUserName();
             byComment.computeIfAbsent(cid, k -> new ArrayList<>()).add(uname);
         }
+        List<Comment> visible = new ArrayList<>();
         for (Comment c : comments) {
             c.setMentionedUsernames(byComment.getOrDefault(c.getId(), List.of()));
+            ModerationStatus ms = c.getModerationStatus();
+            if (ms == null || ms == ModerationStatus.APPROVED) {
+                visible.add(c);
+            }
         }
-        return comments;
+        return visible;
     }
 }

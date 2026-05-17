@@ -253,8 +253,13 @@
             </div>
           </div>
         </div>
-        <button class="add-comment-btn" (click)="addComment()" [disabled]="!newComment.trim()">
-          Add Comment
+        <p class="comment-moderation-error" *ngIf="commentError">{{ commentError }}</p>
+        <button
+          class="add-comment-btn"
+          (click)="addComment()"
+          [disabled]="!newComment.trim() || commentSubmitting"
+        >
+          {{ commentSubmitting ? 'Posting…' : 'Add Comment' }}
         </button>
       </div>
       <div class="login-prompt" *ngIf="!currentUserId">

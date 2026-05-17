@@ -1,0 +1,25 @@
+# =============================================================================
+# AI MODERATION (ai-support) — merge into Backend/application.properties
+# =============================================================================
+app.moderation.enabled=false
+app.moderation.publish-enabled=false
+app.moderation.block-on-failure=true
+app.moderation.sync-username-check=true
+app.moderation.ai-service-url=http://localhost:8090
+app.moderation.ai-service-token=change-me-internal-jwt
+
+app.kafka.moderation.request-topic=moderation.requested
+app.kafka.moderation.completed-topic=moderation.completed
+app.kafka.moderation.dlq-topic=moderation.dlq
+app.kafka.moderation.consumer-group=blog-moderation-result-applier
+app.kafka.moderation.create-topic=false
+
+# Moderation PostgreSQL (separate datasource — configure in Spring)
+# spring.datasource.moderation.url=jdbc:postgresql://localhost:5433/moderation_db
+# spring.datasource.moderation.username=moderation
+# spring.datasource.moderation.password=moderation
+
+# Enable when stack is running:
+# app.moderation.enabled=true
+# app.moderation.publish-enabled=true
+# spring.kafka.listener.auto-startup=true

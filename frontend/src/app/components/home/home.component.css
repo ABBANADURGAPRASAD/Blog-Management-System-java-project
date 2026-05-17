@@ -425,6 +425,12 @@ a.comment-mention-link:hover {
   border-top: 1px solid #eee;
 }
 
+.comment-moderation-error {
+  color: #c62828;
+  font-size: 0.9rem;
+  margin: 0 0 10px;
+}
+
 .comment-input-wrap {
   position: relative;
   margin-bottom: 10px;

@@ -49,6 +49,11 @@ public class Comment {
     @Builder.Default
     private List<String> mentionedUsernames = new ArrayList<>();
 
+    @Enumerated(EnumType.STRING)
+    @Column(name = "moderation_status", length = 32)
+    @Builder.Default
+    private ModerationStatus moderationStatus = ModerationStatus.APPROVED;
+
     @CreationTimestamp
     private LocalDateTime createdAt;
 }

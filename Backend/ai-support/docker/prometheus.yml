@@ -1,0 +1,8 @@
+global:
+  scrape_interval: 15s
+
+scrape_configs:
+  - job_name: ai-moderation
+    static_configs:
+      - targets: ["ai-moderation-api:8090"]
+    metrics_path: /metrics

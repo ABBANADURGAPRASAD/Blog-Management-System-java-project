@@ -16,6 +16,7 @@ com/blog/model/AnonymousSessionMode.class
 com/blog/model/AnonymousMapMarker.class
 com/blog/model/Gender.class
 com/blog/service/FileStorageService.class
+com/blog/moderation/CommentModerationException.class
 com/blog/service/NotificationService.class
 com/blog/controller/AuthController$LoginRequest.class
 com/blog/controller/followersAndFollowingController.class
@@ -63,6 +64,7 @@ com/blog/util/CryptoUtil$CryptoException.class
 com/blog/config/DataSourceConfig.class
 com/blog/controller/PostController.class
 com/blog/model/User.class
+com/blog/controller/ModerationExceptionHandler.class
 com/blog/model/AnonymousChatSession$AnonymousChatSessionBuilder.class
 com/blog/service/CryptoService.class
 com/blog/model/dto/RandomQueueResponse.class
@@ -72,6 +74,7 @@ com/blog/model/dto/AnonymousMessageView.class
 com/blog/model/AnonymousChatMessage$AnonymousChatMessageBuilder.class
 com/blog/model/GenderPreference.class
 com/blog/model/dto/MapPresenceRequest.class
+com/blog/model/ModerationStatus.class
 com/blog/model/dto/MapChatStartRequest.class
 com/blog/model/Like.class
 com/blog/model/Post.class

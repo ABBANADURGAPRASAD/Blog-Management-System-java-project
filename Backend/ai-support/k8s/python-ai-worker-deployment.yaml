@@ -1,0 +1,37 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ai-moderation-worker
+  namespace: ai-safety
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: ai-moderation-worker
+  template:
+    metadata:
+      labels:
+        app: ai-moderation-worker
+    spec:
+      containers:
+        - name: worker
+          image: ghcr.io/your-org/ai-moderation:latest
+          command: ["python", "-m", "app.workers.kafka_consumer"]
+          envFrom:
+            - configMapRef:
+                name: ai-moderation-config
+          env:
+            - name: KAFKA_ENABLED
+              value: "true"
+            - name: INTERNAL_JWT_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: ai-moderation-secrets
+                  key: jwt-secret
+          resources:
+            requests:
+              memory: "1Gi"
+              cpu: "500m"
+            limits:
+              memory: "4Gi"
+              cpu: "2"

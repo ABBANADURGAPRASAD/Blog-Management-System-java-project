@@ -1,0 +1,20 @@
+fastapi==0.115.6
+uvicorn[standard]==0.32.1
+pydantic==2.10.3
+pydantic-settings==2.6.1
+python-multipart==0.0.20
+httpx==0.28.1
+redis==5.2.1
+aiokafka==0.12.0
+orjson==3.10.12
+PyJWT==2.10.1
+prometheus-client==0.21.1
+opentelemetry-api==1.29.0
+opentelemetry-sdk==1.29.0
+opentelemetry-instrumentation-fastapi==0.50b0
+# ML stack (install per environment; GPU optional)
+# transformers==4.47.1
+# torch==2.5.1
+# onnxruntime==1.20.1
+# opencv-python-headless==4.10.0.84
+# langdetect==1.0.9

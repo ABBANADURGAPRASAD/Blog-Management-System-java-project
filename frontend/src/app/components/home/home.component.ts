@@ -29,6 +29,8 @@ export class HomeComponent implements OnInit {
   newComment: string = '';
   showCommentModal = false;
   postComments: Comment[] = [];
+  commentError: string | null = null;
+  commentSubmitting = false;
   usersList: any[] = [];
   /** Full user list for @mention autocomplete */
   allMentionUsers: User[] = [];
@@ -229,10 +231,14 @@ export class HomeComponent implements OnInit {
   }
 
   addComment() {
-    if (!this.selectedPostId || !this.currentUserId || !this.newComment.trim()) return;
+    if (!this.selectedPostId || !this.currentUserId || !this.newComment.trim() || this.commentSubmitting) return;
+
+    this.commentError = null;
+    this.commentSubmitting = true;
 
     this.postService.addComment(this.selectedPostId, this.currentUserId, this.newComment).subscribe({
       next: (comment) => {
+        this.commentSubmitting = false;
         this.postComments.push({
           ...comment,
           author: comment.user?.fullName || 'Anonymous',
@@ -241,13 +247,18 @@ export class HomeComponent implements OnInit {
           date: this.formatDate(comment.createdAt)
         });
         this.newComment = '';
-        // Update post comments count
         const post = this.posts.find(p => p.id === this.selectedPostId);
         if (post) {
           post.commentsCount = (post.commentsCount || 0) + 1;
         }
       },
       error: (error) => {
+        this.commentSubmitting = false;
+        const body = error?.error;
+        this.commentError =
+          (typeof body === 'object' && body?.error) ||
+          error?.message ||
+          'Could not add comment. Please review your text and try again.';
         console.error('Error adding comment:', error);
       }
     });
@@ -257,6 +268,8 @@ export class HomeComponent implements OnInit {
     this.showCommentModal = false;
     this.selectedPostId = null;
     this.postComments = [];
+    this.commentError = null;
+    this.commentSubmitting = false;
     this.newComment = '';
     this.resetMentionAutocomplete();
   }
