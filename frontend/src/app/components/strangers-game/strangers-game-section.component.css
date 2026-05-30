@@ -1,0 +1,250 @@
+:host {
+  display: block;
+}
+
+.feel-card-strangers-game {
+  background: #fff;
+  border-radius: 16px;
+  padding: 22px 22px 20px;
+  box-shadow: var(--feel-card-shadow, 0 8px 28px rgba(26, 43, 60, 0.09));
+  border: 1px solid rgba(26, 43, 60, 0.06);
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  overflow: hidden;
+  padding-top: 0;
+}
+
+.sg-card-hero-wrap {
+  position: relative;
+  margin: 0 -22px 4px;
+  border-radius: 16px 16px 0 0;
+  overflow: hidden;
+  line-height: 0;
+}
+
+.sg-card-hero {
+  width: 100%;
+  height: auto;
+  min-height: 140px;
+  max-height: 200px;
+  object-fit: cover;
+  object-position: center 40%;
+  display: block;
+}
+
+.sg-card-title-overlay {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  margin: 0;
+  width: 92%;
+  text-align: center;
+  font-size: clamp(1rem, 3.2vw, 1.35rem);
+  font-weight: 900;
+  color: #fff;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+  line-height: 1.15;
+  text-shadow:
+    0 2px 0 #000,
+    0 -2px 0 #000,
+    2px 0 0 #000,
+    -2px 0 0 #000,
+    0 0 12px rgba(0, 0, 0, 0.45);
+  pointer-events: none;
+}
+
+.btn-strangers-play {
+  width: 100%;
+  border: none;
+  border-radius: 14px;
+  padding: 14px 18px;
+  font-size: 1rem;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  cursor: pointer;
+  color: #fff;
+  background: linear-gradient(135deg, #e84393 0%, #6c5ce7 55%, #0984e3 100%);
+  box-shadow: 0 8px 20px rgba(108, 92, 231, 0.35);
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.btn-strangers-play:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 12px 28px rgba(108, 92, 231, 0.45);
+}
+
+.btn-strangers-play:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.sg-saved-profile {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 12px;
+  background: #f8fafc;
+  border-radius: 12px;
+  border: 1px solid rgba(26, 43, 60, 0.08);
+}
+
+.sg-saved-meta {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.sg-saved-meta strong {
+  font-size: 0.95rem;
+  color: #1a2b3c;
+}
+
+.sg-saved-meta span {
+  font-size: 0.78rem;
+  color: #64748b;
+}
+
+.sg-link-btn {
+  border: none;
+  background: none;
+  color: #6c5ce7;
+  font-weight: 700;
+  font-size: 0.85rem;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.sg-game-active {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.sg-game-header {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.sg-game-playing-as {
+  margin: 0;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: #64748b;
+  font-weight: 700;
+}
+
+.sg-game-name {
+  font-size: 1.15rem;
+  color: #1a2b3c;
+}
+
+.sg-lobby-stage {
+  text-align: center;
+  padding: 16px 8px;
+  background: linear-gradient(180deg, #eef2ff, #f8fafc);
+  border-radius: 14px;
+  border: 1px dashed rgba(108, 92, 231, 0.35);
+}
+
+.sg-lobby-orbit {
+  position: relative;
+  width: 160px;
+  height: 160px;
+  margin: 0 auto 12px;
+}
+
+.sg-lobby-you {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+}
+
+.sg-lobby-peer {
+  position: absolute;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: #fff;
+  border: 2px dashed #cbd5e1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 800;
+  color: #94a3b8;
+  font-size: 1.1rem;
+  animation: sg-peer-pulse 1.4s ease-in-out infinite;
+}
+
+.sg-peer-1 {
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  animation-delay: 0s;
+}
+
+.sg-peer-2 {
+  bottom: 12px;
+  left: 8px;
+  animation-delay: 0.25s;
+}
+
+.sg-peer-3 {
+  bottom: 12px;
+  right: 8px;
+  animation-delay: 0.5s;
+}
+
+@keyframes sg-peer-pulse {
+  0%,
+  100% {
+    opacity: 0.55;
+    transform: scale(0.95);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.05);
+  }
+}
+
+.sg-peer-1 {
+  animation-name: sg-peer-pulse-top;
+}
+
+@keyframes sg-peer-pulse-top {
+  0%,
+  100% {
+    opacity: 0.55;
+    transform: translateX(-50%) scale(0.95);
+  }
+  50% {
+    opacity: 1;
+    transform: translateX(-50%) scale(1.05);
+  }
+}
+
+.sg-game-status {
+  margin: 0;
+  font-size: 0.9rem;
+  color: #475569;
+  font-weight: 600;
+}
+
+.sg-game-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.sg-inline-btn {
+  flex: 1;
+  min-width: 120px;
+}

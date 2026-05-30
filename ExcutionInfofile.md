@@ -30,11 +30,13 @@ export PROJECT_ROOT="/Users/ent-00210/Desktop/Project Documents/Blog-Management-
 5. [Docker — AI moderation stack (optional)](#5-docker--ai-moderation-stack-optional)
 6. [Docker — Kafka only (optional, for chat)](#6-docker--kafka-only-optional-for-chat)
 7. [Java Spring Boot backend](#7-java-spring-boot-backend)
-8. [AI Support module](#8-ai-support-module)
+8. [AI Support module](#8-ai-support-module-monitoring--security) — paths A/B/C, local Python, verify
 9. [Angular frontend UI](#9-angular-frontend-ui)
 10. [Verify everything works](#10-verify-everything-works)
 11. [Ports reference](#11-ports-reference)
 12. [Troubleshooting](#12-troubleshooting)
+13. [All local commands (copy-paste)](#13-all-local-commands-copy-paste)
+14. [Docker images — build, tag, and run](#14-docker-images--build-tag-and-run)
 
 ---
 
@@ -70,15 +72,16 @@ For a **minimal** run (blog only — no AI, no Kafka):
 3. Angular UI     → port 4400
 ```
 
-For **full stack** (blog + AI moderation + Kafka):
+For **full stack** (blog + AI monitoring/security + optional Kafka):
 
 ```text
-1. MySQL                    → blog_db
-2. Docker (ai-support)      → Kafka, Redis, PostgreSQL, Python AI
-3. PostgreSQL migrations    → moderation_db (if not using Docker init)
-4. Java backend             → with moderation properties enabled
-5. Python Kafka worker      → if not using Docker worker container
-6. Angular UI
+1. MySQL                         → blog_db
+2. Python AI API (port 8090)     → REQUIRED for post image/video + AI chat checks
+3. Java Spring Boot (8080)       → app.moderation.use-ai-service=true
+4. Angular UI (4400)             → create-post shows AI Safety overlay
+5. (Optional) Docker ai-support  → Kafka, Redis, PostgreSQL audit, worker
+6. (Optional) FFmpeg             → brew install ffmpeg — better video frame analysis
+7. (Optional) Tesseract          → brew install tesseract — OCR text in images/video
 ```
 
 ---
@@ -274,7 +277,7 @@ Or start AI services after infrastructure is up:
 docker compose up -d --build ai-moderation-api ai-moderation-worker
 ```
 
-If **pip/apt timeout** during build, use [Section 8 — Option B](#option-b--run-python-ai-locally-without-docker-for-python) instead of Docker for Python.
+If **pip/apt timeout** during build, use [Section 8 — Option B](#84--option-b--python-ai-local-recommended) instead of Docker for Python.
 
 ### Step 5.6 — View logs
 
@@ -524,19 +527,124 @@ Uploaded files are stored under `Backend/uploads/`. Ensure the app can write the
 
 ---
 
-## 8. AI Support module
+## 8. AI Support module (monitoring & security)
 
-Location: `Backend/ai-support/`  
-Python API default: **http://localhost:8090**
+**Folder:** `PROJECT_ROOT/Backend/ai-support/`  
+**Python API (required for media + full AI checks):** http://localhost:8090  
+**Swagger docs:** http://localhost:8090/docs
 
-### Option A — Run everything with Docker
+### 8.1 — What you need running
 
-All commands are in [Section 5](#5-docker--ai-moderation-stack-optional). Quick reference:
+| Goal | Start these (in order) |
+|------|---------------------------|
+| **Blog only** (no AI) | Skip this section. Java + MySQL + Angular are enough ([Section 2](#2-recommended-startup-order) minimal). |
+| **AI text + media moderation** (recommended) | [8.4](#84--option-b--python-ai-local-recommended) Python on 8090 → [Section 7](#7-java-spring-boot-backend) Java on 8080 → [Section 9](#9-angular-frontend-ui) Angular on 4400 |
+| **AI + Kafka async worker** | [Section 5](#5-docker--ai-moderation-stack-optional) Docker infra (or full stack) → [8.4](#84--option-b--python-ai-local-recommended) or [8.5](#85--option-a--docker-quick-reference) AI API → [8.4.6](#846--optional-kafka-consumer-worker--second-terminal) worker → Java |
+
+### 8.2 — What runs where
+
+| Feature | Java (8080) | Python AI (8090) |
+|---------|-------------|------------------|
+| Comment safety | `CommentServiceImpl` + `ContentModerationFacade` | `POST /api/v1/moderate/sync` (`COMMENT`) |
+| DM chat safety | `ChatServiceImpl` | sync (`CHAT`) |
+| Random/anonymous chat | `AnonymousChatServiceImpl` | sync (`ANONYMOUS_CHAT`) |
+| Post text + media | `PostServiceImpl` → before file save | `POST /api/v1/moderate/media` (CNN + OCR/RNN) |
+| Create-post UI loader | — | Angular **AI Safety Check** overlay |
+
+### 8.3 — Choose how to run Python (8090)
+
+| Path | Best for | See steps |
+|------|----------|-----------|
+| **A — Docker full stack** | Kafka, Redis, PostgreSQL audit, AI in containers | [Section 5](#5-docker--ai-moderation-stack-optional) then [8.7](#87--verify-ai-is-running) |
+| **B — Python local** (most common for dev) | Fast iteration, no Docker image build | [8.4](#84--option-b--python-ai-local-recommended) |
+| **C — Docker infra + Python local** | Kafka without building Python in Docker | [Section 5 Step 5.4](#step-54--start-infrastructure-only-recommended-first) + [8.4](#84--option-b--python-ai-local-recommended) |
+
+> If Docker **pip/apt build** fails, use **B** or **C** — do not block on `ai-moderation-api` container build.
+
+### 8.4 — Option B — Python AI local (recommended)
+
+Use **one terminal** for the API. Use a **second terminal** for the Kafka worker only if you need async moderation (Section 5 Kafka up).
+
+**Prerequisites:** Python 3.11+, `pip`. Optional: `ffmpeg` (video), `tesseract` (real OCR) — see `Backend/ai-support/README.md`.
+
+**Step 8.4.1 — Go to the Python service folder**
+
+```bash
+export PROJECT_ROOT="/Users/ent-00210/Desktop/Project Documents/Blog-Management-System-java-project"
+cd "$PROJECT_ROOT/Backend/ai-support/python-ai-service"
+```
+
+**Step 8.4.2 — Virtual environment (first time only)**
+
+```bash
+python3 -m venv .venv
+source .venv/bin/activate          # macOS/Linux
+# .venv\Scripts\activate           # Windows PowerShell
+```
+
+**Step 8.4.3 — Install dependencies (first time or after requirements change)**
+
+```bash
+pip install -r requirements.txt
+```
+
+**Step 8.4.4 — Environment file (first time only)**
+
+```bash
+cp .env.example .env
+```
+
+Default dev settings in `.env`: `DEV_AUTH_BYPASS=true`, token `dev-moderation-token`.  
+Edit `.env` only if Redis/Kafka hosts are not `localhost`.
+
+**Step 8.4.5 — Start FastAPI (keep this terminal open)**
+
+```bash
+source .venv/bin/activate
+uvicorn app.main:app --reload --host 0.0.0.0 --port 8090
+```
+
+Success signs:
+
+- Terminal shows `Uvicorn running on http://0.0.0.0:8090`
+- Browser: http://localhost:8090/docs loads Swagger UI
+
+**Step 8.4.6 — (Optional) Kafka consumer worker — second terminal**
+
+Only if Kafka is running on `localhost:9092` ([Section 5 Step 5.4](#step-54--start-infrastructure-only-recommended-first) or full stack):
+
+```bash
+export PROJECT_ROOT="/Users/ent-00210/Desktop/Project Documents/Blog-Management-System-java-project"
+cd "$PROJECT_ROOT/Backend/ai-support/python-ai-service"
+source .venv/bin/activate
+export KAFKA_ENABLED=true
+export KAFKA_BOOTSTRAP_SERVERS=localhost:9092
+python -m app.workers.kafka_consumer
+```
+
+### 8.5 — Option A — Docker (quick reference)
+
+All detailed commands: [Section 5](#5-docker--ai-moderation-stack-optional).
+
+```bash
+export PROJECT_ROOT="/Users/ent-00210/Desktop/Project Documents/Blog-Management-System-java-project"
+cd "$PROJECT_ROOT/Backend/ai-support/docker"
+cp .env.example .env    # first time only
+
+# Infra only (no Python image build):
+docker compose up -d zookeeper kafka redis moderation-db minio prometheus
+
+# Full stack including AI API + worker (image blog-ai-moderation:1.1.0):
+docker compose up -d --build
+
+# Rebuild latest AI image only — see Section 14.2
+# docker compose build --no-cache ai-moderation-api && docker compose up -d ai-moderation-api
+```
 
 | Service | URL |
 |---------|-----|
 | AI API | http://localhost:8090 |
-| AI docs (Swagger) | http://localhost:8090/docs |
+| AI docs | http://localhost:8090/docs |
 | Kafka | localhost:9092 |
 | Redis | localhost:6379 |
 | PostgreSQL (moderation) | localhost:5433 |
@@ -544,76 +652,98 @@ All commands are in [Section 5](#5-docker--ai-moderation-stack-optional). Quick 
 | MinIO API | http://localhost:19000 |
 | MinIO console | http://localhost:19001 (`minioadmin` / `minioadmin`) |
 
-### Option B — Run Python AI locally (without Docker for Python)
+### 8.6 — Configure Java to call Python (8090)
 
-**Step 8.1 — Virtual environment**
+File: `Backend/application.properties` (repo usually already has this):
 
-```bash
-cd "PROJECT_ROOT/Backend/ai-support/python-ai-service"
-python3 -m venv .venv
-source .venv/bin/activate          # macOS/Linux
-# .venv\Scripts\activate           # Windows
+```properties
+app.moderation.enabled=true
+app.moderation.use-ai-service=true
+app.moderation.ai-service-url=http://localhost:8090
+app.moderation.ai-service-token=dev-moderation-token
+app.moderation.ai-timeout-seconds=45
 ```
 
-**Step 8.2 — Install dependencies**
+**Then start (or restart) the Java backend** — [Section 7](#7-java-spring-boot-backend).
+
+| Python on 8090? | Behavior |
+|-----------------|----------|
+| **Yes** | Comments, chat, posts use AI (media uses CNN/OCR pipeline). |
+| **No** | Text-only posts use local rules; **media** posts skip AI and use text rules only. |
+
+Kafka publishing is optional — see [Step 7.7](#step-77--optional-enable-ai-moderation-in-java) and [Section 5 Step 5.10](#step-510--enable-kafka-in-spring-boot-after-docker-kafka-is-up).
+
+### 8.7 — Verify AI is running
+
+**Health check:**
 
 ```bash
-pip install -r requirements.txt
+curl -s http://localhost:8090/api/v1/health
 ```
 
-**Step 8.3 — Environment variables**
+Expected: JSON with `"status":"UP"` (or similar).
+
+**Text moderation (comment/chat):**
 
 ```bash
-cp .env.example .env
-```
-
-Edit `.env` if Kafka/Redis hosts differ.
-
-**Step 8.4 — Start FastAPI server**
-
-```bash
-uvicorn app.main:app --reload --host 0.0.0.0 --port 8090
-```
-
-**Step 8.5 — Start Kafka consumer worker** (second terminal, same venv)
-
-Requires Kafka on `localhost:9092` (start Docker Compose from Section 5 first).
-
-```bash
-cd "PROJECT_ROOT/Backend/ai-support/python-ai-service"
-source .venv/bin/activate
-export KAFKA_ENABLED=true
-export KAFKA_BOOTSTRAP_SERVERS=localhost:9092
-python -m app.workers.kafka_consumer
-```
-
-**Step 8.6 — Test sync moderation API**
-
-```bash
-curl -X POST http://localhost:8090/api/v1/moderate/sync \
-  -H "Authorization: Bearer test" \
+curl -s -X POST http://localhost:8090/api/v1/moderate/sync \
+  -H "Authorization: Bearer dev-moderation-token" \
   -H "Content-Type: application/json" \
-  -d '{"contentType":"COMMENT","text":"hello world"}'
+  -d '{"contentType":"COMMENT","text":"hello world","userName":"demo"}'
 ```
 
-> `/moderate/sync` requires a valid internal JWT in production; for local stub testing, temporarily adjust `INTERNAL_JWT_SECRET` in `.env` or use Docker stack defaults.
+Expected: JSON with `final_status`: `APPROVED`, `WARNING`, or `BLOCKED`.
 
-### Option C — Build Python Docker image only
+**Media moderation (replace with a real JPG on your machine):**
 
 ```bash
-cd "PROJECT_ROOT/Backend/ai-support/python-ai-service"
-docker build -t blog-ai-moderation:local .
-docker run -p 8090:8090 -e KAFKA_ENABLED=false blog-ai-moderation:local
+curl -s -X POST http://localhost:8090/api/v1/moderate/media \
+  -H "Authorization: Bearer dev-moderation-token" \
+  -F "content_type=POST" \
+  -F "text=My vacation photo" \
+  -F "file=@/path/to/photo.jpg;type=image/jpeg"
 ```
 
-### AI Support — integrate with Java (one-time dev setup)
+**End-to-end in the app:** With Java (8080) + AI (8090) + Angular (4400), create a post in the UI — you should see the **AI Safety Check** overlay, then the post on home if approved.
 
-1. Run MySQL migration: `ai-support/database/mysql_app_migrations.sql`  
-2. Run PostgreSQL schema: `ai-support/database/schema.postgresql.sql`  
-3. Copy Java files from `ai-support/java-integration/samples/` → `Blog_mng_sevice` (`com.blog.moderation`)  
+More checks: [Section 10](#10-verify-everything-works).
+
+> Local dev uses `DEV_AUTH_BYPASS=true` and token `dev-moderation-token` (see `python-ai-service/.env.example`).
+
+### 8.8 — Option C — Python Docker image only (no Compose)
+
+See full build/run steps in [Section 14](#14-docker-images--build-tag-and-run).
+
+```bash
+export PROJECT_ROOT="/Users/ent-00210/Desktop/Project Documents/Blog-Management-System-java-project"
+cd "$PROJECT_ROOT/Backend/ai-support/python-ai-service"
+docker build -t blog-ai-moderation:1.1.0 .
+docker run -p 8090:8090 -e KAFKA_ENABLED=false -e DEV_AUTH_BYPASS=true -e DEV_STATIC_TOKEN=dev-moderation-token blog-ai-moderation:1.1.0
+```
+
+Then continue with [8.6](#86--configure-java-to-call-python-8090) and [8.7](#87--verify-ai-is-running).
+
+### 8.9 — One-time integration (if moderation code not yet in your tree)
+
+Only if you cloned an older branch without `ContentModerationFacade` / hooks:
+
+1. MySQL: `ai-support/database/mysql_app_migrations.sql`  
+2. PostgreSQL (Docker): `ai-support/database/schema.postgresql.sql`  
+3. Copy Java samples: `ai-support/java-integration/samples/` → `Blog_mng_sevice` (`com.blog.moderation`)  
 4. Merge `application-moderation.properties.snippet` into `application.properties`  
-5. Hook `PostServiceImpl` / `CommentServiceImpl` (see `PostModerationHook.java`)  
-6. Full details: `Backend/ai-support/docs/INTEGRATION-GUIDE.md`
+5. Details: `Backend/ai-support/docs/INTEGRATION-GUIDE.md`
+
+Current repo: moderation is already wired in `PostServiceImpl`, `CommentServiceImpl`, chat services — you usually only need **8.4** + **8.6** + Section 7.
+
+### 8.10 — Terminal cheat sheet (full AI dev)
+
+```text
+Terminal 1 — MySQL          (Section 3) — if not already running
+Terminal 2 — AI Python      uvicorn on 8090 (Step 8.4.5)
+Terminal 3 — Java backend   port 8080 (Section 7)
+Terminal 4 — Angular        npm start → 4400 (Section 9)
+Terminal 5 — (Optional)     Kafka worker (Step 8.4.6) + Docker Kafka (Section 5)
+```
 
 ---
 
@@ -679,7 +809,9 @@ Serve with any static server; configure API base URL to your backend (production
 | Backend | http://localhost:8080/api/posts | JSON (array, may be empty) |
 | Frontend | http://localhost:4400 | Login / home page loads |
 | Register user | UI → Register | Success, redirect/login |
-| Create post | UI → Create post | Post appears after save |
+| Create post | UI → Create post | AI overlay → post appears on home |
+| Post blocked | Publish post with toxic text | 400 + moderation message |
+| AI media API | `curl` [Step 8.7](#87--verify-ai-is-running) media test | `final_status` in JSON |
 | AI health | http://localhost:8090/api/v1/health | `{"status":"UP",...}` |
 | Kafka (optional) | `docker compose ps` in ai-support/docker | kafka container healthy |
 
@@ -757,7 +889,7 @@ docker compose up -d zookeeper kafka redis moderation-db minio prometheus
 
 ### Docker: AI image build fails (pip/apt timeout)
 
-Start infrastructure only ([Section 5.4](#step-54--start-infrastructure-only-recommended-first)), then run Python on the host ([Section 8 — Option B](#option-b--run-python-ai-locally-without-docker-for-python)).
+Start infrastructure only ([Section 5.4](#step-54--start-infrastructure-only-recommended-first)), then run Python on the host ([Section 8 — Option B](#84--option-b--python-ai-local-recommended)).
 
 Retry build later:
 
@@ -788,67 +920,143 @@ SMTP is configured in `application.properties` (Gmail). For local dev, email fai
 
 ---
 
-## Quick command cheat sheet (copy-paste)
+## 13. All local commands (copy-paste)
 
-Set project path once (macOS — adjust if your folder differs):
+Run these on your machine **without Docker** (except optional Kafka infra). Set the project path once:
 
 ```bash
 export PROJECT_ROOT="/Users/ent-00210/Desktop/Project Documents/Blog-Management-System-java-project"
+cd "$PROJECT_ROOT"
 ```
 
-**Terminal 1 — MySQL** (once):
+### 13.1 — Prerequisites check
 
 ```bash
+java -version
+mvn -version
+mysql --version
+node -v
+npm -v
+python3 --version
+docker --version
+docker compose version
+```
+
+### 13.2 — MySQL (database)
+
+```bash
+# Start MySQL (macOS Homebrew)
+brew services start mysql
+
+# Create database + tables (enter password when prompted)
 mysql -u root -p < "$PROJECT_ROOT/Backend/database_schema.sql"
+
+# Verify
+mysql -u root -p -e "USE blog_db; SHOW TABLES;"
+
+# Optional: AI moderation columns on MySQL
+mysql -u root -p blog_db < "$PROJECT_ROOT/Backend/ai-support/database/mysql_app_migrations.sql"
 ```
 
-**Terminal 2 — Docker (infrastructure)** (optional):
-
-```bash
-cd "$PROJECT_ROOT/Backend/ai-support/docker"
-cp -n .env.example .env
-docker compose up -d zookeeper kafka redis moderation-db minio prometheus
-docker compose ps
-```
-
-**Terminal 2b — Docker AI containers** (optional, if build succeeds):
-
-```bash
-cd "$PROJECT_ROOT/Backend/ai-support/docker"
-docker compose up -d --build ai-moderation-api ai-moderation-worker
-curl http://localhost:8090/api/v1/health
-```
-
-**Terminal 2c — Python AI local** (if Docker AI build fails):
+### 13.3 — Python AI (local — port 8090)
 
 ```bash
 cd "$PROJECT_ROOT/Backend/ai-support/python-ai-service"
-python3 -m venv .venv && source .venv/bin/activate
+
+# First time only
+python3 -m venv .venv
+source .venv/bin/activate
+pip install --upgrade pip
 pip install -r requirements.txt
 cp -n .env.example .env
-uvicorn app.main:app --reload --port 8090
+
+# Optional system tools (macOS) — better video/OCR
+# brew install ffmpeg tesseract
+
+# Start API (keep terminal open)
+source .venv/bin/activate
+uvicorn app.main:app --reload --host 0.0.0.0 --port 8090
 ```
 
-**Terminal 2d — Python Kafka worker** (second shell, with Kafka from Docker):
+**Second terminal — Kafka worker (only if Kafka on 9092 is running):**
 
 ```bash
 cd "$PROJECT_ROOT/Backend/ai-support/python-ai-service"
 source .venv/bin/activate
-export KAFKA_ENABLED=true KAFKA_BOOTSTRAP_SERVERS=localhost:9092
+export KAFKA_ENABLED=true
+export KAFKA_BOOTSTRAP_SERVERS=localhost:9092
 python -m app.workers.kafka_consumer
 ```
 
-**Terminal 3 — Java backend:**
+**Test AI locally:**
+
+```bash
+curl -s http://localhost:8090/api/v1/health
+
+curl -s -X POST http://localhost:8090/api/v1/moderate/sync \
+  -H "Authorization: Bearer dev-moderation-token" \
+  -H "Content-Type: application/json" \
+  -d '{"contentType":"COMMENT","text":"hello","userName":"demo"}'
+
+# Block test (should return BLOCKED)
+curl -s -X POST http://localhost:8090/api/v1/moderate/sync \
+  -H "Authorization: Bearer dev-moderation-token" \
+  -H "Content-Type: application/json" \
+  -d '{"contentType":"POST","text":"fucking post\nfuck you","userName":"demo"}'
+
+# Media test — replace path with a real image on your Mac
+curl -s -X POST http://localhost:8090/api/v1/moderate/media \
+  -H "Authorization: Bearer dev-moderation-token" \
+  -F "content_type=POST" \
+  -F "text=Test post" \
+  -F "file=@/path/to/your/image.jpg;type=image/jpeg"
+```
+
+**Test CNN/RNN on a sample upload (if file exists in repo):**
+
+```bash
+cd "$PROJECT_ROOT/Backend/ai-support/python-ai-service"
+source .venv/bin/activate
+python -c "
+from pathlib import Path
+from app.pipelines.image_pipeline import analyze_image_bytes
+from app.pipelines.text_pipeline import analyze_text
+from app.core.decision_engine import aggregate_decision
+uploads = Path('$PROJECT_ROOT/Backend/uploads')
+imgs = list(uploads.glob('*.jpeg')) + list(uploads.glob('*.jpg'))
+if imgs:
+    s = analyze_image_bytes(imgs[0].read_bytes())
+    t, _ = analyze_text('fucking post fuck you')
+    r = aggregate_decision(s + t, is_comment=False)
+    print('IMAGE', s); print('TEXT', t); print('FINAL', r.final_status)
+else:
+    print('No images in Backend/uploads — skip')
+"
+```
+
+### 13.4 — Java Spring Boot (port 8080)
 
 ```bash
 cd "$PROJECT_ROOT/Backend"
 export APP_SECRET_KEY="oAxGuIhSpp8OSIlTUs1FwdmWy4XvvY7yQMQ/OwIgUVg"
+
+# Build all modules
 mvn clean install
+
+# Run (development)
 cd Blog_mng_app
 mvn spring-boot:run -Dspring-boot.run.arguments="--spring.config.location=file:../application.properties"
 ```
 
-**Terminal 3b — Java JAR (alternative):**
+**Alternative — run from Backend root:**
+
+```bash
+cd "$PROJECT_ROOT/Backend"
+export APP_SECRET_KEY="oAxGuIhSpp8OSIlTUs1FwdmWy4XvvY7yQMQ/OwIgUVg"
+mvn spring-boot:run -pl Blog_mng_app -Dspring-boot.run.arguments="--spring.config.location=file:./application.properties"
+```
+
+**Alternative — JAR:**
 
 ```bash
 cd "$PROJECT_ROOT/Backend/Blog_mng_app"
@@ -856,21 +1064,252 @@ export APP_SECRET_KEY="oAxGuIhSpp8OSIlTUs1FwdmWy4XvvY7yQMQ/OwIgUVg"
 java -jar target/blog-app-0.0.1-SNAPSHOT.jar --spring.config.location=file:../application.properties
 ```
 
-**Terminal 4 — Angular UI:**
+**Verify backend:**
+
+```bash
+curl -s http://localhost:8080/api/posts
+```
+
+**Required AI settings** in `Backend/application.properties`:
+
+```properties
+app.moderation.enabled=true
+app.moderation.use-ai-service=true
+app.moderation.ai-service-url=http://localhost:8090
+app.moderation.ai-service-token=dev-moderation-token
+app.moderation.ai-timeout-seconds=45
+```
+
+### 13.5 — Angular frontend (port 4400)
 
 ```bash
 cd "$PROJECT_ROOT/frontend"
+
+# First time only
 npm install
+
+# Start dev server
 npm start
+
+# Or explicitly:
+npx ng serve --port 4400 --proxy-config proxy.conf.json
 ```
 
-**Browser:** http://localhost:4400  
+**Open:** http://localhost:4400
 
-**Stop Docker when done:**
+**Production build (optional):**
+
+```bash
+cd "$PROJECT_ROOT/frontend"
+npm run build
+```
+
+### 13.6 — Full local stack — terminal map
+
+Run in this order (each block = separate terminal):
+
+```text
+┌────────┬─────────────────────────────────────────────────────────────┐
+│ Term 1 │ MySQL (brew services start mysql) — once                    │
+├────────┼─────────────────────────────────────────────────────────────┤
+│ Term 2 │ Python AI: uvicorn on :8090  (Section 13.3)                 │
+├────────┼─────────────────────────────────────────────────────────────┤
+│ Term 3 │ Java: mvn spring-boot:run on :8080  (Section 13.4)          │
+├────────┼─────────────────────────────────────────────────────────────┤
+│ Term 4 │ Angular: npm start on :4400  (Section 13.5)                 │
+├────────┼─────────────────────────────────────────────────────────────┤
+│ Term 5 │ (Optional) Kafka worker — only with Docker Kafka on :9092   │
+└────────┴─────────────────────────────────────────────────────────────┘
+```
+
+**One-liner startup reminder:**
+
+```bash
+export PROJECT_ROOT="/Users/ent-00210/Desktop/Project Documents/Blog-Management-System-java-project"
+# Term 2: cd $PROJECT_ROOT/Backend/ai-support/python-ai-service && source .venv/bin/activate && uvicorn app.main:app --reload --port 8090
+# Term 3: cd $PROJECT_ROOT/Backend/Blog_mng_app && export APP_SECRET_KEY="oAxGuIhSpp8OSIlTUs1FwdmWy4XvvY7yQMQ/OwIgUVg" && mvn spring-boot:run -Dspring-boot.run.arguments="--spring.config.location=file:../application.properties"
+# Term 4: cd $PROJECT_ROOT/frontend && npm start
+```
+
+---
+
+## 14. Docker images — build, tag, and run
+
+Use this section when you want AI + Kafka + Redis in containers. Image name: **`blog-ai-moderation:1.1.0`** (CNN, gesture detector, text RNN, FFmpeg, Tesseract).
+
+### 14.1 — One-time setup
+
+```bash
+export PROJECT_ROOT="/Users/ent-00210/Desktop/Project Documents/Blog-Management-System-java-project"
+cd "$PROJECT_ROOT/Backend/ai-support/docker"
+
+# Environment file (first time)
+cp -n .env.example .env
+
+# Optional: edit .env
+# INTERNAL_JWT_SECRET=dev-secret-change-in-prod
+# DEV_STATIC_TOKEN=dev-moderation-token
+```
+
+**Fix Docker credential error (if pull/build fails on macOS):**
+
+```bash
+cp ~/.docker/config.json ~/.docker/config.json.bak
+python3 -c "
+import json, pathlib
+p = pathlib.Path.home() / '.docker/config.json'
+d = json.loads(p.read_text())
+d.pop('credsStore', None)
+p.write_text(json.dumps(d, indent=2))
+print('Fixed:', p)
+"
+```
+
+### 14.2 — Build AI Docker image (latest)
+
+**Option A — Build with Docker Compose (recommended):**
 
 ```bash
 cd "$PROJECT_ROOT/Backend/ai-support/docker"
+
+# Build only the AI API image (tag: blog-ai-moderation:1.1.0)
+docker compose build --no-cache ai-moderation-api
+
+# Verify image exists
+docker images | grep blog-ai-moderation
+```
+
+**Option B — Build directly from Dockerfile:**
+
+```bash
+cd "$PROJECT_ROOT/Backend/ai-support/python-ai-service"
+
+docker build --no-cache -t blog-ai-moderation:1.1.0 .
+
+# Optional extra tags
+docker tag blog-ai-moderation:1.1.0 blog-ai-moderation:latest
+```
+
+**Option C — Build worker image (same Dockerfile, different command at run):**
+
+```bash
+cd "$PROJECT_ROOT/Backend/ai-support/docker"
+docker compose build --no-cache ai-moderation-api ai-moderation-worker
+```
+
+### 14.3 — Run Docker infrastructure only (no AI build)
+
+```bash
+cd "$PROJECT_ROOT/Backend/ai-support/docker"
+
+docker compose up -d zookeeper kafka redis moderation-db minio prometheus
+
+docker compose ps
+```
+
+Then run Python **locally** on 8090 ([Section 13.3](#133--python-ai-local--port-8090)).
+
+### 14.4 — Run full Docker stack (infra + AI API + worker)
+
+```bash
+cd "$PROJECT_ROOT/Backend/ai-support/docker"
+
+# Build and start everything
+docker compose up -d --build
+
+# Or: infra first, then AI after infra is healthy
+docker compose up -d zookeeper kafka redis moderation-db minio prometheus
+sleep 30
+docker compose up -d --build ai-moderation-api ai-moderation-worker
+```
+
+### 14.5 — Start / stop / restart AI containers
+
+```bash
+cd "$PROJECT_ROOT/Backend/ai-support/docker"
+
+# Start AI API only
+docker compose up -d ai-moderation-api
+
+# Start API + Kafka worker
+docker compose up -d ai-moderation-api ai-moderation-worker
+
+# Restart after code change (rebuild + restart)
+docker compose build --no-cache ai-moderation-api
+docker compose up -d --force-recreate ai-moderation-api
+
+# View logs
+docker compose logs -f ai-moderation-api
+docker compose logs -f ai-moderation-worker
+
+# Stop all services (keep volumes)
 docker compose down
+
+# Stop and delete volumes (fresh DB next time)
+docker compose down -v
+
+# Remove local images (full cleanup)
+docker compose down -v --rmi local
+```
+
+### 14.6 — Verify Docker AI
+
+```bash
+curl -s http://localhost:8090/api/v1/health
+
+docker compose -f "$PROJECT_ROOT/Backend/ai-support/docker/docker-compose.yml" ps
+
+# Kafka topics (optional)
+cd "$PROJECT_ROOT/Backend/ai-support/docker"
+docker compose exec kafka kafka-topics --bootstrap-server localhost:9092 --list
+
+# Redis ping
+docker compose exec redis redis-cli ping
+```
+
+### 14.7 — Run AI container without Compose (standalone)
+
+```bash
+cd "$PROJECT_ROOT/Backend/ai-support/python-ai-service"
+
+docker build -t blog-ai-moderation:1.1.0 .
+
+docker run -d --name blog-ai-api \
+  -p 8090:8090 \
+  -e DEV_AUTH_BYPASS=true \
+  -e DEV_STATIC_TOKEN=dev-moderation-token \
+  -e KAFKA_ENABLED=false \
+  -e MODEL_BUNDLE_VERSION=1.1.0 \
+  blog-ai-moderation:1.1.0
+
+curl -s http://localhost:8090/api/v1/health
+
+# Stop/remove
+docker stop blog-ai-api && docker rm blog-ai-api
+```
+
+### 14.8 — Push image to a registry (optional — production)
+
+```bash
+# Example: Docker Hub (replace YOUR_USER)
+docker tag blog-ai-moderation:1.1.0 YOUR_USER/blog-ai-moderation:1.1.0
+docker login
+docker push YOUR_USER/blog-ai-moderation:1.1.0
+
+# Example: AWS ECR (replace ACCOUNT and REGION)
+# aws ecr get-login-password --region REGION | docker login --username AWS --password-stdin ACCOUNT.dkr.ecr.REGION.amazonaws.com
+# docker tag blog-ai-moderation:1.1.0 ACCOUNT.dkr.ecr.REGION.amazonaws.com/blog-ai-moderation:1.1.0
+# docker push ACCOUNT.dkr.ecr.REGION.amazonaws.com/blog-ai-moderation:1.1.0
+```
+
+### 14.9 — Docker + Java + Angular (complete order)
+
+```text
+1. docker compose build ai-moderation-api     →  Section 14.2
+2. docker compose up -d ai-moderation-api       →  Section 14.4
+3. curl http://localhost:8090/api/v1/health   →  Section 14.6
+4. mvn spring-boot:run (Java :8080)             →  Section 13.4
+5. npm start (Angular :4400)                    →  Section 13.5
 ```
 
 ---
@@ -889,4 +1328,4 @@ docker compose down
 
 ---
 
-*Last updated for: Spring Boot 3.1.1, Angular 20, Java 17, ai-support module.*
+*Last updated for: Spring Boot 3.1.1, Angular 20, Java 17, ai-support `blog-ai-moderation:1.1.0`.*

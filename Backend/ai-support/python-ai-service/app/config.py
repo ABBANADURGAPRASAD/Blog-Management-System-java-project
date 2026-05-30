@@ -6,12 +6,14 @@ class Settings(BaseSettings):
 
     app_name: str = "ai-moderation"
     api_prefix: str = "/api/v1"
-    model_bundle_version: str = "1.0.0-dev"
+    model_bundle_version: str = "1.1.0"
     ai_device: str = "cpu"
 
     # Security
     internal_jwt_secret: str = "change-me-in-production"
     internal_jwt_audience: str = "ai-moderation"
+    dev_auth_bypass: bool = True
+    dev_static_token: str = "dev-moderation-token"
 
     # Kafka
     kafka_bootstrap_servers: str = "localhost:9092"

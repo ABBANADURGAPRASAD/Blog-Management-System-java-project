@@ -12,9 +12,12 @@ prometheus-client==0.21.1
 opentelemetry-api==1.29.0
 opentelemetry-sdk==1.29.0
 opentelemetry-instrumentation-fastapi==0.50b0
-# ML stack (install per environment; GPU optional)
+# ML stack (CPU-friendly; optional GPU/onnx in production)
+numpy==2.1.3
+pillow==11.0.0
+# pytesseract==0.3.13   # optional: brew install tesseract
+# onnxruntime==1.20.1   # optional: set NSFW_ONNX_MODEL_PATH
 # transformers==4.47.1
 # torch==2.5.1
-# onnxruntime==1.20.1
 # opencv-python-headless==4.10.0.84
 # langdetect==1.0.9

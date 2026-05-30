@@ -55,16 +55,25 @@ This repository is a **multi-module Maven backend** + **Angular SPA frontend**, 
 - **Anonymous / random chat** with WebSocket support
 - **Map-based presence** (finder / matchmaking metadata)
 
-### AI content moderation (module)
+### AI monitoring & security (integrated)
 
-- Enterprise **AI Safety platform** under `Backend/ai-support/`
-- Automatic analysis of posts, comments, profiles, bios, and media
-- Detects NSFW, hate speech, toxicity, spam, threats, violence, impersonation, and more
-- **Multilingual** support (English, Hindi, Telugu, Tamil, Malayalam, Kannada, Bengali, Arabic, …)
-- Async **Kafka** workflow: Java orchestrates → Python infers → status `APPROVED` / `WARNING` / `BLOCKED`
-- Human review queue and full audit trail (PostgreSQL)
+| Surface | What is checked | Engine |
+|---------|-----------------|--------|
+| **Comments** | Toxicity, spam, NSFW text, threats | Local rules + Python `/moderate/sync` |
+| **Direct chat (DM)** | Same text policies | `CHAT` content type → AI service |
+| **Random / anonymous chat** | Same text policies | `ANONYMOUS_CHAT` content type |
+| **Posts (create)** | Title + body text **and** image/video/PDF media | CNN NSFW on frames + OCR/RNN on text in images/video |
 
-Details: [`Backend/ai-support/README.md`](Backend/ai-support/README.md) · Java bridge: [`Backend/ai-support/java-integration/README.md`](Backend/ai-support/java-integration/README.md)
+**Post media pipeline (on `POST /api/posts`):**
+
+1. Angular shows an **AI Safety Check** overlay while publishing.
+2. Spring Boot calls Python `POST /api/v1/moderate/media` with the uploaded file (before saving to disk).
+3. Python runs **CNN** adult-content scoring on images (and per video frame via FFmpeg).
+4. **OCR + character RNN** analyzes any text visible in images or video frames.
+5. If `BLOCKED`, the post is rejected with a clear API error; otherwise the file is stored and the post is saved.
+
+Enterprise **AI Safety platform** (Kafka async, audit DB, human review) lives under `Backend/ai-support/`.  
+Details: [`Backend/ai-support/README.md`](Backend/ai-support/README.md) · Run order: [`ExcutionInfofile.md`](ExcutionInfofile.md)
 
 ### Platform & security
 
@@ -214,15 +223,27 @@ npm start
 
 UI: **http://localhost:4400**
 
-### 4. AI moderation (optional)
+### 4. AI moderation (required for post media + AI chat checks)
 
 ```bash
-cd Backend/ai-support/docker
+cd Backend/ai-support/python-ai-service
+python3 -m venv .venv && source .venv/bin/activate
+pip install -r requirements.txt
 cp .env.example .env
-docker compose up -d
+uvicorn app.main:app --reload --port 8090
 ```
 
-AI API: **http://localhost:8090** — see [`Backend/ai-support/README.md`](Backend/ai-support/README.md).
+Or use Docker: `cd Backend/ai-support/docker && docker compose up -d`
+
+Ensure `Backend/application.properties` includes:
+
+```properties
+app.moderation.use-ai-service=true
+app.moderation.ai-service-url=http://localhost:8090
+app.moderation.ai-service-token=dev-moderation-token
+```
+
+AI API: **http://localhost:8090** · Swagger: **http://localhost:8090/docs**
 
 ---
 
@@ -268,8 +289,9 @@ AI API: **http://localhost:8090** — see [`Backend/ai-support/README.md`](Backe
 | Area | Endpoints |
 |------|-----------|
 | Auth | `POST /api/auth/register`, `POST /api/auth/login` |
-| Posts | `GET/POST /api/posts`, `GET /api/posts/popular` |
-| Comments | `GET/POST /api/posts/{id}/comments` |
+| Posts | `GET/POST /api/posts`, `GET /api/posts/popular` (create runs AI media check) |
+| Comments | `GET/POST /api/posts/{id}/comments` (AI + local moderation) |
+| AI (internal) | `POST /api/v1/moderate/sync`, `POST /api/v1/moderate/media` on port **8090** |
 | Likes | `POST /api/posts/{id}/like` |
 | Users | `GET/PUT /api/users/{id}`, image uploads |
 | Follow | `/api/followersAndFollowing/*` |

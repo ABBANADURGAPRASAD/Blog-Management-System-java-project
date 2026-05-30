@@ -80,6 +80,12 @@ public class CommentContentModerator {
         double max = scores.values().stream().mapToDouble(Double::doubleValue).max().orElse(0);
         List<String> labels = new ArrayList<>(scores.keySet());
 
+        // Block clear profanity / harassment (e.g. "fucking post", "fuck you" in tags)
+        if (toxicity >= 0.85 || scores.containsKey("BULLYING")) {
+            return decision(ModerationStatus.BLOCKED, "BLOCKED", Math.max(max, toxicity), labels,
+                    "Content blocked: inappropriate language detected.");
+        }
+
         if (scores.containsKey("THREAT") || scores.containsKey("HATE_SPEECH")
                 || max >= 0.88 && (scores.containsKey("TOXICITY") || scores.containsKey("BULLYING"))) {
             return decision(ModerationStatus.BLOCKED, "BLOCKED", max, labels,

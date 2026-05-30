@@ -17,7 +17,10 @@ export class CreatePostComponent implements OnInit {
   postForm: FormGroup;
   selectedFile: File | null = null;
   filePreview: string | null = null;
+  filePreviewIsVideo = false;
   isDragging = false;
+  isPublishing = false;
+  aiAnalysisMessage = 'Running AI safety checks…';
   categories = ['Technology', 'Lifestyle', 'Travel', 'Food', 'Sports', 'Entertainment'];
 
   allMentionUsers: User[] = [];
@@ -197,12 +200,17 @@ export class CreatePostComponent implements OnInit {
     return ids;
   }
 
-  onFileSelected(event: any) {
-    const file = event.target.files[0];
+  onFileSelected(event: Event) {
+    const input = event.target as HTMLInputElement;
+    const file = input.files?.[0];
     if (file) {
-      this.selectedFile = file;
-      this.previewFile(file);
+      this.setSelectedFile(file);
     }
+  }
+
+  private setSelectedFile(file: File) {
+    this.selectedFile = file;
+    this.previewFile(file);
   }
 
   onDragOver(event: DragEvent) {
@@ -224,22 +232,30 @@ export class CreatePostComponent implements OnInit {
 
     const files = event.dataTransfer?.files;
     if (files && files.length > 0) {
-      this.selectedFile = files[0];
-      this.previewFile(files[0]);
+      this.setSelectedFile(files[0]);
     }
   }
 
   previewFile(file: File) {
+    this.filePreviewIsVideo = file.type.startsWith('video/');
+    if (this.filePreviewIsVideo) {
+      this.filePreview = URL.createObjectURL(file);
+      return;
+    }
     const reader = new FileReader();
-    reader.onload = (e: any) => {
-      this.filePreview = e.target.result;
+    reader.onload = (e: ProgressEvent<FileReader>) => {
+      this.filePreview = (e.target?.result as string) || null;
     };
     reader.readAsDataURL(file);
   }
 
   removeFile() {
+    if (this.filePreviewIsVideo && this.filePreview) {
+      URL.revokeObjectURL(this.filePreview);
+    }
     this.selectedFile = null;
     this.filePreview = null;
+    this.filePreviewIsVideo = false;
   }
 
   formatText(command: string) {
@@ -247,36 +263,53 @@ export class CreatePostComponent implements OnInit {
   }
 
   publishPost() {
-    if (this.postForm.valid) {
-      const currentUser = this.authService.getCurrentUser();
-      if (!currentUser?.id) {
-        alert('Please login to create a post.');
-        this.router.navigate(['/login']);
-        return;
+    if (!this.postForm.valid || this.isPublishing) {
+      if (!this.postForm.valid) {
+        alert('Please fill in all required fields.');
       }
-
-      const content = this.postForm.get('content')?.value || '';
-      const mentionedUserIds = this.extractMentionedUserIds(content);
-
-      const postData = {
-        title: content.substring(0, 100) || 'Untitled Post',
-        content,
-        tags: this.postForm.get('tags')?.value || '',
-        category: this.postForm.get('category')?.value || '',
-        mentionedUserIds,
-      };
-
-      this.postService.createPost(postData, this.selectedFile, currentUser.id).subscribe({
-        next: () => {
-          this.router.navigate(['/home']);
-        },
-        error: () => {
-          alert('Failed to create post. Please try again.');
-        },
-      });
-    } else {
-      alert('Please fill in all required fields.');
+      return;
     }
+
+    const currentUser = this.authService.getCurrentUser();
+    if (!currentUser?.id) {
+      alert('Please login to create a post.');
+      this.router.navigate(['/login']);
+      return;
+    }
+
+    const content = this.postForm.get('content')?.value || '';
+    const mentionedUserIds = this.extractMentionedUserIds(content);
+
+    const postData = {
+      title: content.substring(0, 100) || 'Untitled Post',
+      content,
+      tags: this.postForm.get('tags')?.value || '',
+      category: this.postForm.get('category')?.value || '',
+      mentionedUserIds,
+    };
+
+    this.isPublishing = true;
+    this.aiAnalysisMessage = this.selectedFile
+      ? 'AI is analyzing your text and media for safety…'
+      : 'AI is analyzing your post text…';
+
+    this.postService.createPost(postData, this.selectedFile, currentUser.id).subscribe({
+      next: () => {
+        this.isPublishing = false;
+        this.router.navigate(['/home']);
+      },
+      error: (err) => {
+        this.isPublishing = false;
+        const body = err?.error;
+        const msg =
+          typeof body === 'object' && body?.error
+            ? body.error
+            : typeof body === 'string'
+              ? body
+              : 'Failed to create post. Please try again.';
+        alert(msg);
+      },
+    });
   }
 
   saveDraft() {

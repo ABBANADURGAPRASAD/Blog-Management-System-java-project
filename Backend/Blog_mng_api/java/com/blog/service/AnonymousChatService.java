@@ -3,6 +3,7 @@ package com.blog.service;
 import com.blog.model.dto.*;
 
 import java.util.List;
+import java.util.Optional;
 
 public interface AnonymousChatService {
 
@@ -18,6 +19,8 @@ public interface AnonymousChatService {
     RandomQueueResponse joinRandomQueue(Long userId, RandomMatchRequest request);
 
     RandomQueueResponse pollRandomQueue(Long userId, String ticketPublicId);
+
+    Optional<AnonymousSessionResponse> getActiveSession(Long userId);
 
     AnonymousSessionResponse getSession(Long userId, String sessionPublicId);
 

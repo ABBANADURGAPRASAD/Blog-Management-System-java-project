@@ -1,0 +1,24 @@
+<div
+  class="sg-avatar"
+  [class.sg-avatar-sm]="size === 'sm'"
+  [class.sg-avatar-md]="size === 'md'"
+  [class.sg-avatar-lg]="size === 'lg'"
+  [class.sg-shape-round]="shape === 'ROUND'"
+  [class.sg-shape-tall]="shape === 'TALL'"
+  [class.sg-shape-wide]="shape === 'WIDE'"
+  aria-hidden="true"
+>
+  <div class="sg-avatar-body">
+    <div class="sg-avatar-legs" [style.background]="bottomColor"></div>
+    <div class="sg-avatar-torso" [style.background]="topColor">
+      <span class="sg-avatar-accent" [style.background]="accentColor"></span>
+    </div>
+    <div class="sg-avatar-head" [style.background]="skinColor">
+      <ng-container *ngIf="showFace">
+        <span class="sg-eye sg-eye-l"></span>
+        <span class="sg-eye sg-eye-r"></span>
+        <span class="sg-mouth"></span>
+      </ng-container>
+    </div>
+  </div>
+</div>

@@ -8,6 +8,8 @@ from pydantic import BaseModel, ConfigDict, Field
 class ContentType(str, Enum):
     POST = "POST"
     COMMENT = "COMMENT"
+    CHAT = "CHAT"
+    ANONYMOUS_CHAT = "ANONYMOUS_CHAT"
     USER_PROFILE = "USER_PROFILE"
     USER_BIO = "USER_BIO"
     USER_AVATAR = "USER_AVATAR"
@@ -67,6 +69,15 @@ class ModerationResult(BaseModel):
 class SyncModerationRequest(BaseModel):
     content_type: ContentType
     text: str
+    user_name: Optional[str] = None
+    language_hint: Optional[str] = None
+
+
+class MediaModerationRequest(BaseModel):
+    """Metadata for multipart /moderate/media (file sent separately)."""
+
+    content_type: ContentType = ContentType.POST
+    text: Optional[str] = None
     user_name: Optional[str] = None
     language_hint: Optional[str] = None
 

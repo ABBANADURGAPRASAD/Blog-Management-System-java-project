@@ -49,6 +49,7 @@ services:
       - "19001:9001"
 
   ai-moderation-api:
+    image: blog-ai-moderation:1.1.0
     build:
       context: ../python-ai-service
       dockerfile: Dockerfile
@@ -56,27 +57,43 @@ services:
       - "8090:8090"
     environment:
       INTERNAL_JWT_SECRET: ${INTERNAL_JWT_SECRET:-dev-secret}
+      DEV_AUTH_BYPASS: "true"
+      DEV_STATIC_TOKEN: ${DEV_STATIC_TOKEN:-dev-moderation-token}
+      MODEL_BUNDLE_VERSION: "1.1.0"
       KAFKA_BOOTSTRAP_SERVERS: kafka:9092
       REDIS_URL: redis://redis:6379/0
       KAFKA_ENABLED: "false"
     depends_on:
       - kafka
       - redis
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8090/api/v1/health')"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 25s
 
   ai-moderation-worker:
+    image: blog-ai-moderation:1.1.0
     build:
       context: ../python-ai-service
       dockerfile: Dockerfile
     command: python -m app.workers.kafka_consumer
     environment:
       INTERNAL_JWT_SECRET: ${INTERNAL_JWT_SECRET:-dev-secret}
+      DEV_AUTH_BYPASS: "true"
+      DEV_STATIC_TOKEN: ${DEV_STATIC_TOKEN:-dev-moderation-token}
+      MODEL_BUNDLE_VERSION: "1.1.0"
       KAFKA_BOOTSTRAP_SERVERS: kafka:9092
       REDIS_URL: redis://redis:6379/0
       KAFKA_ENABLED: "true"
     depends_on:
-      - kafka
-      - redis
-      - ai-moderation-api
+      ai-moderation-api:
+        condition: service_healthy
+      kafka:
+        condition: service_started
+      redis:
+        condition: service_started
 
   prometheus:
     image: prom/prometheus:v2.54.1

@@ -1,5 +1,14 @@
 <div class="create-post-container">
-  <div class="create-post-modal">
+  <div class="ai-moderation-overlay" *ngIf="isPublishing" role="status" aria-live="polite">
+    <div class="ai-moderation-panel">
+      <div class="ai-spinner" aria-hidden="true"></div>
+      <p class="ai-moderation-title">AI Safety Check</p>
+      <p class="ai-moderation-message">{{ aiAnalysisMessage }}</p>
+      <p class="ai-moderation-hint">Checking text, images, and video for policy violations…</p>
+    </div>
+  </div>
+
+  <div class="create-post-modal" [class.is-disabled]="isPublishing">
     <div class="modal-header">
       <h2 class="modal-title">New Post</h2>
     </div>
@@ -19,14 +28,15 @@
             <input 
               type="file" 
               id="fileInput" 
-              accept="image/*" 
+              accept="image/*,video/*,application/pdf" 
               (change)="onFileSelected($event)"
               style="display: none;"
             />
             <label for="fileInput" class="choose-file-btn">Choose file</label>
           </div>
           <div *ngIf="filePreview" class="uploaded-file">
-            <img [src]="filePreview" alt="Preview" />
+            <img *ngIf="!filePreviewIsVideo" [src]="filePreview" alt="Preview" />
+            <video *ngIf="filePreviewIsVideo" [src]="filePreview" controls class="video-preview"></video>
             <div class="file-info">
               <div class="file-name">{{ selectedFile?.name }}</div>
             </div>
@@ -106,7 +116,9 @@
 
       <!-- Action Buttons -->
       <div class="form-actions">
-        <button type="submit" class="btn btn-primary">Publish</button>
+        <button type="submit" class="btn btn-primary" [disabled]="isPublishing">
+          {{ isPublishing ? 'Analyzing…' : 'Publish' }}
+        </button>
         <button type="button" class="btn btn-secondary" (click)="saveDraft()">Save Draft</button>
         <button type="button" class="btn btn-outline" (click)="cancel()">Cancel</button>
       </div>

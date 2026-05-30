@@ -54,7 +54,18 @@
 
   <div class="feel-dashboard" *ngIf="!session">
     <section class="feel-card feel-card-random">
-      <h2>Random match</h2>
+      <h2 class="feel-section-title">
+        Random match
+        <span class="chat-notif-wrap" *ngIf="randomChatNotificationCount > 0" title="Incoming random chat">
+          <svg class="chat-notif-icon" viewBox="0 0 24 24" width="18" height="18" aria-hidden="true">
+            <path
+              fill="currentColor"
+              d="M12 22c1.1 0 2-.9 2-2h-4c0 1.1.89 2 2 2zm6-6V11c0-3.07-1.64-5.64-4.5-6.32V4c0-.83-.67-1.5-1.5-1.5s-1.5.67-1.5 1.5v.68C7.63 5.36 6 7.92 6 11v5l-2 2v1h16v-1l-2-2z"
+            />
+          </svg>
+          <span class="chat-notif-badge" aria-label="New random chat">{{ randomChatNotificationCount }}</span>
+        </span>
+      </h2>
       <p class="hint">Location + who you want to meet. Matching uses radius &amp; gender rules on the server.</p>
 
       <button
@@ -106,8 +117,51 @@
     </section>
 
     <section class="feel-card feel-card-map">
-      <h2>Map finder</h2>
+      <h2 class="feel-section-title">
+        Map finder
+        <span class="chat-notif-wrap" *ngIf="mapChatNotificationCount > 0" title="Someone wants to chat from the map">
+          <svg class="chat-notif-icon" viewBox="0 0 24 24" width="18" height="18" aria-hidden="true">
+            <path
+              fill="currentColor"
+              d="M12 22c1.1 0 2-.9 2-2h-4c0 1.1.89 2 2 2zm6-6V11c0-3.07-1.64-5.64-4.5-6.32V4c0-.83-.67-1.5-1.5-1.5s-1.5.67-1.5 1.5v.68C7.63 5.36 6 7.92 6 11v5l-2 2v1h16v-1l-2-2z"
+            />
+          </svg>
+          <span class="chat-notif-badge" aria-label="New map chat">{{ mapChatNotificationCount }}</span>
+        </span>
+      </h2>
       <p class="hint">Mr. Map Game Zone — colored pins nearby (same coordinates as Random match).</p>
+
+      <div
+        class="map-invite-alert"
+        *ngIf="mapChatInvite"
+        role="alertdialog"
+        aria-labelledby="map-invite-dash-title"
+        aria-describedby="map-invite-dash-desc"
+      >
+        <div class="map-invite-alert-icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" width="28" height="28">
+            <path
+              fill="currentColor"
+              d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm-2 12H6v-2h12v2zm0-3H6V9h12v2z"
+            />
+          </svg>
+        </div>
+        <div class="map-invite-alert-body">
+          <p id="map-invite-dash-title" class="map-invite-alert-title">Map chat request</p>
+          <p id="map-invite-dash-desc" class="map-invite-alert-text">
+            Someone on the map wants to chat with you anonymously.
+          </p>
+          <div class="map-invite-alert-actions">
+            <button type="button" class="primary map-invite-accept" (click)="acceptMapChatInvite()">
+              Accept &amp; open chat
+            </button>
+            <button type="button" class="secondary" (click)="openFinderForMapInvite()">View on map</button>
+            <button type="button" class="ghost map-invite-decline" (click)="declineMapChatInvite()">
+              Decline
+            </button>
+          </div>
+        </div>
+      </div>
 
       <button type="button" class="btn-map-zone" (click)="openFinder()" [disabled]="!currentUserId">
         <svg class="btn-map-ico" viewBox="0 0 24 24" width="20" height="20" aria-hidden="true">
@@ -142,6 +196,8 @@
         <input type="color" [(ngModel)]="pinColor" class="feel-color-input" title="Pin accent" />
       </div>
     </section>
+
+    <app-strangers-game-section [userId]="currentUserId"></app-strangers-game-section>
   </div>
 
   <section class="feel-concept" *ngIf="!session" aria-label="Product concept">
@@ -160,7 +216,18 @@
     <div class="finder-dialog finder-map-zone map-zone-shell">
       <header class="map-zone-header">
         <div>
-          <h3>Mr. Map Zone</h3>
+          <h3 class="feel-section-title map-zone-title">
+            Mr. Map Zone
+            <span class="chat-notif-wrap" *ngIf="mapChatNotificationCount > 0" title="Incoming map chat">
+              <svg class="chat-notif-icon" viewBox="0 0 24 24" width="18" height="18" aria-hidden="true">
+                <path
+                  fill="currentColor"
+                  d="M12 22c1.1 0 2-.9 2-2h-4c0 1.1.89 2 2 2zm6-6V11c0-3.07-1.64-5.64-4.5-6.32V4c0-.83-.67-1.5-1.5-1.5s-1.5.67-1.5 1.5v.68C7.63 5.36 6 7.92 6 11v5l-2 2v1h16v-1l-2-2z"
+                />
+              </svg>
+              <span class="chat-notif-badge">{{ mapChatNotificationCount }}</span>
+            </span>
+          </h3>
           <p class="map-zone-coords">
             {{ randomLat | number : '1.4-4' }}°, {{ randomLng | number : '1.4-4' }}°
             <span class="map-user-count"
@@ -171,7 +238,38 @@
         <button type="button" class="icon-close" (click)="closeFinder()" aria-label="Close">×</button>
       </header>
 
-      <p class="map-hint-bar" *ngIf="mapHint">{{ mapHint }}</p>
+      <p class="map-hint-bar" *ngIf="mapHint && !mapChatInvite">{{ mapHint }}</p>
+
+      <div
+        class="map-invite-alert map-invite-alert-finder"
+        *ngIf="mapChatInvite"
+        role="alertdialog"
+        aria-labelledby="map-invite-zone-title"
+        aria-describedby="map-invite-zone-desc"
+      >
+        <div class="map-invite-alert-icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" width="32" height="32">
+            <path
+              fill="currentColor"
+              d="M12 22c1.1 0 2-.9 2-2h-4c0 1.1.89 2 2 2zm6-6V11c0-3.07-1.64-5.64-4.5-6.32V4c0-.83-.67-1.5-1.5-1.5s-1.5.67-1.5 1.5v.68C7.63 5.36 6 7.92 6 11v5l-2 2v1h16v-1l-2-2zm-8-2V9H9v5H7zm2 0V9h2v5H9zm4 0V9h2v5h-2z"
+            />
+          </svg>
+        </div>
+        <div class="map-invite-alert-body">
+          <p id="map-invite-zone-title" class="map-invite-alert-title">Incoming map chat</p>
+          <p id="map-invite-zone-desc" class="map-invite-alert-text">
+            A nearby user invited you to an anonymous chat. Accept to join — or decline to stay on the map.
+          </p>
+          <div class="map-invite-alert-actions">
+            <button type="button" class="primary map-invite-accept" (click)="acceptMapChatInvite()">
+              Accept chat
+            </button>
+            <button type="button" class="ghost map-invite-decline" (click)="declineMapChatInvite()">
+              Not now
+            </button>
+          </div>
+        </div>
+      </div>
 
       <div class="map-zone-stage">
         <div
@@ -245,7 +343,11 @@
         </div>
       </div>
 
-      <div class="picker-card" *ngIf="selectedMarker && !selectedMarker.self && !streetViewOpen">
+      <div
+        class="picker-card"
+        [class.picker-card-over-street]="streetViewOpen"
+        *ngIf="selectedMarker && !selectedMarker.self"
+      >
         <button type="button" class="picker-close" (click)="clearSelectedMarker()" aria-label="Close">×</button>
         <h4>{{ selectedMarker.displayLabel }}</h4>
         <p

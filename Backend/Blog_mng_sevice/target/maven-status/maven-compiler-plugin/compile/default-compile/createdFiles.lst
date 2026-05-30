@@ -5,6 +5,7 @@ com/blog/moderation/ModerationEmailService.class
 com/blog/service/impl/UserServiceImpl.class
 com/blog/repository/followersAndFollowingRepository.class
 com/blog/repository/AnonymousChatSessionRepository.class
+com/blog/moderation/ContentModerationFacade.class
 com/blog/moderation/CommentModerationDecision.class
 com/blog/repository/AnonymousMatchQueueRepository.class
 com/blog/service/impl/followersAndFollowingServiceImpl.class
@@ -27,5 +28,6 @@ com/blog/repository/LikeRepository.class
 com/blog/repository/NotificationRepository.class
 com/blog/repository/PostRepository.class
 com/blog/repository/CommentMentionRepository.class
+com/blog/moderation/AiModerationClient.class
 com/blog/repository/AnonymousMapMarkerRepository.class
 com/blog/service/impl/CommentServiceImpl.class

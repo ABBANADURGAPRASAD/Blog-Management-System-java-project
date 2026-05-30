@@ -7,6 +7,10 @@ import com.blog.model.SendMessageRequest;
 import com.blog.model.User;
 import com.blog.repository.ChatMessageRepository;
 import com.blog.repository.UserRepository;
+import com.blog.moderation.CommentModerationDecision;
+import com.blog.moderation.CommentModerationException;
+import com.blog.moderation.ContentModerationFacade;
+import com.blog.model.ModerationStatus;
 import com.blog.service.ChatService;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
@@ -25,14 +29,17 @@ public class ChatServiceImpl implements ChatService {
     private final ChatMessageRepository chatMessageRepository;
     private final UserRepository userRepository;
     private final ApplicationEventPublisher eventPublisher;
+    private final ContentModerationFacade contentModerationFacade;
 
     public ChatServiceImpl(
             ChatMessageRepository chatMessageRepository,
             UserRepository userRepository,
-            ApplicationEventPublisher eventPublisher) {
+            ApplicationEventPublisher eventPublisher,
+            ContentModerationFacade contentModerationFacade) {
         this.chatMessageRepository = chatMessageRepository;
         this.userRepository = userRepository;
         this.eventPublisher = eventPublisher;
+        this.contentModerationFacade = contentModerationFacade;
     }
 
     @Override
@@ -53,6 +60,15 @@ public class ChatServiceImpl implements ChatService {
                 .orElseThrow(() -> new IllegalArgumentException("Sender not found"));
         User receiver = userRepository.findById(request.getReceiverId())
                 .orElseThrow(() -> new IllegalArgumentException("Receiver not found"));
+
+        CommentModerationDecision moderation = contentModerationFacade.analyzeChat(
+                content.trim(), sender.getUserName());
+        if (moderation.isBlocked()) {
+            throw new CommentModerationException(
+                    "Message blocked: it violates our community guidelines.",
+                    ModerationStatus.BLOCKED,
+                    moderation.getDetectedLabels());
+        }
 
         ChatMessage message = ChatMessage.builder()
                 .sender(sender)

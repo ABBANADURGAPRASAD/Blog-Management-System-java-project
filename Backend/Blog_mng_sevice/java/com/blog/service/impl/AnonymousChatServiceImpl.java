@@ -3,6 +3,10 @@ package com.blog.service.impl;
 import com.blog.model.*;
 import com.blog.model.dto.*;
 import com.blog.repository.*;
+import com.blog.moderation.CommentModerationDecision;
+import com.blog.moderation.CommentModerationException;
+import com.blog.moderation.ContentModerationFacade;
+import com.blog.model.ModerationStatus;
 import com.blog.service.AnonymousChatService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
@@ -28,6 +32,7 @@ public class AnonymousChatServiceImpl implements AnonymousChatService {
     private final AnonymousMapMarkerRepository mapMarkerRepository;
     private final AnonymousMatchQueueRepository queueRepository;
     private final SimpMessagingTemplate messagingTemplate;
+    private final ContentModerationFacade contentModerationFacade;
 
     @Autowired
     public AnonymousChatServiceImpl(UserRepository userRepository,
@@ -36,7 +41,8 @@ public class AnonymousChatServiceImpl implements AnonymousChatService {
             RevealRequestEntityRepository revealRequestRepository,
             AnonymousMapMarkerRepository mapMarkerRepository,
             AnonymousMatchQueueRepository queueRepository,
-            SimpMessagingTemplate messagingTemplate) {
+            SimpMessagingTemplate messagingTemplate,
+            ContentModerationFacade contentModerationFacade) {
         this.userRepository = userRepository;
         this.sessionRepository = sessionRepository;
         this.messageRepository = messageRepository;
@@ -44,6 +50,7 @@ public class AnonymousChatServiceImpl implements AnonymousChatService {
         this.mapMarkerRepository = mapMarkerRepository;
         this.queueRepository = queueRepository;
         this.messagingTemplate = messagingTemplate;
+        this.contentModerationFacade = contentModerationFacade;
     }
 
     @Override
@@ -138,6 +145,7 @@ public class AnonymousChatServiceImpl implements AnonymousChatService {
                 .build();
         session = sessionRepository.save(session);
         markUsersInChatOnMap(requester, target);
+        notifyPartnerSessionStarted(target.getId(), session);
         return toSessionResponse(requesterUserId, session);
     }
 
@@ -183,6 +191,8 @@ public class AnonymousChatServiceImpl implements AnonymousChatService {
             markRandomPairInChatOnMap(user, peer.getUser(),
                     request.getLatitude(), request.getLongitude(),
                     peer.getLatitude(), peer.getLongitude());
+            notifyPartnerSessionStarted(peer.getUser().getId(), session);
+            notifyPartnerSessionStarted(user.getId(), session);
             return RandomQueueResponse.builder()
                     .matched(true)
                     .sessionPublicId(session.getPublicId())
@@ -237,6 +247,16 @@ public class AnonymousChatServiceImpl implements AnonymousChatService {
 
     @Override
     @Transactional(readOnly = true)
+    public Optional<AnonymousSessionResponse> getActiveSession(Long userId) {
+        List<AnonymousChatSession> active = sessionRepository.findActiveSessionsForUser(userId);
+        if (active.isEmpty()) {
+            return Optional.empty();
+        }
+        return Optional.of(toSessionResponse(userId, active.get(0)));
+    }
+
+    @Override
+    @Transactional(readOnly = true)
     public AnonymousSessionResponse getSession(Long userId, String sessionPublicId) {
         AnonymousChatSession session = sessionRepository.findByPublicId(sessionPublicId)
                 .orElseThrow(() -> new IllegalArgumentException("Session not found"));
@@ -278,6 +298,15 @@ public class AnonymousChatServiceImpl implements AnonymousChatService {
             throw new IllegalArgumentException("Message too long");
         }
         content = content.trim();
+
+        CommentModerationDecision moderation = contentModerationFacade.analyzeAnonymousChat(content);
+        if (moderation.isBlocked()) {
+            throw new CommentModerationException(
+                    "Message blocked: it violates our community guidelines.",
+                    ModerationStatus.BLOCKED,
+                    moderation.getDetectedLabels());
+        }
+
         User sender = userRepository.findById(userId).orElseThrow();
         AnonymousChatMessage msg = AnonymousChatMessage.builder()
                 .session(session)
@@ -406,6 +435,11 @@ public class AnonymousChatServiceImpl implements AnonymousChatService {
 
     private static User partnerOf(AnonymousChatSession s, Long userId) {
         return s.getUserA().getId().equals(userId) ? s.getUserB() : s.getUserA();
+    }
+
+    private void notifyPartnerSessionStarted(Long userId, AnonymousChatSession session) {
+        AnonymousSessionResponse payload = toSessionResponse(userId, session);
+        messagingTemplate.convertAndSend("/topic/anonymous/invite/" + userId, payload);
     }
 
     private AnonymousSessionResponse toSessionResponse(Long viewerId, AnonymousChatSession s) {

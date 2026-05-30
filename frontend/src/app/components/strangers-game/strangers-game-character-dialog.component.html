@@ -1,0 +1,180 @@
+<div
+  class="sg-dialog-backdrop"
+  *ngIf="open"
+  (click)="onBackdropClick($event)"
+  role="presentation"
+>
+  <div
+    class="sg-dialog"
+    role="dialog"
+    aria-modal="true"
+    [attr.aria-labelledby]="'sg-dialog-title'"
+    (click)="$event.stopPropagation()"
+  >
+    <header class="sg-dialog-header">
+      <div>
+        <p class="sg-dialog-kicker">{{ editMode ? 'Edit your game avatar' : 'Create your game avatar' }}</p>
+        <h2 id="sg-dialog-title" class="sg-dialog-title">Snap-style character</h2>
+        <p class="sg-dialog-sub">
+          Step {{ stepIndex + 1 }} of {{ steps.length }} — {{ stepLabel }}
+          <span class="sg-gender-hint">(Outfits from profile: {{ accountGenderLabel }})</span>
+        </p>
+      </div>
+      <button type="button" class="sg-dialog-close" (click)="close()" aria-label="Close">×</button>
+    </header>
+
+    <div class="sg-dialog-progress" aria-hidden="true">
+      <div class="sg-dialog-progress-fill" [style.width.%]="progressPct"></div>
+    </div>
+
+    <nav class="sg-step-dots" aria-label="Character steps">
+      <button
+        type="button"
+        *ngFor="let s of steps; let i = index"
+        class="sg-step-dot"
+        [class.active]="i === stepIndex"
+        [class.done]="i < stepIndex"
+        (click)="goToStep(i)"
+        [attr.aria-current]="i === stepIndex ? 'step' : null"
+        [attr.aria-label]="'Go to step ' + (i + 1)"
+      ></button>
+    </nav>
+
+    <div class="sg-dialog-body">
+      <aside class="sg-preview-panel">
+        <p class="sg-preview-label">Live preview</p>
+        <app-strangers-game-avatar
+          [skinColor]="skinColor"
+          [shape]="shape"
+          [outfitId]="outfitId"
+          size="lg"
+        ></app-strangers-game-avatar>
+        <p class="sg-preview-name" *ngIf="characterName.trim()">{{ characterName.trim() }}</p>
+      </aside>
+
+      <div class="sg-step-content">
+        <section *ngIf="step === 'skin'" class="sg-step">
+          <h3>Pick skin color</h3>
+          <p class="sg-step-hint">Choose a tone that feels like you — you can change this later.</p>
+          <div class="sg-skin-grid">
+            <button
+              type="button"
+              *ngFor="let tone of skinPresets"
+              class="sg-skin-swatch"
+              [class.selected]="skinColor === tone.hex"
+              [style.background]="tone.hex"
+              (click)="selectSkin(tone.hex)"
+              [attr.aria-label]="tone.label"
+              [attr.aria-pressed]="skinColor === tone.hex"
+            ></button>
+          </div>
+          <label class="sg-custom-color">
+            Custom
+            <input type="color" [(ngModel)]="skinColor" />
+          </label>
+        </section>
+
+        <section *ngIf="step === 'shape'" class="sg-step">
+          <h3>Shape of character</h3>
+          <p class="sg-step-hint">Round, tall, or wide — each changes your cartoon silhouette.</p>
+          <div class="sg-shape-grid">
+            <button
+              type="button"
+              *ngFor="let opt of shapes"
+              class="sg-shape-card"
+              [class.selected]="shape === opt.id"
+              (click)="selectShape(opt.id)"
+            >
+              <app-strangers-game-avatar
+                [skinColor]="skinColor"
+                [shape]="opt.id"
+                [outfitId]="outfitId"
+                size="sm"
+              ></app-strangers-game-avatar>
+              <strong>{{ opt.label }}</strong>
+              <span>{{ opt.description }}</span>
+            </button>
+          </div>
+        </section>
+
+        <section *ngIf="step === 'name'" class="sg-step">
+          <h3>Name your character</h3>
+          <p class="sg-step-hint">This is your game identity — separate from your blog profile name.</p>
+          <input
+            type="text"
+            class="sg-name-input"
+            [(ngModel)]="characterName"
+            maxlength="24"
+            placeholder="e.g. CosmicFox"
+            autocomplete="off"
+          />
+          <p class="sg-char-count">{{ characterName.length }} / 24</p>
+        </section>
+
+        <section *ngIf="step === 'outfit'" class="sg-step">
+          <h3>Choose outfit</h3>
+          <p class="sg-step-hint">
+            Outfits match your account gender when set; otherwise you get the full catalog.
+          </p>
+          <div class="sg-outfit-grid">
+            <button
+              type="button"
+              *ngFor="let o of outfitOptions"
+              class="sg-outfit-card"
+              [class.selected]="outfitId === o.id"
+              (click)="selectOutfit(o.id)"
+            >
+              <app-strangers-game-avatar
+                [skinColor]="skinColor"
+                [shape]="shape"
+                [outfitId]="o.id"
+                size="sm"
+              ></app-strangers-game-avatar>
+              <span>{{ o.label }}</span>
+            </button>
+          </div>
+        </section>
+
+        <section *ngIf="step === 'review'" class="sg-step sg-review">
+          <h3>Almost ready!</h3>
+          <ul class="sg-review-list">
+            <li><span>Skin</span><span class="sg-review-swatch" [style.background]="skinColor"></span></li>
+            <li><span>Shape</span><strong>{{ shape }}</strong></li>
+            <li><span>Name</span><strong>{{ characterName.trim() || '—' }}</strong></li>
+            <li><span>Outfit</span><strong>{{ selectedOutfitLabel }}</strong></li>
+          </ul>
+          <p class="sg-step-hint">
+            Forgot something? Use the dots above or Back to fix skin, shape, name, or outfit.
+          </p>
+        </section>
+
+        <p class="sg-validation" *ngIf="validationError" role="alert">{{ validationError }}</p>
+      </div>
+    </div>
+
+    <footer class="sg-dialog-footer">
+      <button type="button" class="sg-btn ghost" (click)="close()">Cancel</button>
+      <div class="sg-footer-actions">
+        <button type="button" class="sg-btn secondary" (click)="back()" [disabled]="stepIndex === 0">
+          Back
+        </button>
+        <button
+          type="button"
+          class="sg-btn primary"
+          *ngIf="step !== 'review'"
+          (click)="next()"
+        >
+          Next
+        </button>
+        <button
+          type="button"
+          class="sg-btn primary sg-btn-create"
+          *ngIf="step === 'review'"
+          (click)="createCharacter()"
+        >
+          {{ editMode ? 'Save character' : 'Create character' }}
+        </button>
+      </div>
+    </footer>
+  </div>
+</div>

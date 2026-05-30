@@ -6,11 +6,16 @@ import com.blog.model.User;
 import com.blog.repository.PostMentionRepository;
 import com.blog.repository.PostRepository;
 import com.blog.repository.UserRepository;
+import com.blog.moderation.CommentModerationDecision;
+import com.blog.moderation.CommentModerationException;
+import com.blog.moderation.ContentModerationFacade;
+import com.blog.model.ModerationStatus;
 import com.blog.service.NotificationService;
 import com.blog.service.PostService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.ArrayList;
 import java.util.LinkedHashSet;
@@ -24,16 +29,37 @@ public class PostServiceImpl implements PostService {
     private final PostMentionRepository postMentionRepository;
     private final UserRepository userRepository;
     private final NotificationService notificationService;
+    private final ContentModerationFacade contentModerationFacade;
 
     @Autowired
     public PostServiceImpl(PostRepository postRepository,
             PostMentionRepository postMentionRepository,
             UserRepository userRepository,
-            NotificationService notificationService) {
+            NotificationService notificationService,
+            ContentModerationFacade contentModerationFacade) {
         this.postRepository = postRepository;
         this.postMentionRepository = postMentionRepository;
         this.userRepository = userRepository;
         this.notificationService = notificationService;
+        this.contentModerationFacade = contentModerationFacade;
+    }
+
+    @Override
+    public void validatePostContent(Long userId, Post post, MultipartFile mediaFile) {
+        CommentModerationDecision moderation = contentModerationFacade.analyzePostWithMedia(
+                userId,
+                post.getTitle(),
+                post.getContent(),
+                post.getTags(),
+                mediaFile);
+        if (moderation.isBlocked()
+                || moderation.getStatus() == ModerationStatus.WARNING) {
+            throw new CommentModerationException(
+                    "Your post was not published because it violates our community guidelines "
+                            + "(unsafe text or media detected).",
+                    ModerationStatus.BLOCKED,
+                    moderation.getDetectedLabels());
+        }
     }
 
     @Override

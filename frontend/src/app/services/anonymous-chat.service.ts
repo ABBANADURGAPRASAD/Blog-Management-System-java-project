@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
+import { map } from 'rxjs/operators';
 
 export type GenderPreference = 'MALE' | 'FEMALE' | 'ANY';
 
@@ -103,6 +104,19 @@ export class AnonymousChatService {
   pollRandom(userId: number, ticketId: string): Observable<RandomQueueResponse> {
     const params = new HttpParams().set('userId', String(userId)).set('ticketId', ticketId);
     return this.http.get<RandomQueueResponse>(`${this.base}/random/poll`, { params });
+  }
+
+  /** Returns active chat the user was invited to (map finder / random match). */
+  getActiveSession(userId: number): Observable<AnonymousSession | null> {
+    const params = new HttpParams().set('userId', String(userId));
+    return this.http
+      .get<AnonymousSession>(`${this.base}/session/active`, {
+        params,
+        observe: 'response',
+      })
+      .pipe(
+        map((res) => (res.status === 204 || res.body == null ? null : res.body))
+      );
   }
 
   getSession(userId: number, sessionPublicId: string): Observable<AnonymousSession> {

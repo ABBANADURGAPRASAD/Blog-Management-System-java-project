@@ -19,16 +19,19 @@ import {
   MapMarker,
   MapMarkerStatus,
 } from '../../services/anonymous-chat.service';
+import { StrangersGameSectionComponent } from '../strangers-game/strangers-game-section.component';
 
 const FINDER_SPAN_DEG = 12;
 const MAP_POLL_MS = 2200;
+const PENDING_SESSION_POLL_MS = 2000;
+const MESSAGE_POLL_MS = 1500;
 const MOVE_STEP_DEG = 0.00018;
 const NEARBY_AVAILABLE_M = 800;
 
 @Component({
   selector: 'app-random-chat',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterModule],
+  imports: [CommonModule, FormsModule, RouterModule, StrangersGameSectionComponent],
   templateUrl: './random-chat.component.html',
   styleUrls: ['./random-chat.component.css'],
 })
@@ -48,7 +51,15 @@ export class RandomChatComponent implements OnInit, OnDestroy {
   randomHint = '';
   pollHandle: ReturnType<typeof setInterval> | null = null;
   messagePollHandle: ReturnType<typeof setInterval> | null = null;
+  pendingSessionPollHandle: ReturnType<typeof setInterval> | null = null;
   mapPollHandle: ReturnType<typeof setInterval> | null = null;
+
+  /** Badge on Map finder card when someone started a map chat with you. */
+  mapChatNotificationCount = 0;
+  /** Random match: optional badge before auto-join. */
+  randomChatNotificationCount = 0;
+  /** Pending map-finder invite — user must accept (no auto-open). */
+  mapChatInvite: { sessionPublicId: string } | null = null;
 
   showFinder = false;
   mapMarkerList: MapMarker[] = [];
@@ -80,11 +91,13 @@ export class RandomChatComponent implements OnInit, OnDestroy {
   ngOnInit(): void {
     const u = this.auth.getCurrentUser();
     this.currentUserId = u?.id ?? null;
+    this.startPendingSessionPoll();
   }
 
   ngOnDestroy(): void {
     this.stopPoll();
     this.stopMessagePoll();
+    this.stopPendingSessionPoll();
     this.stopMapPoll();
     this.teardownMap();
     this.anonymousApi.disconnectStomp();
@@ -207,7 +220,106 @@ export class RandomChatComponent implements OnInit, OnDestroy {
 
   private startMessagePoll(): void {
     this.stopMessagePoll();
-    this.messagePollHandle = setInterval(() => this.loadMessages(), 2500);
+    this.messagePollHandle = setInterval(() => this.loadMessages(), MESSAGE_POLL_MS);
+  }
+
+  private startPendingSessionPoll(): void {
+    this.stopPendingSessionPoll();
+    if (!this.currentUserId) {
+      return;
+    }
+    this.pollActiveSession();
+    this.pendingSessionPollHandle = setInterval(
+      () => this.pollActiveSession(),
+      PENDING_SESSION_POLL_MS
+    );
+  }
+
+  private stopPendingSessionPoll(): void {
+    if (this.pendingSessionPollHandle) {
+      clearInterval(this.pendingSessionPollHandle);
+      this.pendingSessionPollHandle = null;
+    }
+  }
+
+  private pollActiveSession(): void {
+    if (!this.currentUserId || this.session) {
+      return;
+    }
+    this.anonymousApi.getActiveSession(this.currentUserId).subscribe({
+      next: (active) => {
+        if (!active?.sessionPublicId) {
+          return;
+        }
+        const mode = (active.mode || '').toUpperCase();
+        if (mode === 'MAP_FINDER') {
+          this.showMapChatInvite(active.sessionPublicId);
+          return;
+        }
+        this.randomChatNotificationCount = 1;
+        this.randomHint = 'Random match connected — opening chat…';
+        this.joinIncomingSession(active.sessionPublicId);
+      },
+      error: () => {},
+    });
+  }
+
+  private showMapChatInvite(sessionPublicId: string): void {
+    if (this.mapChatInvite?.sessionPublicId === sessionPublicId) {
+      return;
+    }
+    this.mapChatInvite = { sessionPublicId };
+    this.mapChatNotificationCount = 1;
+  }
+
+  acceptMapChatInvite(): void {
+    if (!this.mapChatInvite) {
+      return;
+    }
+    const sessionPublicId = this.mapChatInvite.sessionPublicId;
+    this.mapChatInvite = null;
+    this.mapChatNotificationCount = 0;
+    this.joinIncomingSession(sessionPublicId);
+  }
+
+  declineMapChatInvite(): void {
+    if (!this.mapChatInvite || !this.currentUserId) {
+      return;
+    }
+    const sessionPublicId = this.mapChatInvite.sessionPublicId;
+    this.mapChatInvite = null;
+    this.mapChatNotificationCount = 0;
+    this.anonymousApi.endSession(this.currentUserId, sessionPublicId).subscribe({
+      next: () => {
+        this.mapHint = 'Chat invite declined.';
+        setTimeout(() => {
+          if (!this.mapChatInvite) {
+            this.mapHint = '';
+          }
+        }, 4000);
+        this.refreshFinderMarkers();
+      },
+      error: () => {
+        this.mapHint = 'Could not decline invite.';
+      },
+    });
+  }
+
+  openFinderForMapInvite(): void {
+    if (!this.showFinder) {
+      this.openFinder();
+    }
+  }
+
+  private joinIncomingSession(sessionPublicId: string): void {
+    this.mapChatInvite = null;
+    this.mapChatNotificationCount = 0;
+    this.randomChatNotificationCount = 0;
+    if (this.showFinder) {
+      this.closeFinder();
+    }
+    this.stopPendingSessionPoll();
+    this.enterSession(sessionPublicId);
   }
 
   private stopMessagePoll(): void {
@@ -234,8 +346,12 @@ export class RandomChatComponent implements OnInit, OnDestroy {
       return;
     }
     this.stopPoll();
+    this.stopPendingSessionPoll();
     this.randomHint = '';
     this.streetViewOpen = false;
+    this.mapChatInvite = null;
+    this.mapChatNotificationCount = 0;
+    this.randomChatNotificationCount = 0;
     this.anonymousApi.getSession(this.currentUserId, sessionPublicId).subscribe({
       next: (s) => {
         this.session = s;
@@ -270,7 +386,12 @@ export class RandomChatComponent implements OnInit, OnDestroy {
           this.messages = [...this.messages, msg];
           this.draftMessage = '';
         },
-        error: () => {},
+        error: (err: HttpErrorResponse) => {
+          const body = err.error as { error?: string } | undefined;
+          if (err.status === 400 && body?.error) {
+            alert(body.error);
+          }
+        },
       });
   }
 
@@ -307,6 +428,7 @@ export class RandomChatComponent implements OnInit, OnDestroy {
         this.session = null;
         this.messages = [];
         this.anonymousApi.disconnectStomp();
+        this.startPendingSessionPoll();
       },
       error: () => {},
     });
@@ -409,6 +531,7 @@ export class RandomChatComponent implements OnInit, OnDestroy {
           const markers = normalizeMarkers(raw);
           this.mapMarkerList = markers;
           this.syncLeafletMarkers(markers);
+          this.refreshSelectedMarkerFromList();
         },
         error: () => (this.mapMarkerList = []),
       });
@@ -416,14 +539,15 @@ export class RandomChatComponent implements OnInit, OnDestroy {
 
   /** List / map row: select and open street view for others. */
   onMarkerRowClick(m: MapMarker): void {
-    this.selectMarker(m);
-    if (!m.self) {
-      this.openFaceToFace(m);
+    const marker = this.markerFromList(m);
+    this.selectMarker(marker);
+    if (!marker.self) {
+      this.openFaceToFace(marker);
     }
   }
 
   selectMarker(m: MapMarker): void {
-    this.selectedMarker = m;
+    this.selectedMarker = this.markerFromList(m);
     if (m.self) {
       this.streetViewOpen = false;
       this.streetTarget = null;
@@ -434,9 +558,36 @@ export class RandomChatComponent implements OnInit, OnDestroy {
     if (m.self) {
       return;
     }
-    this.streetTarget = m;
+    const marker = this.markerFromList(m);
+    this.selectedMarker = marker;
+    this.streetTarget = marker;
     this.streetViewOpen = true;
     this.mapTool = 'street';
+  }
+
+  /** Keep selection in sync with latest poll (status AVAILABLE / IN_CHAT). */
+  private markerFromList(m: MapMarker): MapMarker {
+    const fresh = this.mapMarkerList.find((x) => x.markerPublicId === m.markerPublicId);
+    return fresh ? { ...fresh } : m;
+  }
+
+  private refreshSelectedMarkerFromList(): void {
+    if (this.selectedMarker) {
+      const fresh = this.mapMarkerList.find(
+        (x) => x.markerPublicId === this.selectedMarker!.markerPublicId
+      );
+      if (fresh) {
+        this.selectedMarker = { ...fresh };
+      }
+    }
+    if (this.streetTarget) {
+      const fresh = this.mapMarkerList.find(
+        (x) => x.markerPublicId === this.streetTarget!.markerPublicId
+      );
+      if (fresh) {
+        this.streetTarget = { ...fresh };
+      }
+    }
   }
 
   clearSelectedMarker(): void {
@@ -482,10 +633,20 @@ export class RandomChatComponent implements OnInit, OnDestroy {
     if (tool === 'street') {
       if (this.selectedMarker && !this.selectedMarker.self) {
         this.openFaceToFace(this.selectedMarker);
-      } else if (!this.streetTarget) {
-        this.mapHint = 'Tap another user on the map or in the list for street view.';
-        setTimeout(() => (this.mapHint = ''), 5000);
+        return;
       }
+      if (this.streetTarget && !this.streetTarget.self) {
+        this.streetViewOpen = true;
+        this.selectedMarker = this.markerFromList(this.streetTarget);
+        return;
+      }
+      const nearby = this.mapMarkerList.find((m) => !m.self && m.status === 'AVAILABLE');
+      if (nearby) {
+        this.openFaceToFace(nearby);
+        return;
+      }
+      this.mapHint = 'Tap a green (available) user on the map or in the list for street view.';
+      setTimeout(() => (this.mapHint = ''), 5000);
     }
   }
 
@@ -499,8 +660,17 @@ export class RandomChatComponent implements OnInit, OnDestroy {
     if (!this.currentUserId) {
       return;
     }
-    const target = this.selectedMarker ?? this.streetTarget;
+    let target = this.selectedMarker ?? this.streetTarget;
+    if (target) {
+      target = this.markerFromList(target);
+      this.selectedMarker = target;
+      if (this.streetTarget?.markerPublicId === target.markerPublicId) {
+        this.streetTarget = target;
+      }
+    }
     if (!target || target.self) {
+      this.mapHint = 'Select an available user on the map or list first.';
+      setTimeout(() => (this.mapHint = ''), 4000);
       return;
     }
     if (target.status === 'BUSY') {
@@ -513,6 +683,7 @@ export class RandomChatComponent implements OnInit, OnDestroy {
     }
     this.anonymousApi.startMapChat(this.currentUserId, target.markerPublicId).subscribe({
       next: (s) => {
+        this.stopPendingSessionPoll();
         this.session = s;
         this.closeFinder();
         this.loadMessages();
@@ -626,7 +797,9 @@ export class RandomChatComponent implements OnInit, OnDestroy {
         mk.on('click', (ev: any) => {
           L.DomEvent.stopPropagation(ev);
           this.zone.run(() => {
-            const cur = this.mapMarkerList.find((x) => x.markerPublicId === token) ?? m;
+            const cur = this.markerFromList(
+              this.mapMarkerList.find((x) => x.markerPublicId === token) ?? m
+            );
             this.selectMarker(cur);
             if (!cur.self) {
               this.openFaceToFace(cur);

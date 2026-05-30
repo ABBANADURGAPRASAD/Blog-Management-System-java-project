@@ -1,6 +1,7 @@
 package com.blog.controller;
 
 import com.blog.model.dto.*;
+import com.blog.moderation.CommentModerationException;
 import com.blog.service.AnonymousChatService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -80,6 +81,13 @@ public class AnonymousChatController {
         }
     }
 
+    @GetMapping("/session/active")
+    public ResponseEntity<?> getActiveSession(@RequestParam Long userId) {
+        return anonymousChatService.getActiveSession(userId)
+                .map(ResponseEntity::ok)
+                .orElseGet(() -> ResponseEntity.noContent().build());
+    }
+
     @GetMapping("/session/{sessionPublicId}")
     public ResponseEntity<?> getSession(@RequestParam Long userId, @PathVariable String sessionPublicId) {
         try {
@@ -105,6 +113,8 @@ public class AnonymousChatController {
             @RequestBody SendAnonymousMessageRequest body) {
         try {
             return ResponseEntity.ok(anonymousChatService.sendMessage(userId, sessionPublicId, body));
+        } catch (CommentModerationException e) {
+            throw e;
         } catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
         }

@@ -1,9 +1,9 @@
-from typing import Any
+from typing import Any, Optional
 from uuid import uuid4
 
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, File, Form, UploadFile
 
-from app.core.moderation_runner import run_moderation
+from app.core.moderation_runner import run_media_moderation, run_moderation
 from app.core.security import verify_internal_token
 from app.models.schemas import (
     AnalyzeRequest,
@@ -38,6 +38,31 @@ async def moderate_analyze(
     _: dict = Depends(verify_internal_token),
 ) -> ModerationResult:
     return await run_moderation(body.content_type, body.payload)
+
+
+@router.post("/media", response_model=ModerationResult)
+async def moderate_media(
+    file: UploadFile = File(...),
+    content_type: ContentType = Form(ContentType.POST),
+    text: Optional[str] = Form(None),
+    user_name: Optional[str] = Form(None),
+    language_hint: Optional[str] = Form(None),
+    _: dict = Depends(verify_internal_token),
+) -> ModerationResult:
+    """
+    Multipart media check for post create (image/video).
+    CNN NSFW + OCR/RNN on embedded text in frames.
+    """
+    data = await file.read()
+    mime = file.content_type or "application/octet-stream"
+    return await run_media_moderation(
+        content_type,
+        file_bytes=data,
+        mime_type=mime,
+        text=text,
+        user_name=user_name,
+        language_hint=language_hint,
+    )
 
 
 @router.post("/batch")

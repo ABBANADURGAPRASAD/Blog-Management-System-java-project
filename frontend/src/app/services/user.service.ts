@@ -43,6 +43,7 @@ export interface User {
   profilePic?: string;
   bannerPic?: string;
   role?: string;
+  gender?: 'MALE' | 'FEMALE' | 'ANY' | string;
   postsCount?: number;
   commentsCount?: number;
   followersCount?: number;

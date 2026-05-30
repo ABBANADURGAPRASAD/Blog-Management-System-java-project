@@ -5,9 +5,9 @@ import com.blog.model.CommentMention;
 import com.blog.model.ModerationStatus;
 import com.blog.model.Post;
 import com.blog.model.User;
-import com.blog.moderation.CommentContentModerator;
 import com.blog.moderation.CommentModerationDecision;
 import com.blog.moderation.CommentModerationException;
+import com.blog.moderation.ContentModerationFacade;
 import com.blog.moderation.ModerationEmailService;
 import com.blog.repository.CommentMentionRepository;
 import com.blog.repository.CommentRepository;
@@ -34,7 +34,7 @@ public class CommentServiceImpl implements CommentService {
     private final PostRepository postRepository;
     private final UserRepository userRepository;
     private final NotificationService notificationService;
-    private final CommentContentModerator commentContentModerator;
+    private final ContentModerationFacade contentModerationFacade;
     private final ModerationEmailService moderationEmailService;
 
     @Autowired
@@ -43,14 +43,14 @@ public class CommentServiceImpl implements CommentService {
             PostRepository postRepository,
             UserRepository userRepository,
             NotificationService notificationService,
-            CommentContentModerator commentContentModerator,
+            ContentModerationFacade contentModerationFacade,
             ModerationEmailService moderationEmailService) {
         this.commentRepository = commentRepository;
         this.commentMentionRepository = commentMentionRepository;
         this.postRepository = postRepository;
         this.userRepository = userRepository;
         this.notificationService = notificationService;
-        this.commentContentModerator = commentContentModerator;
+        this.contentModerationFacade = contentModerationFacade;
         this.moderationEmailService = moderationEmailService;
     }
 
@@ -62,7 +62,8 @@ public class CommentServiceImpl implements CommentService {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
-        CommentModerationDecision decision = commentContentModerator.analyze(content);
+        CommentModerationDecision decision = contentModerationFacade.analyzeComment(
+                content, user.getUserName());
 
         if (decision.isBlocked()) {
             moderationEmailService.sendModerationAlerts(
