@@ -54,10 +54,22 @@
           </div>
 
           <div class="post-content">
-            <div class="post-image-container">
-              <img *ngIf="post.media || post.imageUrl" [src]="post.media || post.imageUrl" [alt]="post.title"
-              class="post-image" onerror="this.src='assets/images/image.png'" />
-
+            <div class="post-image-container" *ngIf="postMediaUrl(post)">
+              <video
+                *ngIf="isVideoPost(post)"
+                class="post-video"
+                [src]="postMediaUrl(post)!"
+                controls
+                playsinline
+                preload="metadata"
+              ></video>
+              <img
+                *ngIf="isImagePost(post)"
+                [src]="postMediaUrl(post)!"
+                [alt]="post.title"
+                class="post-image"
+                onerror="this.src='assets/images/image.png'"
+              />
             </div>
 
             <!-- Post Actions -->

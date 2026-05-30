@@ -8,6 +8,8 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
+import java.text.Normalizer;
+import java.util.Locale;
 import java.util.UUID;
 
 @Service
@@ -26,10 +28,9 @@ public class FileStorageService {
     }
 
     public String storeFile(MultipartFile file) {
-        // Normalize file name
         String originalFileName = file.getOriginalFilename();
-        // Generate a unique file name to avoid collisions
-        String fileName = UUID.randomUUID().toString() + "_" + originalFileName;
+        String safeName = sanitizeStoredFileName(originalFileName);
+        String fileName = UUID.randomUUID().toString() + "_" + safeName;
 
         try {
             // Check if the file's name contains invalid characters
@@ -90,10 +91,64 @@ public class FileStorageService {
         if (i <= 0 || i >= originalFileName.length() - 1) {
             return ".jpg";
         }
-        String ext = originalFileName.substring(i);
+        String ext = originalFileName.substring(i).toLowerCase(Locale.ROOT);
         if (ext.length() > 8) {
             return ".jpg";
         }
         return ext;
+    }
+
+    /**
+     * ASCII-safe stored name (Tomcat headers and URLs cannot use characters like U+202F in filenames).
+     */
+    static String sanitizeStoredFileName(String originalFileName) {
+        if (originalFileName == null || originalFileName.isBlank()) {
+            return "file.bin";
+        }
+        String ext = extensionOf(originalFileName);
+        String base = originalFileName;
+        int dot = originalFileName.lastIndexOf('.');
+        if (dot > 0) {
+            base = originalFileName.substring(0, dot);
+        }
+        base = Normalizer.normalize(base, Normalizer.Form.NFKD);
+        base = base.replaceAll("\\p{M}", "");
+        base = base.replaceAll("[^a-zA-Z0-9._-]", "_");
+        base = base.replaceAll("_+", "_");
+        base = base.replaceAll("^_+|_+$", "");
+        if (base.isBlank()) {
+            base = "file";
+        }
+        if (base.length() > 80) {
+            base = base.substring(0, 80);
+        }
+        return base + ext;
+    }
+
+    public static boolean isVideoExtension(String fileName) {
+        if (fileName == null) {
+            return false;
+        }
+        String lower = fileName.toLowerCase(Locale.ROOT);
+        return lower.endsWith(".mp4")
+                || lower.endsWith(".mov")
+                || lower.endsWith(".webm")
+                || lower.endsWith(".m4v")
+                || lower.endsWith(".avi")
+                || lower.endsWith(".mkv")
+                || lower.endsWith(".ogg");
+    }
+
+    public static boolean isImageExtension(String fileName) {
+        if (fileName == null) {
+            return false;
+        }
+        String lower = fileName.toLowerCase(Locale.ROOT);
+        return lower.endsWith(".jpg")
+                || lower.endsWith(".jpeg")
+                || lower.endsWith(".png")
+                || lower.endsWith(".gif")
+                || lower.endsWith(".webp")
+                || lower.endsWith(".bmp");
     }
 }

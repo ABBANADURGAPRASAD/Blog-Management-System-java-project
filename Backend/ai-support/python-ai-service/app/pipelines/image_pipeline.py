@@ -51,6 +51,13 @@ def analyze_image_bytes(data: bytes, *, user_name: Optional[str] = None) -> list
     except Exception:
         return [LabelScore(label="NSFW", score=0.5, model="image-decode-error-v1")]
 
+    # Downscale before CNN/OCR to keep post uploads responsive
+    max_edge = 512
+    w, h = image.size
+    if max(w, h) > max_edge:
+        scale = max_edge / float(max(w, h))
+        image = image.resize((int(w * scale), int(h * scale)), Image.Resampling.BILINEAR)
+
     nsfw_score, model_id = cnn_nsfw_score(image)
     gesture_score = offensive_gesture_score(image)
     combined_visual = max(nsfw_score, gesture_score)

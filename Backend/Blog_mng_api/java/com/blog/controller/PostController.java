@@ -58,16 +58,9 @@ public class PostController {
                 String fileName = fileStorageService.storeFile(file);
                 String fileUrl = "/uploads/" + fileName;
 
-                String mediaType = "unknown";
-                if (contentType != null) {
-                    if (contentType.startsWith("image")) {
-                        mediaType = "image";
-                        post.setImageUrl(fileUrl);
-                    } else if (contentType.startsWith("video")) {
-                        mediaType = "video";
-                    } else if (contentType.equals("application/pdf")) {
-                        mediaType = "pdf";
-                    }
+                String mediaType = resolveMediaType(contentType, fileName);
+                if ("image".equals(mediaType)) {
+                    post.setImageUrl(fileUrl);
                 }
 
                 post.setMediaUrl(fileUrl);
@@ -84,5 +77,29 @@ public class PostController {
     @GetMapping("/popular")
     public List<Post> getPopularPosts() {
         return postService.getPopularPosts();
+    }
+
+    private static String resolveMediaType(String contentType, String storedFileName) {
+        if (contentType != null) {
+            if (contentType.startsWith("image/")) {
+                return "image";
+            }
+            if (contentType.startsWith("video/")) {
+                return "video";
+            }
+            if ("application/pdf".equals(contentType)) {
+                return "pdf";
+            }
+        }
+        if (com.blog.service.FileStorageService.isVideoExtension(storedFileName)) {
+            return "video";
+        }
+        if (com.blog.service.FileStorageService.isImageExtension(storedFileName)) {
+            return "image";
+        }
+        if (storedFileName != null && storedFileName.toLowerCase().endsWith(".pdf")) {
+            return "pdf";
+        }
+        return "unknown";
     }
 }

@@ -183,10 +183,12 @@ body {
   border: 2px solid rgba(255, 255, 255, 0.3);
 }
 
-.chat-header-btn {
+/* Unified header icon buttons (chat + notifications) */
+.header-icon-btn {
   position: relative;
+  flex-shrink: 0;
   background: rgba(255, 255, 255, 0.08);
-  border: 1px solid rgba(255, 255, 255, 0.25);
+  border: 1px solid rgba(255, 255, 255, 0.28);
   color: #fff;
   width: 42px;
   height: 42px;
@@ -196,20 +198,34 @@ body {
   justify-content: center;
   cursor: pointer;
   padding: 0;
-  transition: background 0.2s, border-color 0.2s;
+  transition:
+    background 0.2s ease,
+    border-color 0.2s ease,
+    box-shadow 0.2s ease,
+    transform 0.15s ease;
 }
 
-.chat-header-btn:hover {
-  background: rgba(74, 144, 226, 0.35);
-  border-color: rgba(74, 144, 226, 0.65);
+.header-icon-btn:hover {
+  background: rgba(74, 144, 226, 0.32);
+  border-color: rgba(110, 181, 255, 0.75);
+  box-shadow: 0 0 0 1px rgba(74, 144, 226, 0.25);
 }
 
-.chat-header-icon {
+.header-icon-btn--active,
+.header-icon-btn:focus-visible {
+  background: rgba(74, 144, 226, 0.42);
+  border-color: rgba(110, 181, 255, 0.9);
+  box-shadow: 0 0 0 2px rgba(74, 144, 226, 0.35);
+  outline: none;
+}
+
+.header-nav-icon {
   width: 22px;
   height: 22px;
+  display: block;
 }
 
-.chat-unread-badge {
+.header-icon-badge {
   position: absolute;
   top: -2px;
   right: -2px;
@@ -224,6 +240,7 @@ body {
   line-height: 18px;
   text-align: center;
   box-shadow: 0 1px 4px rgba(0, 0, 0, 0.35);
+  pointer-events: none;
 }
 
 .new-post-btn {

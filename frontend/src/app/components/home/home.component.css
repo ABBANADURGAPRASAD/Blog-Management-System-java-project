@@ -111,7 +111,8 @@
   line-height: 0;
 }
 
-.post-image-container .post-image {
+.post-image-container .post-image,
+.post-image-container .post-video {
   width: 100%;
   max-height: min(520px, 72vh);
   height: auto;

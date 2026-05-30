@@ -19,7 +19,14 @@ def extract_text_from_image(image: Image.Image) -> str:
     try:
         import pytesseract  # type: ignore
 
-        text = pytesseract.image_to_string(image, lang="eng")
+        ocr_img = image
+        w, h = image.size
+        if max(w, h) > 800:
+            scale = 800 / float(max(w, h))
+            ocr_img = image.resize(
+                (int(w * scale), int(h * scale)), Image.Resampling.BILINEAR
+            )
+        text = pytesseract.image_to_string(ocr_img, lang="eng", timeout=8)
         return (text or "").strip()
     except Exception:
         pass

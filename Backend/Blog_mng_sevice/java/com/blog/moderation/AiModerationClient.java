@@ -59,9 +59,9 @@ public class AiModerationClient {
         }
         try {
             String body = objectMapper.writeValueAsString(java.util.Map.of(
-                    "contentType", contentType,
+                    "content_type", contentType,
                     "text", text != null ? text : "",
-                    "userName", userName != null ? userName : ""));
+                    "user_name", userName != null ? userName : ""));
 
             HttpRequest request = HttpRequest.newBuilder()
                     .uri(URI.create(baseUrl + "/api/v1/moderate/sync"))

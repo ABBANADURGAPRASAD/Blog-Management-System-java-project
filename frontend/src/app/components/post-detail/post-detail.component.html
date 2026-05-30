@@ -10,7 +10,20 @@
             <span>{{ post.date }}</span>
         </div>
 
-        <img *ngIf="post.media" [src]="post.media" class="main-image" onerror="this.src='assets/images/image.png'">
+        <video
+            *ngIf="post && isVideoPost(post) && postMediaUrl(post)"
+            class="main-video"
+            [src]="postMediaUrl(post)!"
+            controls
+            playsinline
+            preload="metadata"
+        ></video>
+        <img
+            *ngIf="post && isImagePost(post) && postMediaUrl(post)"
+            [src]="postMediaUrl(post)!"
+            class="main-image"
+            onerror="this.src='assets/images/image.png'"
+        >
 
         <div class="body">
             <p>{{ post.content }}</p>

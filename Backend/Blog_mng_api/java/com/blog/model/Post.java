@@ -38,7 +38,8 @@ public class Post {
 
     private String mediaUrl;
 
-    private String mediaType; // "image", "video", "pdf"
+    /** Media kind: {@code image}, {@code video}, {@code pdf}, or {@code unknown}. */
+    private String mediaType;
 
     private String category;
 

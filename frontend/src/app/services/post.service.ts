@@ -26,6 +26,33 @@ export interface Post {
   isLiked?: boolean;
 }
 
+/** Resolved media URL for display (proxy-relative paths work in dev). */
+export function postMediaUrl(post: Post): string | null {
+  const url = post.mediaUrl || post.imageUrl || post.media;
+  return url && String(url).trim() !== '' ? String(url).trim() : null;
+}
+
+export function isVideoPost(post: Post): boolean {
+  const type = (post.mediaType || '').toLowerCase();
+  if (type === 'video') {
+    return true;
+  }
+  const url = (post.mediaUrl || post.media || '').toLowerCase();
+  return /\.(mp4|webm|mov|m4v|avi|mkv|ogg)(\?|$)/i.test(url);
+}
+
+export function isImagePost(post: Post): boolean {
+  const type = (post.mediaType || '').toLowerCase();
+  if (type === 'image') {
+    return true;
+  }
+  if (isVideoPost(post)) {
+    return false;
+  }
+  const url = (post.mediaUrl || post.imageUrl || post.media || '').toLowerCase();
+  return /\.(jpe?g|png|gif|webp|bmp)(\?|$)/i.test(url) || !!post.imageUrl;
+}
+
 export interface Comment {
   id?: number;
   content: string;

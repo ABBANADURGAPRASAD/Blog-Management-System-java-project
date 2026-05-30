@@ -71,6 +71,14 @@ def cnn_nsfw_score(image: Image.Image) -> tuple[float, str]:
         except Exception:
             pass
 
+    # Pure-NumPy CNN is very slow at 224²; use fast heuristics unless ONNX is configured.
+    if os.environ.get("NSFW_USE_NUMPY_CNN", "false").lower() not in ("1", "true", "yes"):
+        gesture = offensive_gesture_score(image)
+        skin_h = _skin_exposure_heuristic(image)
+        combined = min(0.99, max(gesture, skin_h, 0.05))
+        model = "heuristic-fast-v1+gesture" if gesture >= 0.7 else "heuristic-fast-v1"
+        return combined, model
+
     x = _preprocess(image)
     w = _cnn_weights()
     h = _relu(_conv2d(x, w["c1"]))

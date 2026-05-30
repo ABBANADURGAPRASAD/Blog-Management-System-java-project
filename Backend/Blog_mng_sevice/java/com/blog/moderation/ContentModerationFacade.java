@@ -2,6 +2,9 @@ package com.blog.moderation;
 
 import com.blog.model.ModerationStatus;
 import com.blog.repository.UserRepository;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -13,9 +16,14 @@ import java.util.List;
 @Component
 public class ContentModerationFacade {
 
+    private static final Logger log = LoggerFactory.getLogger(ContentModerationFacade.class);
+
     private final CommentContentModerator localModerator;
     private final AiModerationClient aiModerationClient;
     private final UserRepository userRepository;
+
+    @Value("${app.moderation.fail-closed-on-ai-unavailable:false}")
+    private boolean failClosedOnAiUnavailable;
 
     public ContentModerationFacade(
             CommentContentModerator localModerator,
@@ -61,13 +69,13 @@ public class ContentModerationFacade {
         }
 
         if (!aiModerationClient.isEnabled()) {
-            return aiUnavailableDecision();
+            return onAiUnavailableForMedia(textDecision);
         }
 
         CommentModerationDecision media = aiModerationClient.analyzeMedia(
                 "POST", file, fullText, userName);
         if (media == null) {
-            return aiUnavailableDecision();
+            return onAiUnavailableForMedia(textDecision);
         }
         if (media.isBlocked()) {
             return media;
@@ -90,6 +98,16 @@ public class ContentModerationFacade {
             return textDecision.getConfidence() >= mediaDecision.getConfidence() ? textDecision : mediaDecision;
         }
         return textDecision.getConfidence() >= mediaDecision.getConfidence() ? textDecision : mediaDecision;
+    }
+
+    private CommentModerationDecision onAiUnavailableForMedia(CommentModerationDecision textDecision) {
+        if (failClosedOnAiUnavailable) {
+            return aiUnavailableDecision();
+        }
+        log.warn(
+                "AI media moderation unavailable; allowing post based on local text rules only "
+                        + "(set app.moderation.fail-closed-on-ai-unavailable=true to block).");
+        return textDecision;
     }
 
     private static CommentModerationDecision aiUnavailableDecision() {

@@ -52,8 +52,7 @@ public class PostServiceImpl implements PostService {
                 post.getContent(),
                 post.getTags(),
                 mediaFile);
-        if (moderation.isBlocked()
-                || moderation.getStatus() == ModerationStatus.WARNING) {
+        if (moderation.isBlocked()) {
             throw new CommentModerationException(
                     "Your post was not published because it violates our community guidelines "
                             + "(unsafe text or media detected).",

@@ -67,10 +67,12 @@ class ModerationResult(BaseModel):
 
 
 class SyncModerationRequest(BaseModel):
-    content_type: ContentType
+    model_config = ConfigDict(populate_by_name=True)
+
+    content_type: ContentType = Field(alias="contentType")
     text: str
-    user_name: Optional[str] = None
-    language_hint: Optional[str] = None
+    user_name: Optional[str] = Field(None, alias="userName")
+    language_hint: Optional[str] = Field(None, alias="languageHint")
 
 
 class MediaModerationRequest(BaseModel):

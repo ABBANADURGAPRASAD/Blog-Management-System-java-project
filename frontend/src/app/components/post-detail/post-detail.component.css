@@ -14,12 +14,15 @@
     margin-bottom: 2rem;
 }
 
-.main-image {
+.main-image,
+.main-video {
     width: 100%;
     max-height: 500px;
-    object-fit: cover;
+    object-fit: contain;
     border-radius: 8px;
     margin-bottom: 2rem;
+    display: block;
+    background: #111;
 }
 
 .body {

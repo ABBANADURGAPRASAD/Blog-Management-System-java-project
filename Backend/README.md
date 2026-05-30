@@ -209,7 +209,7 @@ Key properties in `application.properties`:
 | `spring.mail.*` | SMTP |
 | `spring.kafka.bootstrap-servers` | Kafka broker |
 | `app.kafka.publish-enabled` | Chat Kafka on/off |
-| `spring.servlet.multipart.max-file-size` | Upload limit (10MB) |
+| `spring.servlet.multipart.max-file-size` | Upload limit (50MB per file, 55MB request) |
 | `jwt.secret.encrypted` | Token signing (with `APP_SECRET_KEY`) |
 
 ---

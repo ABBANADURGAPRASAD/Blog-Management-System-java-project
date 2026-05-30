@@ -2,7 +2,14 @@ import { Component, ElementRef, OnInit, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
-import { PostService, Post, Comment } from '../../services/post.service';
+import {
+  PostService,
+  Post,
+  Comment,
+  postMediaUrl,
+  isVideoPost,
+  isImagePost,
+} from '../../services/post.service';
 import { AuthService } from '../../services/auth.service';
 import { User, UserService } from 'src/app/services/user.service';
 import { FollowersAndFollowingService } from 'src/app/services/followers-and-following.service';
@@ -111,14 +118,16 @@ export class HomeComponent implements OnInit {
     });
   }
 
+  postMediaUrl = postMediaUrl;
+  isVideoPost = isVideoPost;
+  isImagePost = isImagePost;
+
   transformPosts(posts: Post[]): Post[] {
-    console.log('Transforming posts:', posts);
     return posts.map(post => {
-      const media = post.mediaUrl || post.imageUrl || post.media;
-      console.log(`Post ${post.id} media:`, media);
+      const media = postMediaUrl(post);
       return {
         ...post,
-        media: media,
+        media: media ?? undefined,
         author: post.user?.fullName || post.author || 'Anonymous',
         authorPic: post.user?.profileImageUrl || post.authorPic,
         date: this.formatDate(post.createdAt || post.date),

@@ -1,7 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, RouterModule } from '@angular/router';
-import { PostService, Post, Comment } from '../../services/post.service'; // Adjust path if needed
+import { PostService, Post, postMediaUrl, isVideoPost, isImagePost } from '../../services/post.service';
 import { AuthService } from '../../services/auth.service';
 
 @Component({
@@ -12,6 +12,10 @@ import { AuthService } from '../../services/auth.service';
     styleUrls: ['./post-detail.component.css']
 })
 export class PostDetailComponent implements OnInit {
+    postMediaUrl = postMediaUrl;
+    isVideoPost = isVideoPost;
+    isImagePost = isImagePost;
+
     post: Post | null = null;
     isLoading = true;
     error = '';
@@ -43,8 +47,7 @@ export class PostDetailComponent implements OnInit {
             next: (post) => {
                 this.post = {
                     ...post,
-                    // Apply same transformations as Home if needed, simplified here
-                    media: post.imageUrl || post.media,
+                    media: postMediaUrl(post) ?? undefined,
                     author: post.user?.fullName || post.author || 'Anonymous',
                     authorPic: post.user?.profileImageUrl || post.authorPic,
                     likesCount: post.likes?.length || post.likesCount || 0,
