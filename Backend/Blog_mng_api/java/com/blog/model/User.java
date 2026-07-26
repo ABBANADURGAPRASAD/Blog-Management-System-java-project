@@ -39,6 +39,15 @@ public class User {
 
     private String phoneNumber;
 
+    /** Country name for account security / location. */
+    private String country;
+
+    /** State / region name. */
+    private String state;
+
+    /** Village or town name. */
+    private String town;
+
     private String twitterUrl;
 
     private String linkedinUrl;

@@ -157,33 +157,10 @@ body {
 .header-right {
   display: flex;
   align-items: center;
-  gap: 20px;
+  gap: 10px;
 }
 
-.anon-header-link {
-  color: #fff;
-  font-weight: 600;
-  font-size: 14px;
-  text-decoration: none;
-  padding: 6px 12px;
-  border-radius: 999px;
-  background: rgba(74, 144, 226, 0.35);
-  border: 1px solid rgba(255, 255, 255, 0.35);
-}
-
-.anon-header-link:hover {
-  background: rgba(74, 144, 226, 0.55);
-}
-
-.user-profile-pic {
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
-  cursor: pointer;
-  border: 2px solid rgba(255, 255, 255, 0.3);
-}
-
-/* Unified header icon buttons (chat + notifications) */
+/* Unified header icon buttons — same stroke theme for all actions */
 .header-icon-btn {
   position: relative;
   flex-shrink: 0;
@@ -198,17 +175,19 @@ body {
   justify-content: center;
   cursor: pointer;
   padding: 0;
+  text-decoration: none;
+  box-sizing: border-box;
   transition:
     background 0.2s ease,
     border-color 0.2s ease,
-    box-shadow 0.2s ease,
-    transform 0.15s ease;
+    box-shadow 0.2s ease;
 }
 
 .header-icon-btn:hover {
   background: rgba(74, 144, 226, 0.32);
   border-color: rgba(110, 181, 255, 0.75);
   box-shadow: 0 0 0 1px rgba(74, 144, 226, 0.25);
+  color: #fff;
 }
 
 .header-icon-btn--active,
@@ -217,6 +196,7 @@ body {
   border-color: rgba(110, 181, 255, 0.9);
   box-shadow: 0 0 0 2px rgba(74, 144, 226, 0.35);
   outline: none;
+  color: #fff;
 }
 
 .header-nav-icon {
@@ -243,24 +223,8 @@ body {
   pointer-events: none;
 }
 
-.new-post-btn {
-  background: #4A90E2;
-  color: white;
-  border: none;
-  padding: 10px 20px;
-  border-radius: 20px;
-  cursor: pointer;
-  font-weight: 600;
-  transition: background 0.3s;
-}
-
-.new-post-btn:hover {
-  background: #357ABD;
-}
-
 .login-btn,
-.register-btn,
-.logout-btn {
+.register-btn {
   background: transparent;
   color: white;
   border: 1px solid rgba(255, 255, 255, 0.3);
@@ -276,16 +240,6 @@ body {
 .register-btn:hover {
   background: rgba(255, 255, 255, 0.1);
   border-color: rgba(255, 255, 255, 0.5);
-}
-
-.logout-btn {
-  background: rgba(255, 68, 68, 0.2);
-  border-color: rgba(255, 68, 68, 0.5);
-}
-
-.logout-btn:hover {
-  background: rgba(255, 68, 68, 0.3);
-  border-color: rgba(255, 68, 68, 0.7);
 }
 
 /* Main Container */

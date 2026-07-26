@@ -2,16 +2,36 @@ export type StrangerCharacterShape = 'ROUND' | 'TALL' | 'WIDE';
 
 export type AccountGender = 'MALE' | 'FEMALE' | 'ANY' | string | null | undefined;
 
+/** Visual silhouette / gear kit for the SVG avatar renderer. */
+export type OutfitLook =
+  | 'tee'
+  | 'hoodie'
+  | 'sport'
+  | 'dress'
+  | 'sweater'
+  | 'jacket'
+  | 'tactical'
+  | 'tracksuit'
+  | 'blazer'
+  | 'street-cap';
+
+export type HairStyle = 'short' | 'swept' | 'buzz' | 'ponytail' | 'wavy' | 'bun';
+
 export interface StrangerOutfitOption {
   id: string;
   label: string;
-  /** Top / shirt color */
   topColor: string;
-  /** Bottom / pants color */
   bottomColor: string;
-  /** Accent (shoes, trim) */
   accentColor: string;
   genders: ('MALE' | 'FEMALE' | 'NEUTRAL')[];
+  look: OutfitLook;
+  hair: HairStyle;
+  accessories?: {
+    glasses?: boolean;
+    cap?: boolean;
+    vest?: boolean;
+    gloves?: boolean;
+  };
 }
 
 export interface StrangersGameCharacter {
@@ -53,6 +73,8 @@ export const OUTFIT_CATALOG: StrangerOutfitOption[] = [
     bottomColor: '#2C3E50',
     accentColor: '#FFFFFF',
     genders: ['MALE', 'NEUTRAL'],
+    look: 'tee',
+    hair: 'swept',
   },
   {
     id: 'hoodie-m',
@@ -61,6 +83,8 @@ export const OUTFIT_CATALOG: StrangerOutfitOption[] = [
     bottomColor: '#1A1A2E',
     accentColor: '#FDCB6E',
     genders: ['MALE', 'NEUTRAL'],
+    look: 'hoodie',
+    hair: 'short',
   },
   {
     id: 'sport-m',
@@ -69,6 +93,41 @@ export const OUTFIT_CATALOG: StrangerOutfitOption[] = [
     bottomColor: '#2D3436',
     accentColor: '#FFEAA7',
     genders: ['MALE', 'NEUTRAL'],
+    look: 'sport',
+    hair: 'buzz',
+  },
+  {
+    id: 'tracksuit-m',
+    label: 'Track suit',
+    topColor: '#2d3436',
+    bottomColor: '#b2bec3',
+    accentColor: '#ffffff',
+    genders: ['MALE', 'NEUTRAL'],
+    look: 'tracksuit',
+    hair: 'buzz',
+    accessories: { glasses: true },
+  },
+  {
+    id: 'blazer-m',
+    label: 'City blazer',
+    topColor: '#dfe6e9',
+    bottomColor: '#2d3436',
+    accentColor: '#636e72',
+    genders: ['MALE', 'NEUTRAL'],
+    look: 'blazer',
+    hair: 'swept',
+    accessories: { glasses: true },
+  },
+  {
+    id: 'tactical-m',
+    label: 'Tactical street',
+    topColor: '#636e72',
+    bottomColor: '#2d3436',
+    accentColor: '#d63031',
+    genders: ['MALE', 'NEUTRAL'],
+    look: 'tactical',
+    hair: 'short',
+    accessories: { vest: true, gloves: true, glasses: true },
   },
   {
     id: 'dress-f',
@@ -77,6 +136,8 @@ export const OUTFIT_CATALOG: StrangerOutfitOption[] = [
     bottomColor: '#FD79A8',
     accentColor: '#E84393',
     genders: ['FEMALE', 'NEUTRAL'],
+    look: 'dress',
+    hair: 'wavy',
   },
   {
     id: 'cozy-f',
@@ -85,6 +146,8 @@ export const OUTFIT_CATALOG: StrangerOutfitOption[] = [
     bottomColor: '#636E72',
     accentColor: '#DFE6E9',
     genders: ['FEMALE', 'NEUTRAL'],
+    look: 'sweater',
+    hair: 'ponytail',
   },
   {
     id: 'sport-f',
@@ -93,6 +156,30 @@ export const OUTFIT_CATALOG: StrangerOutfitOption[] = [
     bottomColor: '#2D3436',
     accentColor: '#FFFFFF',
     genders: ['FEMALE', 'NEUTRAL'],
+    look: 'sport',
+    hair: 'ponytail',
+  },
+  {
+    id: 'street-cap-f',
+    label: 'Street cap',
+    topColor: '#2d3436',
+    bottomColor: '#636e72',
+    accentColor: '#74b9ff',
+    genders: ['FEMALE', 'NEUTRAL'],
+    look: 'street-cap',
+    hair: 'ponytail',
+    accessories: { glasses: true, cap: true, gloves: true },
+  },
+  {
+    id: 'tactical-f',
+    label: 'Tactical chic',
+    topColor: '#f5f6fa',
+    bottomColor: '#718093',
+    accentColor: '#c23616',
+    genders: ['FEMALE', 'NEUTRAL'],
+    look: 'tactical',
+    hair: 'bun',
+    accessories: { vest: true, gloves: true, cap: true },
   },
   {
     id: 'uni-tee',
@@ -101,6 +188,8 @@ export const OUTFIT_CATALOG: StrangerOutfitOption[] = [
     bottomColor: '#3498DB',
     accentColor: '#2ECC71',
     genders: ['MALE', 'FEMALE', 'NEUTRAL'],
+    look: 'tee',
+    hair: 'short',
   },
   {
     id: 'uni-jacket',
@@ -109,6 +198,8 @@ export const OUTFIT_CATALOG: StrangerOutfitOption[] = [
     bottomColor: '#1B2631',
     accentColor: '#85C1E9',
     genders: ['MALE', 'FEMALE', 'NEUTRAL'],
+    look: 'jacket',
+    hair: 'swept',
   },
 ];
 
@@ -136,4 +227,20 @@ export function normalizeAccountGender(gender: AccountGender): 'MALE' | 'FEMALE'
 
 export function getOutfitById(id: string): StrangerOutfitOption | undefined {
   return OUTFIT_CATALOG.find((o) => o.id === id);
+}
+
+/** Soften / deepen a hex for SVG gradients. */
+export function shadeHex(hex: string, amount: number): string {
+  const raw = (hex || '#888888').replace('#', '');
+  if (raw.length !== 6) {
+    return hex;
+  }
+  const n = parseInt(raw, 16);
+  let r = (n >> 16) & 255;
+  let g = (n >> 8) & 255;
+  let b = n & 255;
+  r = Math.max(0, Math.min(255, Math.round(r + 255 * amount)));
+  g = Math.max(0, Math.min(255, Math.round(g + 255 * amount)));
+  b = Math.max(0, Math.min(255, Math.round(b + 255 * amount)));
+  return `#${((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1)}`;
 }

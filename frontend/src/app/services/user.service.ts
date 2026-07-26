@@ -35,6 +35,9 @@ export interface User {
   fullName?: string;
   bio?: string;
   phoneNumber?: string;
+  country?: string;
+  state?: string;
+  town?: string;
   twitterUrl?: string;
   linkedinUrl?: string;
   linkedInUrl?: string;

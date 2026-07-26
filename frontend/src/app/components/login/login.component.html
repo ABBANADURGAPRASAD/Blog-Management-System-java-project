@@ -1,4 +1,16 @@
 <div class="login-container">
+  <!-- White header bar -->
+  <header class="auth-white-header">
+    <a routerLink="/login" class="auth-header-brand">
+      <img src="assets/images/Blog_mang_logo.png" alt="Blog Manager" class="auth-header-logo" />
+      <span>Feel free</span>
+    </a>
+    <nav class="auth-header-nav">
+      <a routerLink="/login" class="auth-header-link active">Log in</a>
+      <a routerLink="/register" class="auth-header-link">Create account</a>
+    </nav>
+  </header>
+
   <div class="login-layout">
     <!-- Left Section - Marketing/Visual -->
     <div class="login-left-section">
@@ -9,25 +21,24 @@
         <h2 class="marketing-title">See everyday moments from your<br><span class="gradient-text">close friends.</span></h2>
       </div>
       <div class="visual-placeholder">
-        <!-- Visual elements placeholder -->
-        <div class="phone-mockup"></div>
+        <img
+          src="assets/images/login-features.png"
+          alt="Feel free page features — home feed, finder, and profile"
+          class="features-image"
+        />
       </div>
     </div>
 
     <!-- Right Section - Login Form -->
     <div class="login-right-section">
       <div class="login-form-container">
-        <!-- Title -->
         <h1 class="form-title">Log into Blog Manager</h1>
 
-        <!-- Form -->
         <form [formGroup]="loginForm" (ngSubmit)="onSubmit()" class="login-form">
-          <!-- Error Message -->
           <div class="error-message" *ngIf="errorMessage">
             {{ errorMessage }}
           </div>
 
-          <!-- Email Field -->
           <div class="form-group">
             <input
               type="email"
@@ -43,7 +54,6 @@
             </div>
           </div>
 
-          <!-- Password Field -->
           <div class="form-group">
             <input
               [type]="showPassword ? 'text' : 'password'"
@@ -67,7 +77,6 @@
             </div>
           </div>
 
-          <!-- Submit Button -->
           <button
             type="submit"
             class="submit-button"
@@ -79,33 +88,28 @@
           </button>
         </form>
 
-        <!-- Divider -->
         <div class="divider">
           <span class="divider-line"></span>
           <span class="divider-text">OR</span>
           <span class="divider-line"></span>
         </div>
 
-        <!-- Facebook Login -->
-        <button class="facebook-login-btn">
+        <button type="button" class="facebook-login-btn" (click)="socialLogin('facebook')">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
             <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
           </svg>
           Log in with Facebook
         </button>
 
-        <!-- Forgot Password -->
-        <a href="#" class="forgot-password">Forgot password?</a>
+        <a href="#" class="forgot-password" (click)="$event.preventDefault()">Forgot password?</a>
       </div>
 
-      <!-- Create Account Button -->
       <div class="create-account-section">
         <p>Don't have an account? <a routerLink="/register">Sign up</a></p>
       </div>
     </div>
   </div>
 
-  <!-- Footer -->
   <div class="footer">
     <div class="footer-links">
       <a href="#">Meta</a>

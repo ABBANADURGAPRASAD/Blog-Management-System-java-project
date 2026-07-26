@@ -5,7 +5,7 @@
       <span class="logo-text">Feel free</span>
     </a>
     <div class="search-bar search-wrapper" *ngIf="showSearch">
-      <input 
+      <input
         type="text"
         class="search-input"
         placeholder="Search users..."
@@ -28,10 +28,11 @@
         </div>
       </div>
     </div>
-
   </div>
+
   <div class="header-right">
     <ng-container *ngIf="isAuthenticated">
+      <!-- Messages -->
       <button
         type="button"
         class="header-icon-btn"
@@ -43,22 +44,59 @@
       >
         <svg class="header-nav-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
           <path
-            d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"
             fill="none"
             stroke="currentColor"
             stroke-width="2"
             stroke-linecap="round"
             stroke-linejoin="round"
+            d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"
           />
         </svg>
         <span class="header-icon-badge" *ngIf="chatUnreadCount > 0">{{
           chatUnreadCount > 99 ? '99+' : chatUnreadCount
         }}</span>
       </button>
-      <a routerLink="/random-chat" class="anon-header-link" title="Anonymous map & random chat"
-        >Finder</a>
-      <button class="new-post-btn-text" (click)="onNewPostClick()">New Post
+
+      <!-- Finder -->
+      <a
+        routerLink="/random-chat"
+        class="header-icon-btn"
+        title="Finder"
+        aria-label="Open Finder"
+      >
+        <svg class="header-nav-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+          <circle cx="12" cy="12" r="10" fill="none" stroke="currentColor" stroke-width="2" />
+          <polygon
+            points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linejoin="round"
+          />
+        </svg>
+      </a>
+
+      <!-- New Post -->
+      <button
+        type="button"
+        class="header-icon-btn"
+        (click)="onNewPostClick()"
+        title="New Post"
+        aria-label="Create new post"
+      >
+        <svg class="header-nav-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+          <path
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            d="M12 5v14M5 12h14"
+          />
+        </svg>
       </button>
+
+      <!-- Notifications -->
       <div class="notification-wrap" #notificationWrap>
         <button
           type="button"
@@ -129,10 +167,108 @@
           </div>
         </div>
       </div>
-      <img [src]="headerProfileSrc()"
-        alt="Profile" class="user-profile-pic" (click)="onProfileClick()"
-        onerror="this.src='assets/images/dp_profile.jpeg'" />
-      <button class="logout-btn" (click)="onLogoutClick()">Logout</button>
+
+      <!-- Profile menu: Profile / Settings / Logout -->
+      <div class="profile-menu-wrap" #profileMenuWrap>
+        <button
+          type="button"
+          class="header-profile-btn"
+          [class.header-icon-btn--active]="profileMenuOpen"
+          (click)="toggleProfileMenu($event)"
+          title="Account"
+          aria-label="Account menu"
+          [attr.aria-expanded]="profileMenuOpen"
+        >
+          <img
+            [src]="headerProfileSrc()"
+            alt=""
+            class="header-profile-avatar"
+            onerror="this.src='assets/images/dp_profile.jpeg'"
+          />
+          <svg class="header-profile-caret" viewBox="0 0 24 24" aria-hidden="true">
+            <path
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              d="M6 9l6 6 6-6"
+            />
+          </svg>
+        </button>
+
+        <div
+          class="profile-dropdown"
+          *ngIf="profileMenuOpen"
+          (click)="$event.stopPropagation()"
+          role="menu"
+        >
+          <button type="button" class="profile-dropdown-item" role="menuitem" (click)="onProfileMenuProfile()">
+            <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true">
+              <path
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"
+              />
+              <circle cx="12" cy="7" r="4" fill="none" stroke="currentColor" stroke-width="2" />
+            </svg>
+            Profile
+          </button>
+          <button type="button" class="profile-dropdown-item" role="menuitem" (click)="onProfileMenuSettings()">
+            <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true">
+              <circle cx="12" cy="12" r="3" fill="none" stroke="currentColor" stroke-width="2" />
+              <path
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"
+              />
+            </svg>
+            Settings
+          </button>
+          <div class="profile-dropdown-divider"></div>
+          <button
+            type="button"
+            class="profile-dropdown-item profile-dropdown-item--danger"
+            role="menuitem"
+            (click)="onProfileMenuLogout()"
+          >
+            <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true">
+              <path
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"
+              />
+              <polyline
+                points="16 17 21 12 16 7"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              />
+              <line
+                x1="21"
+                y1="12"
+                x2="9"
+                y2="12"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+              />
+            </svg>
+            Logout
+          </button>
+        </div>
+      </div>
     </ng-container>
   </div>
 </header>

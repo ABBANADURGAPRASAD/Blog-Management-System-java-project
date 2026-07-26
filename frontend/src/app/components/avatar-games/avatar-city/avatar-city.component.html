@@ -1,0 +1,251 @@
+<div class="city-page" *ngIf="character as c">
+  <header class="city-hud">
+    <button type="button" class="city-back" (click)="goBack()">← Hub</button>
+    <div class="city-title-block">
+      <h1>
+        Avatar City
+        <span class="city-online">{{ onlineCount }} online</span>
+        <span class="city-owners">{{ ownerCount }} homes</span>
+      </h1>
+      <p *ngIf="currentPlace as p">
+        <strong>{{ p.name }}</strong> — {{ p.blurb }}
+      </p>
+      <p *ngIf="!currentPlace">{{ syncHint }}</p>
+    </div>
+    <div class="city-you">
+      <app-strangers-game-avatar
+        [skinColor]="c.skinColor"
+        [shape]="c.shape"
+        [outfitId]="c.outfitId"
+        size="sm"
+        facing="front"
+      ></app-strangers-game-avatar>
+      <div class="city-you-meta">
+        <span>{{ c.name }}</span>
+        <small>{{ myBuildingLabel }}</small>
+      </div>
+    </div>
+  </header>
+
+  <div class="city-viewport" tabindex="0" aria-label="City world">
+    <div class="city-world" [ngStyle]="cameraStyle">
+      <!-- District floors -->
+      <div
+        class="city-place"
+        *ngFor="let p of places"
+        [attr.data-kind]="p.kind"
+        [style.left.px]="p.x"
+        [style.top.px]="p.y"
+        [style.width.px]="p.w"
+        [style.height.px]="p.h"
+        [style.--tone]="p.tone"
+        [class.city-place-active]="currentPlace?.id === p.id"
+      >
+        <span class="city-place-label">{{ p.name }}</span>
+      </div>
+
+      <!-- Proper road grid -->
+      <div
+        class="city-road"
+        *ngFor="let r of roads"
+        [style.left.px]="r.x"
+        [style.top.px]="r.y"
+        [style.width.px]="r.w"
+        [style.height.px]="r.h"
+      ></div>
+
+      <!-- Center spawn marker -->
+      <div
+        class="city-center-mark"
+        [style.left.px]="1800"
+        [style.top.px]="1560"
+        title="City Center spawn"
+      >
+        ★
+      </div>
+
+      <!-- Scenery blocks -->
+      <div
+        class="city-scenery"
+        *ngFor="let s of scenery"
+        [style.left.px]="s.x"
+        [style.top.px]="s.y"
+        [style.width.px]="s.w"
+        [style.height.px]="s.h"
+      ></div>
+
+      <!-- Ownable buildings -->
+      <div
+        class="city-building"
+        *ngFor="let b of buildings; trackBy: trackBuilding"
+        [style.left.px]="b.x"
+        [style.top.px]="b.y"
+        [style.width.px]="b.w"
+        [style.height.px]="b.h"
+        [style.background]="b.color"
+        [style.--roof]="b.roof"
+        [class.city-building-mine]="myBuildingId === b.id"
+        [class.city-building-taken]="!!ownerOf(b.id) && myBuildingId !== b.id"
+        [class.city-building-near]="nearbyBuilding?.id === b.id"
+      >
+        <span>{{ b.label }}</span>
+        <small *ngIf="ownerOf(b.id) as o">{{ o.mine ? 'Your home' : o.ownerName }}</small>
+        <small *ngIf="!ownerOf(b.id)">Free to adopt</small>
+      </div>
+
+      <!-- Transit props -->
+      <div class="city-prop city-bus" style="left: 240px; top: 2240px"></div>
+      <div class="city-prop city-bus" style="left: 460px; top: 2240px"></div>
+      <div class="city-prop city-tree" style="left: 260px; top: 400px"></div>
+      <div class="city-prop city-tree" style="left: 520px; top: 520px"></div>
+      <div class="city-prop city-tree" style="left: 720px; top: 300px"></div>
+      <div class="city-prop city-boat" style="left: 2550px; top: 1180px"></div>
+
+      <!-- Other players -->
+      <div
+        class="city-avatar city-avatar-other"
+        *ngFor="let o of others; trackBy: trackPlayer"
+        [ngStyle]="otherStyle(o)"
+      >
+        <app-strangers-game-avatar
+          [skinColor]="o.skinColor"
+          [shape]="otherShape(o)"
+          [outfitId]="o.outfitId"
+          size="md"
+          [facing]="otherFacing(o)"
+          motion="idle"
+        ></app-strangers-game-avatar>
+        <span class="city-avatar-name">{{ o.characterName }}</span>
+      </div>
+
+      <!-- You -->
+      <div
+        class="city-avatar city-avatar-self"
+        [ngStyle]="avatarStyle"
+        [class.city-avatar-walk]="walking"
+      >
+        <app-strangers-game-avatar
+          [skinColor]="c.skinColor"
+          [shape]="c.shape"
+          [outfitId]="c.outfitId"
+          size="md"
+          [facing]="facing"
+          [motion]="walking ? 'idle' : 'none'"
+        ></app-strangers-game-avatar>
+        <span class="city-avatar-name">{{ c.name }} (you)</span>
+      </div>
+    </div>
+  </div>
+
+  <aside class="city-side">
+    <div class="city-minimap" aria-label="City overview">
+      <div
+        class="city-mini-place"
+        *ngFor="let p of places"
+        [style.left.%]="(p.x / world.width) * 100"
+        [style.top.%]="(p.y / world.height) * 100"
+        [style.width.%]="(p.w / world.width) * 100"
+        [style.height.%]="(p.h / world.height) * 100"
+        [style.background]="p.tone"
+        [title]="p.name"
+      ></div>
+      <span
+        class="city-mini-other"
+        *ngFor="let o of others; trackBy: trackPlayer"
+        [ngStyle]="miniOtherDot(o)"
+        [title]="o.characterName"
+      ></span>
+      <span class="city-mini-you" [ngStyle]="minimapDot"></span>
+    </div>
+
+    <p class="city-side-label">Constant places</p>
+    <div class="city-place-list">
+      <button type="button" *ngFor="let p of places" (click)="jumpTo(p)">
+        {{ p.name }}
+      </button>
+    </div>
+
+    <button type="button" class="city-home-btn" (click)="goHome()">
+      Go to {{ myBuildingId ? 'my home' : 'city center' }}
+    </button>
+  </aside>
+
+  <!-- Nearby player chat -->
+  <div class="city-meet" *ngIf="nearbyPlayer as np">
+    <div class="city-meet-info">
+      <strong>{{ np.characterName }}</strong> is nearby
+    </div>
+    <button type="button" class="city-meet-chat" (click)="openChatPrompt()">Chat</button>
+  </div>
+
+  <div class="city-chat-modal" *ngIf="chatConfirmOpen && nearbyPlayer as np" role="dialog" aria-modal="true">
+    <div class="city-chat-card">
+      <h3>Request new chat?</h3>
+      <p>
+        Start a chat request with <strong>{{ np.characterName }}</strong> from Avatar City?
+        You’ll open the Random Chat page.
+      </p>
+      <div class="city-chat-actions">
+        <button type="button" class="ghost" (click)="cancelChatPrompt()">Cancel</button>
+        <button type="button" class="primary" (click)="confirmChatRequest()">Request chat</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Adopt prompt -->
+  <div class="city-adopt" *ngIf="nearbyBuilding as nb">
+    <p>
+      <strong>{{ nb.label }}</strong>
+      <span *ngIf="ownerOf(nb.id) as o"> — {{ o.mine ? 'your home' : 'owned by ' + o.ownerName }}</span>
+      <span *ngIf="!ownerOf(nb.id)"> — free (1 home per citizen)</span>
+    </p>
+    <button type="button" (click)="tryClaimOrRelease()">
+      {{ myBuildingId === nb.id ? 'Release home' : ownerOf(nb.id) ? 'Occupied' : 'Adopt home (E)' }}
+    </button>
+  </div>
+  <p class="city-action-hint" *ngIf="actionHint">{{ actionHint }}</p>
+
+  <div class="city-pad" aria-label="Movement controls">
+    <button
+      type="button"
+      class="city-pad-btn city-pad-up"
+      (pointerdown)="press('up')"
+      (pointerup)="release('up')"
+      (pointerleave)="release('up')"
+      aria-label="Move forward"
+    >
+      ▲
+    </button>
+    <button
+      type="button"
+      class="city-pad-btn city-pad-left"
+      (pointerdown)="press('left')"
+      (pointerup)="release('left')"
+      (pointerleave)="release('left')"
+      aria-label="Move left"
+    >
+      ◀
+    </button>
+    <button
+      type="button"
+      class="city-pad-btn city-pad-down"
+      (pointerdown)="press('down')"
+      (pointerup)="release('down')"
+      (pointerleave)="release('down')"
+      aria-label="Move back"
+    >
+      ▼
+    </button>
+    <button
+      type="button"
+      class="city-pad-btn city-pad-right"
+      (pointerdown)="press('right')"
+      (pointerup)="release('right')"
+      (pointerleave)="release('right')"
+      aria-label="Move right"
+    >
+      ▶
+    </button>
+    <p class="city-pad-hint">WASD · E adopt · C chat nearby</p>
+  </div>
+</div>

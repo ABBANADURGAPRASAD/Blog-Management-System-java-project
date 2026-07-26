@@ -1,0 +1,146 @@
+:host {
+  display: block;
+  min-height: calc(100vh - 64px);
+}
+
+.kg-page {
+  max-width: 720px;
+  margin: 0 auto;
+  padding: 16px 16px 40px;
+  min-height: calc(100vh - 64px);
+  font-family: 'Trebuchet MS', 'Segoe UI', sans-serif;
+  color: #1a2b3c;
+  transition: background 0.35s ease;
+}
+
+.kg-page[data-theme='fact'] {
+  background: linear-gradient(180deg, #eaf3ff, #c9ddf8);
+}
+
+.kg-page[data-theme='money'] {
+  background: linear-gradient(180deg, #eafaf0, #c5ebd2);
+}
+
+.kg-page[data-theme='civic'] {
+  background: linear-gradient(180deg, #f2efff, #d8cffc);
+}
+
+.kg-page[data-theme='cases'] {
+  background: linear-gradient(180deg, #fff0f3, #ffd0da);
+}
+
+.kg-top {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.kg-top h1 {
+  margin: 0;
+  font-size: 1.45rem;
+  font-weight: 900;
+}
+
+.kg-back {
+  border: none;
+  background: rgba(255, 255, 255, 0.75);
+  padding: 8px 12px;
+  border-radius: 10px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.kg-blurb {
+  font-weight: 700;
+  opacity: 0.8;
+}
+
+.kg-modes {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.kg-modes button {
+  border: 2px solid rgba(26, 43, 60, 0.12);
+  background: rgba(255, 255, 255, 0.75);
+  border-radius: 999px;
+  padding: 8px 12px;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.kg-modes button.on {
+  background: #1a2b3c;
+  color: #fff;
+}
+
+.kg-mode-note {
+  font-size: 0.82rem;
+  font-weight: 700;
+  opacity: 0.7;
+}
+
+.kg-progress {
+  font-size: 0.8rem;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  opacity: 0.6;
+}
+
+.kg-prompt {
+  font-size: 1.15rem;
+  font-weight: 800;
+  line-height: 1.35;
+}
+
+.kg-choices {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.kg-choices button {
+  text-align: left;
+  border: 2px solid rgba(26, 43, 60, 0.12);
+  background: rgba(255, 255, 255, 0.9);
+  border-radius: 12px;
+  padding: 12px 14px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.kg-choices button:hover:not(:disabled) {
+  border-color: #1a2b3c;
+}
+
+.kg-feedback {
+  font-weight: 700;
+  background: rgba(255, 255, 255, 0.75);
+  padding: 12px;
+  border-radius: 12px;
+}
+
+.kg-next {
+  margin-top: 8px;
+  border: none;
+  background: #1a2b3c;
+  color: #fff;
+  border-radius: 12px;
+  padding: 12px 18px;
+  font-weight: 900;
+  cursor: pointer;
+}
+
+.kg-done {
+  margin-top: 20px;
+  padding: 18px;
+  background: rgba(255, 255, 255, 0.8);
+  border-radius: 14px;
+}
+
+.kg-done h2 {
+  margin: 0 0 8px;
+}

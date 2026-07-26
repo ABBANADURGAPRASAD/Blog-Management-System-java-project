@@ -49,10 +49,15 @@ export class HeaderComponent implements OnInit, OnDestroy {
   notifications: NotificationItem[] = [];
   notificationsLoading = false;
 
+  profileMenuOpen = false;
+
   private notifPollId: ReturnType<typeof setInterval> | null = null;
 
   @ViewChild('notificationWrap', { read: ElementRef })
   notificationWrap?: ElementRef<HTMLElement>;
+
+  @ViewChild('profileMenuWrap', { read: ElementRef })
+  profileMenuWrap?: ElementRef<HTMLElement>;
 
   constructor(
     private router: Router,
@@ -78,6 +83,7 @@ export class HeaderComponent implements OnInit, OnDestroy {
         this.notificationUnreadCount = 0;
         this.notifications = [];
         this.notificationsOpen = false;
+        this.profileMenuOpen = false;
         this.stopNotificationPoll();
       }
     });
@@ -97,15 +103,19 @@ export class HeaderComponent implements OnInit, OnDestroy {
 
   @HostListener('document:click', ['$event'])
   onDocumentClick(event: MouseEvent): void {
-    if (!this.notificationsOpen) {
-      return;
-    }
     const target = event.target as Node;
-    const wrap = this.notificationWrap?.nativeElement;
-    if (wrap?.contains(target)) {
-      return;
+    if (this.notificationsOpen) {
+      const wrap = this.notificationWrap?.nativeElement;
+      if (!wrap?.contains(target)) {
+        this.notificationsOpen = false;
+      }
     }
-    this.notificationsOpen = false;
+    if (this.profileMenuOpen) {
+      const wrap = this.profileMenuWrap?.nativeElement;
+      if (!wrap?.contains(target)) {
+        this.profileMenuOpen = false;
+      }
+    }
   }
 
   @HostListener('window:focus')
@@ -140,10 +150,32 @@ export class HeaderComponent implements OnInit, OnDestroy {
 
   toggleNotifications(event: Event): void {
     event.stopPropagation();
+    this.profileMenuOpen = false;
     this.notificationsOpen = !this.notificationsOpen;
     if (this.notificationsOpen && this.currentUser?.id) {
       this.loadNotifications();
     }
+  }
+
+  toggleProfileMenu(event: Event): void {
+    event.stopPropagation();
+    this.notificationsOpen = false;
+    this.profileMenuOpen = !this.profileMenuOpen;
+  }
+
+  onProfileMenuProfile(): void {
+    this.profileMenuOpen = false;
+    this.onProfileClick();
+  }
+
+  onProfileMenuSettings(): void {
+    this.profileMenuOpen = false;
+    this.router.navigate(['/profile/edit']);
+  }
+
+  onProfileMenuLogout(): void {
+    this.profileMenuOpen = false;
+    this.onLogoutClick();
   }
 
   loadNotifications(): void {
@@ -318,6 +350,8 @@ export class HeaderComponent implements OnInit, OnDestroy {
   }
 
   toggleChat() {
+    this.profileMenuOpen = false;
+    this.notificationsOpen = false;
     this.chatOpen = !this.chatOpen;
   }
 

@@ -84,7 +84,7 @@ export class ChatPanelComponent implements OnChanges, OnInit, OnDestroy {
           setTimeout(() => {
             this.loadThread();
             this.loadConversations();
-            this.focusSearch();
+            this.startCompose();
           }, 0);
         },
         error: () => {},
@@ -136,7 +136,24 @@ export class ChatPanelComponent implements OnChanges, OnInit, OnDestroy {
   }
 
   focusSearch() {
-    setTimeout(() => this.chatSearchInput?.nativeElement?.focus(), 0);
+    setTimeout(() => {
+      const el = this.chatSearchInput?.nativeElement;
+      if (el) {
+        el.focus();
+        el.select();
+      }
+    }, 0);
+  }
+
+  /** Pencil / edit: start a new message by focusing search. */
+  startCompose() {
+    this.searchQuery = '';
+    this.applySearchFilter();
+    this.focusSearch();
+  }
+
+  insertEmoji() {
+    this.draft = (this.draft || '') + '😊';
   }
 
   private scrollThreadToBottom() {

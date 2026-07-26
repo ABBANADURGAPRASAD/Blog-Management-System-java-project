@@ -1,0 +1,67 @@
+<div class="sk-page">
+  <header class="sk-top">
+    <button type="button" class="sk-back" (click)="goBack()">← Hub</button>
+    <h1>Sketch</h1>
+    <span class="sk-round">Round {{ round }} / {{ maxRounds }}</span>
+  </header>
+
+  <p class="sk-status">{{ status }}</p>
+  <p class="sk-timer" *ngIf="phase === 'draw' || phase === 'guess'">
+    {{ secondsLeft }}s
+  </p>
+  <p class="sk-score">Drawer {{ scoreDrawer }} · Guesser {{ scoreGuesser }}</p>
+
+  <div class="sk-pick" *ngIf="phase === 'pick'">
+    <p>Choose a secret word for the other player:</p>
+    <div class="sk-words">
+      <button type="button" *ngFor="let w of wordChoices" (click)="pickWord(w)">
+        {{ w }}
+      </button>
+    </div>
+  </div>
+
+  <div class="sk-tools" *ngIf="phase === 'draw'">
+    <button type="button" [class.on]="tool === 'pen'" (click)="setTool('pen')">Pen</button>
+    <button type="button" [class.on]="tool === 'paint'" (click)="setTool('paint')">Paint</button>
+    <button type="button" [class.on]="tool === 'eraser'" (click)="setTool('eraser')">Eraser</button>
+    <button type="button" (click)="clearBoard()">Clear</button>
+    <label class="sk-brush">
+      Size
+      <input type="range" min="2" max="18" [(ngModel)]="brush" />
+    </label>
+    <div class="sk-colors">
+      <button
+        type="button"
+        *ngFor="let c of colors"
+        class="sk-swatch"
+        [style.background]="c"
+        [class.on]="color === c"
+        (click)="color = c"
+      ></button>
+    </div>
+  </div>
+
+  <canvas
+    #board
+    class="sk-board"
+    [class.sk-board-active]="phase === 'draw'"
+    (pointerdown)="onPointerDown($event)"
+    (pointermove)="onPointerMove($event)"
+    (pointerup)="onPointerUp()"
+    (pointerleave)="onPointerUp()"
+  ></canvas>
+
+  <div class="sk-guess" *ngIf="phase === 'guess'">
+    <input
+      [(ngModel)]="guess"
+      placeholder="Type your guess…"
+      (keyup.enter)="submitGuess()"
+    />
+    <button type="button" (click)="submitGuess()">Guess</button>
+  </div>
+
+  <div class="sk-done" *ngIf="phase === 'done'">
+    <p>{{ status }}</p>
+    <button type="button" class="sk-again" (click)="goBack()">Back to hub</button>
+  </div>
+</div>

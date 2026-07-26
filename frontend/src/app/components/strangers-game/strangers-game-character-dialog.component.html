@@ -14,7 +14,7 @@
     <header class="sg-dialog-header">
       <div>
         <p class="sg-dialog-kicker">{{ editMode ? 'Edit your game avatar' : 'Create your game avatar' }}</p>
-        <h2 id="sg-dialog-title" class="sg-dialog-title">Snap-style character</h2>
+        <h2 id="sg-dialog-title" class="sg-dialog-title">Street-style character</h2>
         <p class="sg-dialog-sub">
           Step {{ stepIndex + 1 }} of {{ steps.length }} — {{ stepLabel }}
           <span class="sg-gender-hint">(Outfits from profile: {{ accountGenderLabel }})</span>
@@ -48,8 +48,12 @@
           [shape]="shape"
           [outfitId]="outfitId"
           size="lg"
+          motion="idle"
         ></app-strangers-game-avatar>
-        <p class="sg-preview-name" *ngIf="characterName.trim()">{{ characterName.trim() }}</p>
+        <!-- Name shown only outside the name step to avoid duplicate labels -->
+        <p class="sg-preview-name" *ngIf="characterName.trim() && step !== 'name'">
+          {{ characterName.trim() }}
+        </p>
       </aside>
 
       <div class="sg-step-content">

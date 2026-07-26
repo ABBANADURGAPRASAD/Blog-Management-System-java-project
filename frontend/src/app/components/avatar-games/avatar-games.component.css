@@ -1,0 +1,336 @@
+:host {
+  display: block;
+  min-height: calc(100vh - 64px);
+}
+
+.ag-page {
+  --ag-ink: #1a2b3c;
+  --ag-blue: #4a90e2;
+  --ag-blue-deep: #2f6fbd;
+  --ag-sky: #cfe8ff;
+  --ag-sand: #f3efe6;
+  max-width: 920px;
+  margin: 0 auto;
+  padding: 16px 16px 48px;
+  display: flex;
+  flex-direction: column;
+  gap: 28px;
+  background:
+    radial-gradient(ellipse 120% 60% at 50% -10%, #9fd0ff 0%, transparent 55%),
+    linear-gradient(180deg, #e8f4ff 0%, var(--ag-sand) 42%, #ebe4d6 100%);
+  color: var(--ag-ink);
+  font-family: 'Trebuchet MS', 'Segoe UI', sans-serif;
+  animation: ag-page-in 0.45s ease-out both;
+}
+
+@keyframes ag-page-in {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+.ag-top {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.ag-back {
+  border: none;
+  background: rgba(255, 255, 255, 0.7);
+  color: var(--ag-ink);
+  font-weight: 700;
+  font-size: 0.9rem;
+  padding: 8px 12px;
+  border-radius: 10px;
+  cursor: pointer;
+}
+
+.ag-back:hover {
+  background: #fff;
+}
+
+.ag-brand {
+  margin: 0;
+  font-size: clamp(1.35rem, 4vw, 1.75rem);
+  font-weight: 900;
+}
+
+.ag-section {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.ag-section-label {
+  margin: 0 0 8px;
+  font-size: 0.75rem;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  opacity: 0.55;
+}
+
+/* —— Section 1 —— */
+.ag-section-avatar {
+  gap: 10px;
+}
+
+.ag-avatar-name {
+  margin: 0;
+  font-size: clamp(1.6rem, 5vw, 2.1rem);
+  font-weight: 900;
+  text-align: center;
+}
+
+.ag-avatar-stage {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-height: 260px;
+  justify-content: flex-end;
+  padding: 40px 28px 8px;
+  border-radius: 24px;
+  background:
+    radial-gradient(ellipse 70% 55% at 50% 70%, rgba(255, 255, 255, 0.55), transparent 70%),
+    linear-gradient(160deg, rgba(120, 180, 255, 0.25), rgba(255, 220, 180, 0.2));
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.35);
+}
+
+.ag-speech {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  background: #fff;
+  color: var(--ag-ink);
+  font-weight: 800;
+  font-size: 0.95rem;
+  padding: 8px 14px;
+  border-radius: 16px;
+  border: 2px solid rgba(26, 43, 60, 0.12);
+  box-shadow: 0 6px 16px rgba(26, 43, 60, 0.12);
+  white-space: nowrap;
+  animation: ag-speech-pop 0.35s ease-out;
+}
+
+.ag-speech::after {
+  content: '';
+  position: absolute;
+  left: 50%;
+  bottom: -8px;
+  transform: translateX(-50%);
+  border: 8px solid transparent;
+  border-top-color: #fff;
+}
+
+.ag-speech-sleep {
+  letter-spacing: 0.08em;
+  opacity: 0.85;
+}
+
+@keyframes ag-speech-pop {
+  from {
+    opacity: 0;
+    transform: translateX(-50%) scale(0.85);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(-50%) scale(1);
+  }
+}
+
+.ag-avatar-caption {
+  margin: 0;
+  font-size: 0.8rem;
+  opacity: 0.65;
+  font-weight: 600;
+  text-align: center;
+  max-width: 280px;
+}
+
+/* —— Section 2 —— */
+.ag-section-map {
+  width: 100%;
+  align-items: stretch;
+}
+
+.ag-map-shell {
+  position: relative;
+  width: 100%;
+  height: min(42vh, 360px);
+  min-height: 240px;
+  border-radius: 18px;
+  overflow: hidden;
+  border: 3px solid rgba(26, 43, 60, 0.12);
+  box-shadow: 0 14px 36px rgba(26, 43, 60, 0.14);
+  background: var(--ag-sky);
+}
+
+.ag-map-pane {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+}
+
+.ag-map-center {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  pointer-events: none;
+  background: radial-gradient(
+    circle at center,
+    rgba(255, 255, 255, 0.22) 0%,
+    transparent 55%
+  );
+}
+
+.ag-lets-go {
+  pointer-events: auto;
+  border: none;
+  border-radius: 14px;
+  padding: 14px 28px;
+  min-width: 160px;
+  font-size: 1.05rem;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #fff;
+  background: var(--ag-blue);
+  box-shadow: 0 8px 22px rgba(74, 144, 226, 0.45);
+  cursor: pointer;
+  animation: ag-cta-pulse 2.2s ease-in-out infinite;
+}
+
+.ag-lets-go:hover {
+  background: var(--ag-blue-deep);
+  transform: translateY(-2px) scale(1.03);
+  animation: none;
+}
+
+@keyframes ag-cta-pulse {
+  0%,
+  100% {
+    box-shadow: 0 8px 22px rgba(74, 144, 226, 0.45);
+  }
+  50% {
+    box-shadow: 0 10px 28px rgba(74, 144, 226, 0.65);
+  }
+}
+
+.ag-map-hint {
+  margin: 0;
+  max-width: 90%;
+  text-align: center;
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: var(--ag-ink);
+  background: rgba(255, 255, 255, 0.9);
+  padding: 6px 12px;
+  border-radius: 10px;
+}
+
+/* —— Section 3 —— */
+.ag-section-games {
+  width: 100%;
+  align-items: stretch;
+  gap: 10px;
+}
+
+.ag-games-title {
+  margin: 0 0 4px;
+  font-size: 1.2rem;
+  font-weight: 800;
+  text-align: center;
+}
+
+.ag-games-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+}
+
+.ag-game-tile {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 6px;
+  text-align: left;
+  min-height: 120px;
+  padding: 14px;
+  border-radius: 14px;
+  border: 2px solid rgba(26, 43, 60, 0.1);
+  background: rgba(255, 255, 255, 0.88);
+  cursor: pointer;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.ag-game-tile:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 10px 22px rgba(26, 43, 60, 0.14);
+}
+
+.ag-game-tile[data-theme='chess'] {
+  background: linear-gradient(160deg, #f7f0e0 0%, #e8d9b5 100%);
+}
+
+.ag-game-tile[data-theme='sketch'] {
+  background: linear-gradient(160deg, #fff8f0 0%, #ffe0c8 100%);
+}
+
+.ag-game-tile[data-theme='fact'] {
+  background: linear-gradient(160deg, #eef6ff 0%, #d4e8ff 100%);
+}
+
+.ag-game-tile[data-theme='money'] {
+  background: linear-gradient(160deg, #eefaf1 0%, #c8efd4 100%);
+}
+
+.ag-game-tile[data-theme='civic'] {
+  background: linear-gradient(160deg, #f3f0ff 0%, #ddd4ff 100%);
+}
+
+.ag-game-tile[data-theme='cases'] {
+  background: linear-gradient(160deg, #fff0f3 0%, #ffd0da 100%);
+}
+
+.ag-game-tag {
+  font-size: 0.68rem;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  opacity: 0.65;
+}
+
+.ag-game-title {
+  font-size: 1.05rem;
+  font-weight: 800;
+}
+
+.ag-game-blurb {
+  font-size: 0.8rem;
+  line-height: 1.35;
+  opacity: 0.75;
+  font-weight: 600;
+}
+
+@media (max-width: 640px) {
+  .ag-games-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .ag-map-shell {
+    height: 280px;
+  }
+}

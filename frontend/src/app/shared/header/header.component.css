@@ -1,4 +1,4 @@
-/* Header styles are in global styles.css */
+/* Header styles are in global styles.css; component-specific menus below */
 
 .logo-image {
   height: 60px;
@@ -19,17 +19,108 @@
   text-decoration: none;
 }
 
-.new-post-btn-text{
-  color: rgb(255, 255, 255);
-  background: rgb(11, 58, 84);
-  border-radius: 1em;
-  padding: 0.4em;
-}
-
-.notification-wrap {
+.notification-wrap,
+.profile-menu-wrap {
   position: relative;
   display: inline-flex;
   align-items: center;
+}
+
+.header-profile-btn {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 42px;
+  padding: 3px 10px 3px 3px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.28);
+  color: #fff;
+  cursor: pointer;
+  transition:
+    background 0.2s ease,
+    border-color 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+.header-profile-btn:hover,
+.header-profile-btn.header-icon-btn--active {
+  background: rgba(74, 144, 226, 0.32);
+  border-color: rgba(110, 181, 255, 0.75);
+  box-shadow: 0 0 0 1px rgba(74, 144, 226, 0.25);
+}
+
+.header-profile-avatar {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  object-fit: cover;
+  display: block;
+  border: 1px solid rgba(255, 255, 255, 0.25);
+}
+
+.header-profile-caret {
+  width: 16px;
+  height: 16px;
+  opacity: 0.85;
+  flex-shrink: 0;
+}
+
+.profile-dropdown {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  min-width: 200px;
+  padding: 6px;
+  background: #0f2a3d;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 12px;
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.45);
+  z-index: 1000;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.profile-dropdown-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 10px 12px;
+  border: none;
+  border-radius: 8px;
+  background: transparent;
+  color: #fff;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  text-align: left;
+  font-family: inherit;
+}
+
+.profile-dropdown-item:hover {
+  background: rgba(74, 144, 226, 0.22);
+}
+
+.profile-dropdown-item svg {
+  flex-shrink: 0;
+  opacity: 0.9;
+}
+
+.profile-dropdown-item--danger {
+  color: #ff8a8a;
+}
+
+.profile-dropdown-item--danger:hover {
+  background: rgba(255, 68, 68, 0.18);
+}
+
+.profile-dropdown-divider {
+  height: 1px;
+  margin: 4px 6px;
+  background: rgba(255, 255, 255, 0.12);
 }
 
 .notification-dropdown {
@@ -133,4 +224,3 @@
   font-size: 11px;
   color: rgba(255, 255, 255, 0.5);
 }
-

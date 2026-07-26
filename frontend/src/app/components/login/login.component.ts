@@ -40,6 +40,10 @@ export class LoginComponent implements OnInit {
     this.showPassword = !this.showPassword;
   }
 
+  socialLogin(provider: 'facebook' | 'google') {
+    this.router.navigate(['/register'], { queryParams: { social: provider } });
+  }
+
   onSubmit() {
     if (this.loginForm.valid) {
       this.isLoading = true;

@@ -3,22 +3,354 @@
   [class.sg-avatar-sm]="size === 'sm'"
   [class.sg-avatar-md]="size === 'md'"
   [class.sg-avatar-lg]="size === 'lg'"
-  [class.sg-shape-round]="shape === 'ROUND'"
-  [class.sg-shape-tall]="shape === 'TALL'"
-  [class.sg-shape-wide]="shape === 'WIDE'"
+  [class.sg-motion-hi]="motion === 'hi'"
+  [class.sg-motion-bye]="motion === 'bye'"
+  [class.sg-motion-sleep]="motion === 'sleep'"
+  [class.sg-motion-idle]="motion === 'idle'"
+  [class.sg-facing-back]="isBack"
+  [class.sg-facing-left]="facing === 'left'"
+  [class.sg-facing-right]="facing === 'right'"
+  [class.sg-facing-side]="isSide"
   aria-hidden="true"
 >
-  <div class="sg-avatar-body">
-    <div class="sg-avatar-legs" [style.background]="bottomColor"></div>
-    <div class="sg-avatar-torso" [style.background]="topColor">
-      <span class="sg-avatar-accent" [style.background]="accentColor"></span>
-    </div>
-    <div class="sg-avatar-head" [style.background]="skinColor">
-      <ng-container *ngIf="showFace">
-        <span class="sg-eye sg-eye-l"></span>
-        <span class="sg-eye sg-eye-r"></span>
-        <span class="sg-mouth"></span>
-      </ng-container>
-    </div>
-  </div>
+  <svg class="sg-avatar-svg" viewBox="0 0 200 280" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+      <linearGradient [attr.id]="uid + '-skin'" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%" [attr.stop-color]="skinLight" />
+        <stop offset="55%" [attr.stop-color]="skinColor" />
+        <stop offset="100%" [attr.stop-color]="skinDark" />
+      </linearGradient>
+      <linearGradient [attr.id]="uid + '-top'" x1="20%" y1="0%" x2="80%" y2="100%">
+        <stop offset="0%" [attr.stop-color]="topLight" />
+        <stop offset="50%" [attr.stop-color]="topColor" />
+        <stop offset="100%" [attr.stop-color]="topDark" />
+      </linearGradient>
+      <linearGradient [attr.id]="uid + '-bot'" x1="0%" y1="0%" x2="0%" y2="100%">
+        <stop offset="0%" [attr.stop-color]="bottomColor" />
+        <stop offset="100%" [attr.stop-color]="bottomDark" />
+      </linearGradient>
+      <linearGradient [attr.id]="uid + '-hair'" x1="30%" y1="0%" x2="70%" y2="100%">
+        <stop offset="0%" [attr.stop-color]="hairLight" />
+        <stop offset="100%" [attr.stop-color]="hairColor" />
+      </linearGradient>
+      <radialGradient [attr.id]="uid + '-cheek'" cx="50%" cy="50%" r="50%">
+        <stop offset="0%" stop-color="#ff8fa3" stop-opacity="0.45" />
+        <stop offset="100%" stop-color="#ff8fa3" stop-opacity="0" />
+      </radialGradient>
+      <filter [attr.id]="uid + '-soft'" x="-20%" y="-20%" width="140%" height="140%">
+        <feDropShadow dx="0" dy="6" stdDeviation="4" flood-opacity="0.22" />
+      </filter>
+    </defs>
+
+    <ellipse cx="100" cy="268" rx="46" ry="8" fill="rgba(20,30,50,0.18)" />
+
+    <g class="sg-figure" [attr.filter]="'url(#' + uid + '-soft)'" [attr.transform]="bodyScale || null">
+      <!-- Legs -->
+      <g class="sg-legs">
+        <path
+          *ngIf="look !== 'dress'"
+          [attr.fill]="'url(#' + uid + '-bot)'"
+          d="M72 168 h56 c6 0 10 6 10 14 v52 c0 6-4 10-10 10 h-14 c-5 0-8-3-8-8 v-28 h-4 v28 c0 5-3 8-8 8 h-14 c-6 0-10-4-10-10 v-52 c0-8 4-14 10-14z"
+        />
+        <path
+          *ngIf="look === 'dress'"
+          [attr.fill]="'url(#' + uid + '-top)'"
+          d="M68 150 c8 4 20 8 32 8 s24-4 32-8 l10 70 c-12 8-28 12-42 12 s-30-4-42-12z"
+        />
+        <!-- shoes -->
+        <ellipse cx="78" cy="246" rx="14" ry="6" [attr.fill]="accentColor" opacity="0.95" />
+        <ellipse cx="122" cy="246" rx="14" ry="6" [attr.fill]="accentColor" opacity="0.95" />
+        <rect x="66" y="236" width="24" height="10" rx="4" [attr.fill]="bottomDark" />
+        <rect x="110" y="236" width="24" height="10" rx="4" [attr.fill]="bottomDark" />
+      </g>
+
+      <!-- Torso -->
+      <g class="sg-torso">
+        <!-- arms back (under torso for front) -->
+        <g class="sg-arm sg-arm-l">
+          <path
+            [attr.fill]="'url(#' + uid + '-top)'"
+            d="M68 108 c-14 8-22 28-20 46 l8 4 c-1-16 6-32 16-40z"
+          />
+          <ellipse
+            cx="50"
+            cy="158"
+            rx="9"
+            ry="10"
+            [attr.fill]="hasGloves ? '#1e272e' : 'url(#' + uid + '-skin)'"
+          />
+        </g>
+        <g class="sg-arm sg-arm-r">
+          <path
+            [attr.fill]="'url(#' + uid + '-top)'"
+            d="M132 108 c14 8 22 28 20 46 l-8 4 c1-16-6-32-16-40z"
+          />
+          <ellipse
+            class="sg-hand-r"
+            cx="150"
+            cy="158"
+            rx="9"
+            ry="10"
+            [attr.fill]="hasGloves ? '#1e272e' : 'url(#' + uid + '-skin)'"
+          />
+        </g>
+
+        <!-- body -->
+        <path
+          [attr.fill]="'url(#' + uid + '-top)'"
+          [attr.d]="
+            look === 'dress'
+              ? 'M74 96 c8-10 18-14 26-14 s18 4 26 14 l8 58 c-10 6-22 10-34 10 s-24-4-34-10z'
+              : 'M72 98 c10-12 20-16 28-16 s18 4 28 16 l6 72 H66z'
+          "
+        />
+
+        <!-- neck -->
+        <rect
+          x="92"
+          y="86"
+          width="16"
+          height="16"
+          rx="4"
+          [attr.fill]="'url(#' + uid + '-skin)'"
+        />
+
+        <!-- collar / hoodie / blazer details -->
+        <path
+          *ngIf="look === 'hoodie' && !isBack"
+          [attr.fill]="topDark"
+          d="M84 98 c8 10 12 12 16 12 s8-2 16-12 c-6 4-12 8-16 8 s-10-4-16-8z"
+        />
+        <path
+          *ngIf="(look === 'blazer' || look === 'jacket') && !isBack"
+          d="M86 100 l14 28 14-28"
+          fill="none"
+          [attr.stroke]="accentColor"
+          stroke-width="2.5"
+          stroke-linecap="round"
+        />
+        <rect
+          *ngIf="look === 'tracksuit' && !isBack"
+          x="86"
+          y="118"
+          width="28"
+          height="8"
+          rx="2"
+          [attr.fill]="accentColor"
+          opacity="0.85"
+        />
+        <circle
+          *ngIf="look === 'tee' && !isBack"
+          cx="100"
+          cy="130"
+          r="8"
+          [attr.fill]="accentColor"
+          opacity="0.9"
+        />
+        <path
+          *ngIf="look === 'sweater' && !isBack"
+          d="M78 112 h44"
+          fill="none"
+          [attr.stroke]="accentColor"
+          stroke-width="3"
+          opacity="0.5"
+        />
+
+        <!-- tactical vest -->
+        <g *ngIf="hasVest && !isBack">
+          <path
+            fill="#2f3640"
+            d="M78 108 h44 v52 c-8 4-16 6-22 6 s-14-2-22-6z"
+            opacity="0.92"
+          />
+          <rect x="84" y="118" width="12" height="16" rx="2" fill="#353b48" />
+          <rect x="104" y="118" width="12" height="16" rx="2" fill="#353b48" />
+          <rect x="90" y="140" width="20" height="10" rx="2" [attr.fill]="accentColor" opacity="0.7" />
+        </g>
+
+        <!-- back seam -->
+        <path
+          *ngIf="isBack"
+          d="M100 106 v60"
+          fill="none"
+          stroke="rgba(0,0,0,0.12)"
+          stroke-width="2"
+        />
+      </g>
+
+      <!-- Head -->
+      <g class="sg-head">
+        <!-- back hair mass -->
+        <ellipse
+          *ngIf="isBack || hairStyle === 'wavy' || hairStyle === 'ponytail' || hairStyle === 'bun'"
+          cx="100"
+          cy="58"
+          rx="38"
+          ry="42"
+          [attr.fill]="'url(#' + uid + '-hair)'"
+        />
+
+        <!-- face / head oval -->
+        <ellipse
+          cx="100"
+          cy="58"
+          [attr.rx]="isFeminine ? 34 : 32"
+          [attr.ry]="isFeminine ? 38 : 36"
+          [attr.fill]="'url(#' + uid + '-skin)'"
+        />
+
+        <!-- jaw soft -->
+        <ellipse
+          cx="100"
+          cy="78"
+          rx="22"
+          ry="14"
+          [attr.fill]="'url(#' + uid + '-skin)'"
+        />
+
+        <!-- hair styles (front) -->
+        <g *ngIf="!isBack" class="sg-hair-front">
+          <!-- short / swept / buzz fringe -->
+          <path
+            *ngIf="hairStyle === 'short' || hairStyle === 'swept' || hairStyle === 'buzz'"
+            [attr.fill]="'url(#' + uid + '-hair)'"
+            d="M66 52 c4-28 22-40 34-40 s30 12 34 40 c-8-14-18-20-34-20 s-26 6-34 20z"
+          />
+          <path
+            *ngIf="hairStyle === 'swept'"
+            [attr.fill]="hairLight"
+            d="M78 28 c10-8 22-6 30 2 c-12 2-22 8-30 16z"
+            opacity="0.85"
+          />
+          <!-- ponytail -->
+          <path
+            *ngIf="hairStyle === 'ponytail' || hairStyle === 'bun'"
+            [attr.fill]="'url(#' + uid + '-hair)'"
+            d="M64 48 c6-26 24-38 36-38 s30 12 36 38 c-10-12-22-18-36-18 s-26 6-36 18z"
+          />
+          <ellipse
+            *ngIf="hairStyle === 'ponytail'"
+            cx="138"
+            cy="70"
+            rx="10"
+            ry="28"
+            [attr.fill]="hairColor"
+            transform="rotate(18 138 70)"
+          />
+          <circle
+            *ngIf="hairStyle === 'bun'"
+            cx="100"
+            cy="18"
+            r="14"
+            [attr.fill]="hairColor"
+          />
+          <!-- wavy side locks -->
+          <path
+            *ngIf="hairStyle === 'wavy'"
+            [attr.fill]="'url(#' + uid + '-hair)'"
+            d="M64 48 c2-24 20-40 36-40 s34 16 36 40 c-4-8-10-14-16-16 v40 c-6-10-14-14-20-14 s-14 4-20 14 V32 c-6 2-12 8-16 16z"
+          />
+          <path
+            *ngIf="hairStyle === 'wavy'"
+            [attr.fill]="hairColor"
+            d="M62 70 c-4 18 0 36 6 44 c2-16 4-28 2-44z"
+          />
+          <path
+            *ngIf="hairStyle === 'wavy'"
+            [attr.fill]="hairColor"
+            d="M138 70 c4 18 0 36-6 44 c-2-16-4-28-2-44z"
+          />
+        </g>
+
+        <!-- back hair detail -->
+        <g *ngIf="isBack">
+          <path
+            [attr.fill]="hairColor"
+            d="M70 40 c8-20 20-28 30-28 s22 8 30 28 c-10-8-20-12-30-12 s-20 4-30 12z"
+          />
+          <ellipse
+            *ngIf="hairStyle === 'ponytail'"
+            cx="100"
+            cy="110"
+            rx="12"
+            ry="36"
+            [attr.fill]="hairColor"
+          />
+        </g>
+
+        <!-- Face features -->
+        <g *ngIf="faceVisible" class="sg-face">
+          <ellipse cx="82" cy="68" rx="7" ry="5" [attr.fill]="'url(#' + uid + '-cheek)'" />
+          <ellipse cx="118" cy="68" rx="7" ry="5" [attr.fill]="'url(#' + uid + '-cheek)'" />
+
+          <path d="M78 48 q4-3 8 0" fill="none" stroke="rgba(40,30,20,0.45)" stroke-width="1.6" stroke-linecap="round" />
+          <path d="M114 48 q4-3 8 0" fill="none" stroke="rgba(40,30,20,0.45)" stroke-width="1.6" stroke-linecap="round" />
+
+          <ellipse cx="84" cy="58" rx="6.5" ry="7" fill="#fff" />
+          <ellipse cx="116" cy="58" rx="6.5" ry="7" fill="#fff" />
+          <circle cx="85" cy="59" r="3.2" fill="#1a1a2e" />
+          <circle cx="117" cy="59" r="3.2" fill="#1a1a2e" />
+          <circle cx="86.2" cy="57.5" r="1" fill="#fff" opacity="0.9" />
+          <circle cx="118.2" cy="57.5" r="1" fill="#fff" opacity="0.9" />
+
+          <path
+            d="M96 66 c2 3 6 3 8 0"
+            fill="none"
+            [attr.stroke]="skinDark"
+            stroke-width="1.8"
+            stroke-linecap="round"
+          />
+
+          <path
+            class="sg-smile"
+            d="M88 76 q12 10 24 0"
+            fill="none"
+            stroke="#1a1a2e"
+            stroke-width="2.4"
+            stroke-linecap="round"
+          />
+        </g>
+
+        <g *ngIf="sleepFace" class="sg-face-sleep">
+          <path d="M78 58 q6 4 12 0" fill="none" stroke="#1a1a2e" stroke-width="2.2" stroke-linecap="round" />
+          <path d="M110 58 q6 4 12 0" fill="none" stroke="#1a1a2e" stroke-width="2.2" stroke-linecap="round" />
+          <ellipse cx="100" cy="76" rx="5" ry="3.5" fill="rgba(0,0,0,0.12)" />
+        </g>
+
+        <!-- Glasses -->
+        <g *ngIf="hasGlasses && !isBack && motion !== 'sleep'" class="sg-glasses">
+          <rect x="72" y="52" width="22" height="14" rx="4" fill="#111" opacity="0.55" />
+          <rect x="106" y="52" width="22" height="14" rx="4" fill="#111" opacity="0.55" />
+          <path d="M94 58 h12" stroke="#222" stroke-width="2" />
+          <path d="M72 56 h-6" stroke="#222" stroke-width="2" stroke-linecap="round" />
+          <path d="M128 56 h6" stroke="#222" stroke-width="2" stroke-linecap="round" />
+        </g>
+
+        <!-- Cap -->
+        <g *ngIf="hasCap" class="sg-cap">
+          <path
+            [attr.fill]="accentColor"
+            d="M62 42 c8-22 28-32 38-32 s30 10 38 32 c-12-8-26-12-38-12 s-26 4-38 12z"
+          />
+          <path
+            *ngIf="!isBack"
+            fill="#2d3436"
+            d="M100 42 h48 c2 0 4 2 4 4 v4 H100z"
+            opacity="0.9"
+          />
+          <text
+            *ngIf="!isBack"
+            x="88"
+            y="38"
+            font-size="12"
+            font-weight="900"
+            fill="#fff"
+            font-family="Trebuchet MS, sans-serif"
+          >
+            S
+          </text>
+        </g>
+      </g>
+    </g>
+  </svg>
 </div>

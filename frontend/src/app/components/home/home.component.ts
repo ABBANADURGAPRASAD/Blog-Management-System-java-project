@@ -22,9 +22,14 @@ import { FollowersAndFollowingService } from 'src/app/services/followers-and-fol
 })
 export class HomeComponent implements OnInit {
   posts: Post[] = [];
+  /** Unfiltered feed used when toggling sidebar filters off. */
+  allPosts: Post[] = [];
   popularPosts: Post[] = [];
   recentComments: Comment[] = [];
   tags: string[] = [];
+  selectedTag: string | null = null;
+  selectedPopularPostId: number | null = null;
+  selectedSuggestion: string | null = null;
   currentPage = 1;
   totalPages = 1;
   currentUserId: number | null = null;
@@ -94,16 +99,53 @@ export class HomeComponent implements OnInit {
   loadPosts() {
     this.postService.getAllPosts().subscribe({
       next: (data) => {
-        this.posts = this.transformPosts(data);
+        this.allPosts = this.transformPosts(data);
+        this.posts = [...this.allPosts];
         this.extractTags();
-        // Calculate total pages (assuming 9 posts per page)
-        this.totalPages = Math.ceil(this.posts.length / 9);
+        this.recomputePages();
+        this.applyActiveFilter();
       },
       error: (error) => {
         console.error('Error loading posts:', error);
+        this.allPosts = [];
         this.posts = [];
       }
     });
+  }
+
+  private recomputePages() {
+    this.totalPages = Math.max(1, Math.ceil(this.posts.length / 9));
+    if (this.currentPage > this.totalPages) {
+      this.currentPage = 1;
+    }
+  }
+
+  private clearFilters() {
+    this.selectedTag = null;
+    this.selectedPopularPostId = null;
+    this.selectedSuggestion = null;
+    this.posts = [...this.allPosts];
+    this.recomputePages();
+  }
+
+  private applyActiveFilter() {
+    if (this.selectedTag) {
+      this.posts = this.allPosts.filter((post) =>
+        post.tags?.toLowerCase().includes(this.selectedTag!.toLowerCase())
+      );
+    } else if (this.selectedPopularPostId != null) {
+      this.posts = this.allPosts.filter((p) => p.id === this.selectedPopularPostId);
+    } else if (this.selectedSuggestion) {
+      const q = this.selectedSuggestion.toLowerCase();
+      this.posts = this.allPosts.filter((post) => {
+        const author = (post.author || '').toLowerCase();
+        const handle = ((post as any).user?.userName || (post as any).user?.username || '').toLowerCase();
+        return author.includes(q) || handle.includes(q);
+      });
+    } else {
+      this.posts = [...this.allPosts];
+    }
+    this.recomputePages();
   }
 
   loadPopularPosts() {
@@ -315,10 +357,39 @@ export class HomeComponent implements OnInit {
     }
   }
 
+  /** First tap applies filter; second tap on same item clears it. */
   onTagClick(tag: string) {
-    this.posts = this.posts.filter(post =>
-      post.tags?.toLowerCase().includes(tag.toLowerCase())
-    );
+    if (this.selectedTag === tag) {
+      this.clearFilters();
+      return;
+    }
+    this.selectedTag = tag;
+    this.selectedPopularPostId = null;
+    this.selectedSuggestion = null;
+    this.applyActiveFilter();
+  }
+
+  onPopularPostClick(post: Post) {
+    if (!post.id) return;
+    if (this.selectedPopularPostId === post.id) {
+      this.clearFilters();
+      return;
+    }
+    this.selectedPopularPostId = post.id;
+    this.selectedTag = null;
+    this.selectedSuggestion = null;
+    this.applyActiveFilter();
+  }
+
+  onSuggestionClick(userHandle: string) {
+    if (this.selectedSuggestion === userHandle) {
+      this.clearFilters();
+      return;
+    }
+    this.selectedSuggestion = userHandle;
+    this.selectedTag = null;
+    this.selectedPopularPostId = null;
+    this.applyActiveFilter();
   }
 
   getUserAccount() {

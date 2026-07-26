@@ -1,0 +1,57 @@
+<div class="ag-page" *ngIf="character as c">
+  <header class="ag-top">
+    <button type="button" class="ag-back" (click)="goBack()">← Back</button>
+    <h1 class="ag-brand">Avatar Games</h1>
+  </header>
+
+  <!-- Section 1: name + living avatar -->
+  <section class="ag-section ag-section-avatar" aria-label="Your avatar">
+    <h2 class="ag-avatar-name">{{ c.name }}</h2>
+    <div class="ag-avatar-stage">
+      <span class="ag-speech" [class.ag-speech-sleep]="avatarMotion === 'sleep'">{{ speech }}</span>
+      <app-strangers-game-avatar
+        class="ag-avatar-figure"
+        [skinColor]="c.skinColor"
+        [shape]="c.shape"
+        [outfitId]="c.outfitId"
+        size="lg"
+        [facing]="avatarFacing"
+        [motion]="avatarMotion"
+      ></app-strangers-game-avatar>
+    </div>
+    <p class="ag-avatar-caption">  Waves hi on open · bye when you scroll · sleeps if you go idle </p>
+  </section>
+
+  <!-- Section 2: map only — goes to streets page -->
+  <section class="ag-section ag-section-map" aria-label="Street map">
+    <p class="ag-section-label">Streets</p>
+    <div class="ag-map-shell">
+      <div #mapPane class="ag-map-pane" role="img" aria-label="Play map"></div>
+      <div class="ag-map-center">
+        <button type="button" class="ag-lets-go" (click)="onLetsGo()">Let's Go</button>
+        <p class="ag-map-hint">
+          {{ mapHint || 'Enter Avatar City — walk parks, shops, harbor & more.' }}
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Section 3: games with strangers / friends / avatar -->
+  <section class="ag-section ag-section-games" aria-label="Games">
+    <p class="ag-section-label">Play with strangers, followers & friends</p>
+    <h2 class="ag-games-title">Pick a game</h2>
+    <div class="ag-games-grid">
+      <button
+        type="button"
+        class="ag-game-tile"
+        *ngFor="let tile of gameTiles"
+        [attr.data-theme]="tile.theme"
+        (click)="onGamePick(tile)"
+      >
+        <span class="ag-game-tag">{{ tile.tag }}</span>
+        <span class="ag-game-title">{{ tile.title }}</span>
+        <span class="ag-game-blurb">{{ tile.blurb }}</span>
+      </button>
+    </div>
+  </section>
+</div>

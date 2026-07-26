@@ -1,0 +1,26 @@
+<div class="cp-page" [attr.data-mode]="mode">
+  <header class="cp-top">
+    <button type="button" class="cp-back" (click)="goBack()">← Lobby</button>
+    <h1>Chess match</h1>
+  </header>
+  <p class="cp-status">{{ status }}</p>
+  <p class="cp-meta">
+    Mode: <strong>{{ mode }}</strong>
+    <span *ngIf="room"> · Room {{ room }}</span>
+    <span *ngIf="friend"> · Friend {{ friend }}</span>
+  </p>
+
+  <div class="cp-board" role="grid" aria-label="Chess board">
+    <div class="cp-row" *ngFor="let row of board; let r = index">
+      <button
+        type="button"
+        class="cp-cell"
+        *ngFor="let cell of row; let c = index"
+        [class]="cellClass(r, c)"
+        (click)="onCell(r, c)"
+      >
+        {{ cell }}
+      </button>
+    </div>
+  </div>
+</div>

@@ -49,8 +49,8 @@
           </div>
           <div class="post-header">
             <h3 class="post-title">{{ post.title || 'Untitled Post' }}</h3>
-            <p class="post-description">{{ post.content | slice:0:150 }}{{ post.content && post.content.length > 150 ?
-              '...' : '' }}</p>
+            <!-- <p class="post-description">{{ post.content | slice:0:150 }}{{ post.content && post.content.length > 150 ?
+              '...' : '' }}</p> -->
           </div>
 
           <div class="post-content">
@@ -126,38 +126,67 @@
       </div>
     </div>
 
-<!-- Sidebar -->
-<div class="sidebar-section">
-  <!-- Popular Posts -->
-  <div class="sidebar-posts" *ngIf="popularPosts.length > 0">
+<!-- Sidebar: fixed titles, scrollable lists; tap to filter, tap again to clear -->
+<aside class="sidebar-section">
+  <div class="sidebar-panel sidebar-posts" *ngIf="popularPosts.length > 0">
     <div class="sidebar-title-container">
       <h3 class="sidebar-title">Popular Posts</h3>
     </div>
-    <div class="sidebar-item" *ngFor="let post of popularPosts">
-      <img [src]="post.media || post.imageUrl || 'assets/images/image.png'" [alt]="post.title"
-        onerror="this.src='assets/images/image.png'" />
-      <div class="sidebar-item-content">
-        <div class="sidebar-item-title">{{ post.title }}</div>
+    <div class="sidebar-scroll">
+      <button
+        type="button"
+        class="sidebar-item"
+        *ngFor="let post of popularPosts"
+        [class.active]="selectedPopularPostId === post.id"
+        (click)="onPopularPostClick(post)"
+      >
+        <img [src]="post.media || post.imageUrl || 'assets/images/image.png'" [alt]="post.title"
+          onerror="this.src='assets/images/image.png'" />
+        <div class="sidebar-item-content">
+          <div class="sidebar-item-title">{{ post.title }}</div>
+        </div>
+      </button>
+    </div>
+  </div>
+
+  <div class="sidebar-panel sidebar-tags" *ngIf="tags.length > 0">
+    <div class="sidebar-title-container">
+      <h3 class="sidebar-title">Tags</h3>
+    </div>
+    <div class="sidebar-scroll">
+      <div class="tags-container">
+        <button
+          type="button"
+          class="tag"
+          *ngFor="let tag of tags"
+          [class.active]="selectedTag === tag"
+          (click)="onTagClick(tag)"
+        >
+          {{ tag }}
+        </button>
       </div>
     </div>
   </div>
 
-  <!-- Tags -->
-  <div class="sidebar-tags" *ngIf="tags.length > 0">
-    <div class="sidebar-title-container"> <h3 class="sidebar-title">Tags</h3></div>
-    <div class="tags-container">
-      <span class="tag" *ngFor="let tag of tags" (click)="onTagClick(tag)">{{ tag }}</span>
+  <div class="sidebar-panel sidebar-userlist" *ngIf="usersList && usersList.length > 0">
+    <div class="sidebar-title-container">
+      <h3 class="sidebar-title">Suggestions</h3>
+    </div>
+    <div class="sidebar-scroll">
+      <div class="tags-container">
+        <button
+          type="button"
+          class="tag"
+          *ngFor="let user of usersList"
+          [class.active]="selectedSuggestion === user"
+          (click)="onSuggestionClick(user)"
+        >
+          {{ user }}
+        </button>
+      </div>
     </div>
   </div>
-
-  <!-- userlist -->
-  <div class="sidebar-userlist" *ngIf="usersList && usersList.length > 0">
-    <div class="sidebar-title-container">  <h3 class="sidebar-title">Suggestions</h3></div>
-    <div class="tags-container">
-      <span class="tag" *ngFor="let user of usersList">{{ user }}</span>
-    </div>
-  </div>
-</div>
+</aside>
 
   </div>
 

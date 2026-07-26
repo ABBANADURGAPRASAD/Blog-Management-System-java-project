@@ -1,94 +1,106 @@
-<div class="main-container">
-  <div class="profile-layout">
-    <!-- Left Column - Profile Section -->
-    <div class="profile-section">
-      <div class="card profile-card">
-        <div class="profile-banner-wrap">
-          <img
-            *ngIf="bannerSrc()"
-            [src]="bannerSrc()"
-            alt=""
-            class="profile-banner"
-          />
-          <div *ngIf="!bannerSrc()" class="profile-banner-placeholder" aria-hidden="true"></div>
-        </div>
-        <div class="profile-header">
-          <img
-            [src]="profileAvatarSrc()"
-            alt="Profile"
-            class="profile-pic-large"
-          />
-          <div class="profile-header-main">
-            <div class="profile-name-block">
-              <h2 class="profile-name">{{ user?.fullName || user?.username || 'User' }}</h2>
-              <p class="profile-role">{{ user?.role || 'Member' }}</p>
-            </div>
-            <div class="profile-header-actions">
-              <button type="button" class="btn btn-primary" (click)="editProfile()">Edit Profile</button>
-            </div>
+<div class="main-container profile-page">
+  <!-- Section 1: profile (left) + stats / recent activity (right) -->
+  <section class="profile-section-1">
+    <div class="profile-layout">
+      <div class="profile-section">
+        <div class="card profile-card">
+          <div class="profile-banner-wrap">
+            <img
+              *ngIf="bannerSrc()"
+              [src]="bannerSrc()"
+              alt=""
+              class="profile-banner"
+            />
+            <div *ngIf="!bannerSrc()" class="profile-banner-placeholder" aria-hidden="true"></div>
           </div>
-        </div>
-        <div class="profile-body">
-          <h3>About Me</h3>
-          <p class="about-text">{{ user?.bio || 'No bio available.' }}</p>
-          <div class="social-links">
-            <a [href]="'mailto:' + user?.email" class="social-link" *ngIf="user?.email">Email</a>
-            <a [href]="user?.twitterUrl" target="_blank" rel="noopener noreferrer" class="social-link" *ngIf="user?.twitterUrl">Twitter</a>
-            <a [href]="user?.linkedInUrl" target="_blank" rel="noopener noreferrer" class="social-link" *ngIf="user?.linkedInUrl">LinkedIn</a>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- Right Column - Stats and Activity -->
-    <div class="activity-section">
-      <div class="stats-section">
-        <h3 class="section-title">Stats</h3>
-        <div class="stats-grid">
-          <div class="stat-card">
-            <div class="stat-number">{{ user?.postsCount || 0 }}</div>
-            <div class="stat-label">Posts</div>
-          </div>
-          <div class="stat-card stat-card-clickable" (click)="openFollowDialog('following')">
-            <div class="stat-number">{{ user?.followingCount ?? 0 }}</div>
-            <div class="stat-label">Following</div>
-          </div>
-          <div class="stat-card stat-card-clickable" (click)="openFollowDialog('followers')">
-            <div class="stat-number">{{ user?.followersCount ?? 0 }}</div>
-            <div class="stat-label">Followers</div>
-          </div>
-        </div>
-      </div>
-
-      <div class="activity-section-content">
-        <h3 class="section-title">Recent Activity</h3>
-        <div class="activity-timeline" *ngIf="recentActivities.length > 0">
-          <div class="activity-item" *ngFor="let activity of recentActivities">
-            <div class="activity-icon">{{ activity.icon }}</div>
-            <div class="activity-content">
-              <div class="activity-text">{{ activity.text }}</div>
-              <div class="activity-meta">
-                <img
-                  *ngIf="activity.authorPic"
-                  [src]="activity.authorPic"
-                  [alt]="activity.author"
-                  class="activity-author-pic"
-                />
-                <span *ngIf="activity.author">{{ activity.author }}</span>
-                <span *ngIf="activity.date">{{ activity.date }}</span>
-                <span *ngIf="activity.time">{{ activity.time }}</span>
+          <div class="profile-header">
+            <img
+              [src]="profileAvatarSrc()"
+              alt="Profile"
+              class="profile-pic-large"
+            />
+            <div class="profile-header-main">
+              <div class="profile-name-block">
+                <h2 class="profile-name">{{ user?.fullName || user?.username || 'User' }}</h2>
+                <p class="profile-role">{{ user?.role || 'Member' }}</p>
+              </div>
+              <div class="profile-header-actions">
+                <button type="button" class="btn btn-primary" (click)="editProfile()">Edit Profile</button>
               </div>
             </div>
           </div>
+          <div class="profile-body">
+            <h3>About Me</h3>
+            <p class="about-text">{{ user?.bio || 'No bio available.' }}</p>
+            <div class="social-links">
+              <a [href]="'mailto:' + user?.email" class="social-link" *ngIf="user?.email">Email</a>
+              <a [href]="user?.twitterUrl" target="_blank" rel="noopener noreferrer" class="social-link" *ngIf="user?.twitterUrl">Twitter</a>
+              <a [href]="user?.linkedInUrl" target="_blank" rel="noopener noreferrer" class="social-link" *ngIf="user?.linkedInUrl">LinkedIn</a>
+            </div>
+            <div class="profile-location" *ngIf="user?.country || user?.town">
+              <span *ngIf="user?.town">{{ user?.town }}</span>
+              <span *ngIf="user?.state">, {{ user?.state }}</span>
+              <span *ngIf="user?.country"> · {{ user?.country }}</span>
+            </div>
+          </div>
         </div>
-        <p class="activity-empty" *ngIf="recentActivities.length === 0">No recent activity yet.</p>
+      </div>
+
+      <div class="activity-section">
+        <div class="stats-section">
+          <div class="section-header-fixed">
+            <h3 class="section-title">Profile</h3>
+          </div>
+          <div class="stats-grid">
+            <div class="stat-card">
+              <div class="stat-number">{{ user?.postsCount || 0 }}</div>
+              <div class="stat-label">Posts</div>
+            </div>
+            <div class="stat-card stat-card-clickable" (click)="openFollowDialog('following')">
+              <div class="stat-number">{{ user?.followingCount ?? 0 }}</div>
+              <div class="stat-label">Following</div>
+            </div>
+            <div class="stat-card stat-card-clickable" (click)="openFollowDialog('followers')">
+              <div class="stat-number">{{ user?.followersCount ?? 0 }}</div>
+              <div class="stat-label">Followers</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="activity-panel">
+          <div class="section-header-fixed">
+            <h3 class="section-title">Recent Activity</h3>
+          </div>
+          <div class="activity-scroll">
+            <div class="activity-timeline" *ngIf="recentActivities.length > 0">
+              <div class="activity-item" *ngFor="let activity of recentActivities">
+                <div class="activity-icon">{{ activity.icon }}</div>
+                <div class="activity-content">
+                  <div class="activity-text">{{ activity.text }}</div>
+                  <div class="activity-meta">
+                    <img
+                      *ngIf="activity.authorPic"
+                      [src]="activity.authorPic"
+                      [alt]="activity.author"
+                      class="activity-author-pic"
+                    />
+                    <span *ngIf="activity.author">{{ activity.author }}</span>
+                    <span *ngIf="activity.date">{{ activity.date }}</span>
+                    <span *ngIf="activity.time">{{ activity.time }}</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <p class="activity-empty" *ngIf="recentActivities.length === 0">No recent activity yet.</p>
+          </div>
+        </div>
       </div>
     </div>
-  </div>
+  </section>
 
-  <!-- Photos / Videos / Tags -->
-  <div class="profile-content-tabs">
-    <div class="content-tabs content-tabs-row content-tabs-spread">
+  <!-- Section 2: photos / videos / tags — fixed tab header, scrollable grid -->
+  <section class="profile-section-2 profile-content-tabs">
+    <div class="content-tabs content-tabs-row content-tabs-spread section-header-fixed">
       <button type="button" class="content-tab" [class.active]="contentTab === 'photos'" (click)="setContentTab('photos')">
         <span class="tab-icon">▦</span> Photos
       </button>
@@ -99,7 +111,7 @@
         <span class="tab-icon">⌖</span> Tags
       </button>
     </div>
-    <div class="content-grid-wrap">
+    <div class="content-grid-wrap content-scroll">
       <p class="loading-msg" *ngIf="postsLoading">Loading...</p>
       <div class="content-grid" *ngIf="!postsLoading && activePosts.length > 0">
         <a *ngFor="let post of activePosts" [routerLink]="['/posts', post.id]" class="grid-item">
@@ -115,7 +127,7 @@
       </div>
       <p class="empty-msg" *ngIf="!postsLoading && activePosts.length === 0">No {{ contentTab }} yet.</p>
     </div>
-  </div>
+  </section>
 </div>
 
 <app-followers-and-following
@@ -126,4 +138,3 @@
   (close)="closeFollowDialog()"
   (countsChanged)="loadFollowCounts()"
 ></app-followers-and-following>
-

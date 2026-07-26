@@ -1,37 +1,4 @@
 <div class="feel-page">
-  <header class="feel-topnav" role="banner">
-    <a routerLink="/home" class="feel-brand" aria-label="Feel Free home">Feel Free</a>
-    <div class="feel-nav-search-wrap">
-      <input
-        type="search"
-        class="feel-nav-search"
-        placeholder="Search users…"
-        disabled
-        aria-disabled="true"
-        title="Preview only"
-      />
-    </div>
-    <div class="feel-nav-actions">
-      <span class="feel-nav-icon" title="Messages (preview)" aria-hidden="true">
-        <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true">
-          <path
-            fill="currentColor"
-            d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm0 14H6l-2 2V4h16v12z"
-          />
-        </svg>
-      </span>
-      <span class="feel-nav-icon" title="Notifications (preview)" aria-hidden="true">
-        <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true">
-          <path
-            fill="currentColor"
-            d="M12 22c1.1 0 2-.9 2-2h-4c0 1.1.89 2 2 2zm6-6V11c0-3.07-1.64-5.64-4.5-6.32V4c0-.83-.67-1.5-1.5-1.5s-1.5.67-1.5 1.5v.68C7.63 5.36 6 7.92 6 11v5l-2 2v1h16v-1l-2-2z"
-          />
-        </svg>
-      </span>
-      <span class="feel-avatar-mini" title="Account">FF</span>
-    </div>
-  </header>
-
   <main class="feel-main">
   <a routerLink="/home" class="nav-back feel-nav-back">← Back to home</a>
 
@@ -40,6 +7,10 @@
        <p class="feel-sub">
       Connect with strangers anonymously using random match or explore the map in Mr. Map Zone to find people nearby.
     </p>
+    <div class="city-chat-banner" *ngIf="cityChatPeerName">
+      <strong>Avatar City request</strong>
+      <span>You asked to chat with {{ cityChatPeerName }}. Start a random match to continue.</span>
+    </div>
     <button type="button" class="linkish" (click)="privacyOpen = !privacyOpen">Privacy &amp; safety</button>
     <div class="privacy-panel" *ngIf="privacyOpen">
       <ul>
@@ -89,9 +60,34 @@
         >
       </div>
 
+      <p class="feel-place-label" *ngIf="locationPlaceLabel">
+        <svg viewBox="0 0 24 24" width="14" height="14" aria-hidden="true">
+          <path
+            fill="currentColor"
+            d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"
+          />
+        </svg>
+        {{ locationPlaceLabel }}
+      </p>
+      <p class="feel-place-loading" *ngIf="locationResolving && !locationPlaceLabel">Resolving place name…</p>
+
       <div class="feel-manual-loc" *ngIf="!locationLive">
-        <label>Latitude <input type="number" [(ngModel)]="randomLat" step="0.0001" /></label>
-        <label>Longitude <input type="number" [(ngModel)]="randomLng" step="0.0001" /></label>
+        <label
+          >Latitude
+          <input
+            type="number"
+            [(ngModel)]="randomLat"
+            step="0.0001"
+            (ngModelChange)="onCoordsChanged()"
+          /></label>
+        <label
+          >Longitude
+          <input
+            type="number"
+            [(ngModel)]="randomLng"
+            step="0.0001"
+            (ngModelChange)="onCoordsChanged()"
+          /></label>
         <button type="button" class="secondary feel-inline-btn" (click)="useGeolocation()">
           Use my location once
         </button>
@@ -230,6 +226,7 @@
           </h3>
           <p class="map-zone-coords">
             {{ randomLat | number : '1.4-4' }}°, {{ randomLng | number : '1.4-4' }}°
+            <span *ngIf="locationPlaceLabel"> · {{ locationPlaceLabel }}</span>
             <span class="map-user-count"
               >· <strong>{{ otherPlayersOnMap }}</strong> other users on map</span
             >

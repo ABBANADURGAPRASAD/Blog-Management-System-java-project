@@ -2,164 +2,145 @@
   display: flex;
   align-items: flex-end;
   justify-content: center;
+  line-height: 0;
+  user-select: none;
 }
 
-.sg-avatar-body {
-  position: relative;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
+.sg-avatar-svg {
+  display: block;
+  overflow: visible;
+  transform-origin: center bottom;
 }
 
-.sg-avatar-head {
-  position: relative;
-  border-radius: 50%;
-  border: 3px solid rgba(0, 0, 0, 0.12);
-  box-shadow: 0 4px 0 rgba(0, 0, 0, 0.08);
-  z-index: 3;
-}
-
-.sg-eye {
-  position: absolute;
-  top: 38%;
-  width: 8%;
-  height: 8%;
-  background: #1a1a2e;
-  border-radius: 50%;
-}
-
-.sg-eye-l {
-  left: 28%;
-}
-
-.sg-eye-r {
-  right: 28%;
-}
-
-.sg-mouth {
-  position: absolute;
-  bottom: 22%;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 22%;
-  height: 12%;
-  border: 3px solid #1a1a2e;
-  border-top: none;
-  border-radius: 0 0 50% 50%;
-  background: transparent;
-}
-
-.sg-avatar-torso {
-  margin-top: -8%;
-  border-radius: 18px 18px 10px 10px;
-  border: 3px solid rgba(0, 0, 0, 0.1);
-  position: relative;
-  z-index: 2;
-}
-
-.sg-avatar-accent {
-  position: absolute;
-  left: 50%;
-  top: 35%;
-  transform: translateX(-50%);
-  width: 28%;
-  height: 18%;
-  border-radius: 6px;
-  opacity: 0.85;
-}
-
-.sg-avatar-legs {
-  margin-top: -4%;
-  border-radius: 8px 8px 14px 14px;
-  border: 3px solid rgba(0, 0, 0, 0.1);
-  z-index: 1;
-}
-
-/* Sizes */
-.sg-avatar-sm .sg-avatar-head {
-  width: 44px;
-  height: 44px;
-}
-
-.sg-avatar-sm .sg-avatar-torso {
-  width: 36px;
-  height: 32px;
-}
-
-.sg-avatar-sm .sg-avatar-legs {
-  width: 32px;
-  height: 22px;
-}
-
-.sg-avatar-md .sg-avatar-head {
+.sg-avatar-sm .sg-avatar-svg {
   width: 72px;
-  height: 72px;
+  height: 100px;
 }
 
-.sg-avatar-md .sg-avatar-torso {
-  width: 58px;
-  height: 50px;
+.sg-avatar-md .sg-avatar-svg {
+  width: 120px;
+  height: 168px;
 }
 
-.sg-avatar-md .sg-avatar-legs {
-  width: 50px;
-  height: 34px;
+.sg-avatar-lg .sg-avatar-svg {
+  width: 168px;
+  height: 236px;
 }
 
-.sg-avatar-lg .sg-avatar-head {
-  width: 110px;
-  height: 110px;
+.sg-figure {
+  transform-origin: 100px 240px;
 }
 
-.sg-avatar-lg .sg-avatar-torso {
-  width: 88px;
-  height: 76px;
+.sg-arm-r {
+  transform-origin: 132px 110px;
 }
 
-.sg-avatar-lg .sg-avatar-legs {
-  width: 76px;
-  height: 52px;
+.sg-hand-r {
+  transform-origin: 150px 158px;
 }
 
-/* Shapes */
-.sg-shape-round .sg-avatar-head {
-  transform: scale(1.05);
+/* Idle bob */
+.sg-motion-idle .sg-figure {
+  animation: sg-idle-bob 2.4s ease-in-out infinite;
 }
 
-.sg-shape-tall .sg-avatar-head {
-  transform: scale(0.95, 1.08);
+@keyframes sg-idle-bob {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-5px);
+  }
 }
 
-.sg-shape-tall .sg-avatar-torso {
-  height: 58px;
-  width: 48px;
+/* Hi / Bye wave */
+.sg-motion-hi .sg-arm-r,
+.sg-motion-bye .sg-arm-r {
+  animation: sg-wave-arm 0.55s ease-in-out infinite;
 }
 
-.sg-shape-tall .sg-avatar-legs {
-  height: 42px;
-  width: 42px;
+.sg-motion-hi .sg-hand-r,
+.sg-motion-bye .sg-hand-r {
+  animation: sg-wave-hand 0.55s ease-in-out infinite;
 }
 
-.sg-shape-wide .sg-avatar-head {
-  transform: scale(1.12, 1.02);
+.sg-motion-hi .sg-smile {
+  stroke-width: 3;
 }
 
-.sg-shape-wide .sg-avatar-torso {
-  width: 72px;
-  height: 48px;
+.sg-motion-bye .sg-figure {
+  animation: sg-bye-sway 1.1s ease-in-out infinite;
 }
 
-.sg-shape-wide .sg-avatar-legs {
-  width: 64px;
-  height: 32px;
+@keyframes sg-wave-arm {
+  0%,
+  100% {
+    transform: rotate(-25deg);
+  }
+  50% {
+    transform: rotate(-70deg);
+  }
 }
 
-.sg-avatar-lg.sg-shape-tall .sg-avatar-torso {
-  height: 88px;
-  width: 72px;
+@keyframes sg-wave-hand {
+  0%,
+  100% {
+    transform: translate(0, 0);
+  }
+  50% {
+    transform: translate(-2px, -8px);
+  }
 }
 
-.sg-avatar-lg.sg-shape-wide .sg-avatar-torso {
-  width: 104px;
-  height: 72px;
+@keyframes sg-bye-sway {
+  0%,
+  100% {
+    transform: rotate(-2deg);
+  }
+  50% {
+    transform: rotate(2deg);
+  }
+}
+
+/* Sleep */
+.sg-motion-sleep .sg-figure {
+  animation: sg-sleep-breathe 2.8s ease-in-out infinite;
+  transform: rotate(-6deg) translateY(4px);
+}
+
+@keyframes sg-sleep-breathe {
+  0%,
+  100% {
+    transform: rotate(-6deg) translateY(4px);
+  }
+  50% {
+    transform: rotate(-6deg) translateY(8px);
+  }
+}
+
+.sg-facing-back .sg-face,
+.sg-facing-back .sg-glasses {
+  display: none;
+}
+
+/* Side views for city walk (left mirrors) */
+.sg-facing-left .sg-avatar-svg {
+  transform: scaleX(-1);
+}
+
+.sg-facing-side .sg-avatar-svg {
+  transform-origin: center bottom;
+}
+
+.sg-facing-right.sg-avatar-md .sg-avatar-svg,
+.sg-facing-left.sg-avatar-md .sg-avatar-svg {
+  /* slight lean reads as profile while walking */
+  transform: none;
+}
+
+.sg-facing-left.sg-avatar-sm .sg-avatar-svg,
+.sg-facing-left.sg-avatar-md .sg-avatar-svg,
+.sg-facing-left.sg-avatar-lg .sg-avatar-svg {
+  transform: scaleX(-1);
 }

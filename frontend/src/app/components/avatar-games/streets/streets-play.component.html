@@ -1,0 +1,25 @@
+<div class="st-page" *ngIf="character as c">
+  <header class="st-top">
+    <button type="button" class="st-back" (click)="goBack()">← Hub</button>
+    <h1>Streets</h1>
+  </header>
+
+  <div class="st-you">
+    <app-strangers-game-avatar
+      [skinColor]="c.skinColor"
+      [shape]="c.shape"
+      [outfitId]="c.outfitId"
+      size="md"
+      facing="back"
+      motion="idle"
+    ></app-strangers-game-avatar>
+    <div>
+      <strong>{{ c.name }}</strong>
+      <p>{{ status }}</p>
+    </div>
+  </div>
+
+  <div class="st-map-shell">
+    <div #mapPane class="st-map"></div>
+  </div>
+</div>

@@ -85,6 +85,18 @@ public class UserServiceImpl implements UserService {
             user.setLinkedinUrl(userDetails.getLinkedinUrl());
             user.setProfileImageUrl(userDetails.getProfileImageUrl());
             user.setBackgroundImageUrl(userDetails.getBackgroundImageUrl());
+            if (userDetails.getGender() != null) {
+                user.setGender(userDetails.getGender());
+            }
+            if (userDetails.getCountry() != null) {
+                user.setCountry(userDetails.getCountry());
+            }
+            if (userDetails.getState() != null) {
+                user.setState(userDetails.getState());
+            }
+            if (userDetails.getTown() != null) {
+                user.setTown(userDetails.getTown());
+            }
             return userRepository.save(user);
         }).orElseThrow(() -> new RuntimeException("User not found"));
     }

@@ -1,0 +1,70 @@
+<div class="ch-page" [class.ch-mode-strangers]="selected === 'strangers'" [class.ch-mode-friends]="selected === 'friends'" [class.ch-mode-avatar]="selected === 'avatar'">
+  <header class="ch-top">
+    <button type="button" class="ch-back" (click)="goBack()">← Hub</button>
+    <h1>Chess</h1>
+  </header>
+
+  <div class="ch-hero" *ngIf="character as c">
+    <app-strangers-game-avatar
+      [skinColor]="c.skinColor"
+      [shape]="c.shape"
+      [outfitId]="c.outfitId"
+      size="md"
+      motion="hi"
+    ></app-strangers-game-avatar>
+    <div>
+      <p class="ch-kicker">How do you want to play?</p>
+      <strong>{{ c.name }}</strong>
+    </div>
+  </div>
+
+  <div class="ch-options">
+    <button
+      type="button"
+      class="ch-opt"
+      [class.ch-opt-on]="selected === 'strangers'"
+      (click)="selectMode('strangers')"
+    >
+      <span class="ch-opt-num">i</span>
+      <span class="ch-opt-title">Play with strangers</span>
+      <span class="ch-opt-blurb">Match a random opponent nearby or online.</span>
+    </button>
+
+    <button
+      type="button"
+      class="ch-opt"
+      [class.ch-opt-on]="selected === 'friends'"
+      (click)="selectMode('friends')"
+    >
+      <span class="ch-opt-num">ii</span>
+      <span class="ch-opt-title">Create a room or request a friend</span>
+      <span class="ch-opt-blurb">Share a code with followers / following.</span>
+    </button>
+
+    <button
+      type="button"
+      class="ch-opt"
+      [class.ch-opt-on]="selected === 'avatar'"
+      (click)="selectMode('avatar')"
+    >
+      <span class="ch-opt-num">iii</span>
+      <span class="ch-opt-title">Play with your avatar</span>
+      <span class="ch-opt-blurb">Practice against your street character (local).</span>
+    </button>
+  </div>
+
+  <div class="ch-friends" *ngIf="selected === 'friends'">
+    <label>
+      Room code
+      <input [(ngModel)]="roomCode" maxlength="8" placeholder="ABC123" />
+    </label>
+    <label>
+      Or request friend
+      <input [(ngModel)]="friendName" placeholder="Friend display name" />
+    </label>
+  </div>
+
+  <p class="ch-status" *ngIf="status">{{ status }}</p>
+
+  <button type="button" class="ch-start" (click)="start()">Start match</button>
+</div>

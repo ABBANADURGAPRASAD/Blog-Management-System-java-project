@@ -8,7 +8,7 @@ import {
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { RouterModule } from '@angular/router';
+import { RouterModule, ActivatedRoute } from '@angular/router';
 import { HttpErrorResponse } from '@angular/common/http';
 import { AuthService } from '../../services/auth.service';
 import {
@@ -68,6 +68,10 @@ export class RandomChatComponent implements OnInit, OnDestroy {
   mapAvailability: MapMarkerStatus = 'AVAILABLE';
   mapHint = '';
 
+  /** Banner when arriving from Avatar City meetup chat request. */
+  cityChatPeerName: string | null = null;
+  cityChatPeerId: number | null = null;
+
   private leafletMap: any = null;
   private markerLayerGroup: any = null;
   private selfCircle: any = null;
@@ -82,16 +86,34 @@ export class RandomChatComponent implements OnInit, OnDestroy {
   privacyOpen = false;
   locationLive = false;
 
+  /** Human-readable place: "Town, Country" from reverse geocode. */
+  locationPlaceLabel = '';
+  locationResolving = false;
+  private placeLookupTimer: ReturnType<typeof setTimeout> | null = null;
+  private placeLookupSeq = 0;
+
   constructor(
     private auth: AuthService,
     private anonymousApi: AnonymousChatService,
-    private zone: NgZone
+    private zone: NgZone,
+    private route: ActivatedRoute
   ) {}
 
   ngOnInit(): void {
     const u = this.auth.getCurrentUser();
     this.currentUserId = u?.id ?? null;
     this.startPendingSessionPoll();
+    this.schedulePlaceLookup();
+
+    const q = this.route.snapshot.queryParamMap;
+    if (q.get('fromCity') === '1') {
+      this.cityChatPeerName = q.get('peerName');
+      const id = Number(q.get('peerId'));
+      this.cityChatPeerId = Number.isFinite(id) && id > 0 ? id : null;
+      this.randomHint = this.cityChatPeerName
+        ? `City meetup: chat requested with ${this.cityChatPeerName}. Start a random match below.`
+        : 'City meetup: chat requested. Start a random match below.';
+    }
   }
 
   ngOnDestroy(): void {
@@ -101,9 +123,67 @@ export class RandomChatComponent implements OnInit, OnDestroy {
     this.stopMapPoll();
     this.teardownMap();
     this.anonymousApi.disconnectStomp();
+    if (this.placeLookupTimer) {
+      clearTimeout(this.placeLookupTimer);
+      this.placeLookupTimer = null;
+    }
     if (this.currentUserId && !this.session) {
       this.anonymousApi.clearMapPresence(this.currentUserId).subscribe({ error: () => {} });
     }
+  }
+
+  onCoordsChanged(): void {
+    this.schedulePlaceLookup();
+  }
+
+  private schedulePlaceLookup(): void {
+    if (this.placeLookupTimer) {
+      clearTimeout(this.placeLookupTimer);
+    }
+    this.placeLookupTimer = setTimeout(() => this.resolvePlaceName(), 450);
+  }
+
+  private resolvePlaceName(): void {
+    const lat = this.randomLat;
+    const lng = this.randomLng;
+    if (lat == null || lng == null || Number.isNaN(lat) || Number.isNaN(lng)) {
+      this.locationPlaceLabel = '';
+      return;
+    }
+    const seq = ++this.placeLookupSeq;
+    this.locationResolving = true;
+    const url =
+      `https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${encodeURIComponent(String(lat))}` +
+      `&lon=${encodeURIComponent(String(lng))}&zoom=12&addressdetails=1`;
+    fetch(url, {
+      headers: { Accept: 'application/json' },
+    })
+      .then((r) => (r.ok ? r.json() : Promise.reject(r.status)))
+      .then((data) => {
+        if (seq !== this.placeLookupSeq) {
+          return;
+        }
+        const addr = data?.address || {};
+        const town =
+          addr.city ||
+          addr.town ||
+          addr.village ||
+          addr.suburb ||
+          addr.municipality ||
+          addr.county ||
+          '';
+        const country = addr.country || '';
+        const parts = [town, country].filter(Boolean);
+        this.locationPlaceLabel = parts.length ? parts.join(', ') : '';
+        this.locationResolving = false;
+      })
+      .catch(() => {
+        if (seq !== this.placeLookupSeq) {
+          return;
+        }
+        this.locationPlaceLabel = '';
+        this.locationResolving = false;
+      });
   }
 
   get otherPlayersOnMap(): number {
@@ -155,6 +235,7 @@ export class RandomChatComponent implements OnInit, OnDestroy {
         this.randomLat = pos.coords.latitude;
         this.randomLng = pos.coords.longitude;
         this.randomHint = 'Location updated.';
+        this.schedulePlaceLookup();
         if (this.leafletMap) {
           this.leafletMap.setView([this.randomLat, this.randomLng], this.leafletMap.getZoom());
           this.updateSelfCircle();

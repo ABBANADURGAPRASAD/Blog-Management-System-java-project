@@ -1,5 +1,6 @@
 com/blog/repository/ChatMessageRepository.class
 com/blog/kafka/ChatKafkaDeliveryConsumer.class
+com/blog/service/impl/AvatarCityServiceImpl$Ownership.class
 com/blog/kafka/ChatKafkaConfig.class
 com/blog/moderation/ModerationEmailService.class
 com/blog/service/impl/UserServiceImpl.class
@@ -11,6 +12,7 @@ com/blog/repository/AnonymousMatchQueueRepository.class
 com/blog/service/impl/followersAndFollowingServiceImpl.class
 com/blog/moderation/CommentContentModerator.class
 com/blog/service/impl/PostServiceImpl.class
+com/blog/service/impl/AvatarCityServiceImpl$Presence.class
 com/blog/service/impl/followersAndFollowingRepository.class
 com/blog/moderation/CommentModerationDecision$CommentModerationDecisionBuilder.class
 com/blog/repository/AnonymousChatMessageRepository.class
@@ -29,5 +31,6 @@ com/blog/repository/NotificationRepository.class
 com/blog/repository/PostRepository.class
 com/blog/repository/CommentMentionRepository.class
 com/blog/moderation/AiModerationClient.class
+com/blog/service/impl/AvatarCityServiceImpl.class
 com/blog/repository/AnonymousMapMarkerRepository.class
 com/blog/service/impl/CommentServiceImpl.class

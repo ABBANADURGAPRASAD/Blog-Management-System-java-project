@@ -1,0 +1,67 @@
+:host {
+  display: block;
+  min-height: calc(100vh - 64px);
+}
+
+.st-page {
+  max-width: 960px;
+  margin: 0 auto;
+  padding: 16px 16px 40px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  font-family: 'Trebuchet MS', 'Segoe UI', sans-serif;
+  background: linear-gradient(180deg, #d9ecff 0%, #f0e6d4 100%);
+  color: #1a2b3c;
+}
+
+.st-top {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.st-top h1 {
+  margin: 0;
+  font-size: 1.5rem;
+  font-weight: 900;
+}
+
+.st-back {
+  border: none;
+  background: rgba(255, 255, 255, 0.8);
+  padding: 8px 12px;
+  border-radius: 10px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.st-you {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  background: rgba(255, 255, 255, 0.75);
+  border-radius: 14px;
+  padding: 12px 14px;
+}
+
+.st-you p {
+  margin: 4px 0 0;
+  font-size: 0.85rem;
+  opacity: 0.75;
+  font-weight: 600;
+}
+
+.st-map-shell {
+  height: min(70vh, 520px);
+  min-height: 320px;
+  border-radius: 18px;
+  overflow: hidden;
+  border: 3px solid rgba(26, 43, 60, 0.12);
+  box-shadow: 0 14px 36px rgba(26, 43, 60, 0.14);
+}
+
+.st-map {
+  width: 100%;
+  height: 100%;
+}

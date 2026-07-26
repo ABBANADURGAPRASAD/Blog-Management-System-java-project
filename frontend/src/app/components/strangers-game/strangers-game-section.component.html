@@ -2,19 +2,20 @@
   <div class="sg-card-hero-wrap">
     <img
       class="sg-card-hero"
-      src="assets/images/strangers-game-hero.png"
-      alt="Cartoon crowd — let's play with strangers"
+      src="assets/images/lets-play-strangers-plan.png"
+      alt="Let's play with strangers — street avatars and proximity chat"
       width="600"
       height="320"
       loading="lazy"
     />
+    <p class="sg-card-title-overlay" aria-hidden="true">LET'S PLAY WITH THE STRANGERS</p>
   </div>
 
-  <p class="hint" *ngIf="!gameActive">
-    Create your own Snap-style avatar once, then jump into a playful stranger lobby.
+  <p class="hint">
+    Create your own street-style avatar once, then jump into a playful stranger lobby.
   </p>
 
-  <div class="sg-saved-profile" *ngIf="character && !gameActive">
+  <div class="sg-saved-profile" *ngIf="character">
     <app-strangers-game-avatar
       [skinColor]="character.skinColor"
       [shape]="character.shape"
@@ -33,50 +34,11 @@
     class="btn-strangers-play"
     (click)="onLetsPlay()"
     [disabled]="!userId"
-    *ngIf="!gameActive"
   >
     Let's Play
   </button>
 
-  <div class="sg-game-active" *ngIf="gameActive && character">
-    <div class="sg-game-header">
-      <app-strangers-game-avatar
-        [skinColor]="character.skinColor"
-        [shape]="character.shape"
-        [outfitId]="character.outfitId"
-        size="md"
-      ></app-strangers-game-avatar>
-      <div>
-        <p class="sg-game-playing-as">Playing as</p>
-        <strong class="sg-game-name">{{ character.name }}</strong>
-      </div>
-    </div>
-
-    <div class="sg-lobby-stage" aria-live="polite">
-      <div class="sg-lobby-orbit">
-        <span class="sg-lobby-peer sg-peer-1" aria-hidden="true">?</span>
-        <span class="sg-lobby-peer sg-peer-2" aria-hidden="true">?</span>
-        <span class="sg-lobby-peer sg-peer-3" aria-hidden="true">?</span>
-        <app-strangers-game-avatar
-          class="sg-lobby-you"
-          [skinColor]="character.skinColor"
-          [shape]="character.shape"
-          [outfitId]="character.outfitId"
-          size="md"
-        ></app-strangers-game-avatar>
-      </div>
-      <p class="sg-game-status">{{ gameStatus }}</p>
-    </div>
-
-    <div class="sg-game-actions">
-      <button type="button" class="secondary sg-inline-btn" (click)="onEditCharacter()">
-        Edit character
-      </button>
-      <button type="button" class="ghost sg-inline-btn" (click)="exitGame()">Leave lobby</button>
-    </div>
-  </div>
-
-  <p class="status" *ngIf="gameStatus && !gameActive">{{ gameStatus }}</p>
+  <p class="status" *ngIf="gameStatus">{{ gameStatus }}</p>
 </section>
 
 <app-strangers-game-character-dialog

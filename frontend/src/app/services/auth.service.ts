@@ -14,6 +14,11 @@ export interface RegisterRequest {
   email: string;
   password: string;
   confirmPassword?: string;
+  gender?: string;
+  phoneNumber?: string;
+  country?: string;
+  state?: string;
+  town?: string;
 }
 
 @Injectable({

@@ -1,0 +1,40 @@
+<div class="kg-page" [attr.data-theme]="theme">
+  <header class="kg-top">
+    <button type="button" class="kg-back" (click)="goBack()">← Hub</button>
+    <h1>{{ title }}</h1>
+  </header>
+
+  <p class="kg-blurb">{{ blurb }}</p>
+
+  <div class="kg-modes">
+    <button type="button" [class.on]="mode === 'solo'" (click)="setMode('solo')">Practice solo</button>
+    <button type="button" [class.on]="mode === 'strangers'" (click)="setMode('strangers')">
+      Play with strangers
+    </button>
+    <button type="button" [class.on]="mode === 'friends'" (click)="setMode('friends')">
+      Followers / following
+    </button>
+  </div>
+  <p class="kg-mode-note" *ngIf="mode !== 'solo'"> Matchmaking hooks land next — practice questions are live now. </p>
+
+  <ng-container *ngIf="!done && current as q">
+    <p class="kg-progress">Question {{ index + 1 }} / {{ questions.length }}</p>
+    <h2 class="kg-prompt">{{ q.prompt }}</h2>
+    <div class="kg-choices">
+      <button type="button" *ngFor="let c of q.choices; let i = index"
+        [disabled]="locked"
+        (click)="answer(i)" >  {{ c }}
+      </button>
+    </div>
+    <p class="kg-feedback" *ngIf="feedback">{{ feedback }}</p>
+    <button type="button" class="kg-next" *ngIf="locked" (click)="next()">
+      {{ index >= questions.length - 1 ? 'See score' : 'Next' }}
+    </button>
+  </ng-container>
+
+  <div class="kg-done" *ngIf="done">
+    <h2>Score: {{ score }} / {{ questions.length }}</h2>
+    <p>Useful knowledge sticks better when you argue it with a friend next time.</p>
+    <button type="button" class="kg-next" (click)="goBack()">Back to hub</button>
+  </div>
+</div>

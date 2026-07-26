@@ -7,6 +7,7 @@ import {
   SimpleChanges,
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { Router } from '@angular/router';
 import { Subscription } from 'rxjs';
 import { UserService } from '../../services/user.service';
 import { StrangersGameProfileService } from '../../services/strangers-game-profile.service';
@@ -36,16 +37,14 @@ export class StrangersGameSectionComponent implements OnInit, OnChanges, OnDestr
   accountGender: AccountGender = null;
   characterDialogOpen = false;
   editCharacterMode = false;
-  gameActive = false;
   gameStatus = '';
-  lobbyTick = 0;
 
   private userSub?: Subscription;
-  private lobbyInterval?: ReturnType<typeof setInterval>;
 
   constructor(
     private profileService: StrangersGameProfileService,
-    private userService: UserService
+    private userService: UserService,
+    private router: Router
   ) {}
 
   ngOnInit(): void {
@@ -55,8 +54,6 @@ export class StrangersGameSectionComponent implements OnInit, OnChanges, OnDestr
 
   ngOnChanges(changes: SimpleChanges): void {
     if (changes['userId']) {
-      this.stopLobby();
-      this.gameActive = false;
       this.reloadCharacter();
       this.loadAccountGender();
     }
@@ -64,7 +61,6 @@ export class StrangersGameSectionComponent implements OnInit, OnChanges, OnDestr
 
   ngOnDestroy(): void {
     this.userSub?.unsubscribe();
-    this.stopLobby();
   }
 
   get outfitLabel(): string {
@@ -84,7 +80,7 @@ export class StrangersGameSectionComponent implements OnInit, OnChanges, OnDestr
       this.characterDialogOpen = true;
       return;
     }
-    this.startGame();
+    void this.router.navigate(['/avatar-games']);
   }
 
   onEditCharacter(): void {
@@ -101,17 +97,14 @@ export class StrangersGameSectionComponent implements OnInit, OnChanges, OnDestr
     if (!this.userId) {
       return;
     }
+    const wasEdit = this.editCharacterMode;
     this.profileService.saveCharacter(this.userId, character);
     this.character = character;
     this.characterDialogOpen = false;
     this.editCharacterMode = false;
-    this.startGame();
-  }
-
-  exitGame(): void {
-    this.stopLobby();
-    this.gameActive = false;
-    this.gameStatus = '';
+    if (!wasEdit) {
+      void this.router.navigate(['/avatar-games']);
+    }
   }
 
   private reloadCharacter(): void {
@@ -136,27 +129,5 @@ export class StrangersGameSectionComponent implements OnInit, OnChanges, OnDestr
         this.accountGender = null;
       },
     });
-  }
-
-  private startGame(): void {
-    this.gameActive = true;
-    this.gameStatus = 'Looking for strangers to play with…';
-    this.stopLobby();
-    this.lobbyTick = 0;
-    this.lobbyInterval = setInterval(() => {
-      this.lobbyTick++;
-      const dots = '.'.repeat((this.lobbyTick % 3) + 1);
-      this.gameStatus = `Matching players${dots}`;
-      if (this.lobbyTick >= 4) {
-        this.gameStatus = 'You are in the lobby — say hi when someone joins!';
-      }
-    }, 900);
-  }
-
-  private stopLobby(): void {
-    if (this.lobbyInterval) {
-      clearInterval(this.lobbyInterval);
-      this.lobbyInterval = undefined;
-    }
   }
 }

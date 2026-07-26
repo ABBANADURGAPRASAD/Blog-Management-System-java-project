@@ -3,9 +3,66 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
   background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
-  padding: 20px;
+  padding: 0 20px 20px;
+  margin-top: -90px;
+}
+
+.auth-white-header {
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  align-self: stretch;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 64px;
+  margin: 0 -20px 24px;
+  padding: 0 28px;
+  background: #ffffff;
+  border-bottom: 1px solid #e6e8ee;
+  box-shadow: 0 1px 0 rgba(0, 0, 0, 0.04);
+}
+
+.auth-header-brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  text-decoration: none;
+  color: #111827;
+  font-weight: 700;
+  font-size: 1.05rem;
+}
+
+.auth-header-logo {
+  height: 36px;
+  width: auto;
+  object-fit: contain;
+}
+
+.auth-header-nav {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.auth-header-link {
+  text-decoration: none;
+  color: #4b5563;
+  font-size: 14px;
+  font-weight: 600;
+  padding: 8px 14px;
+  border-radius: 8px;
+}
+
+.auth-header-link:hover {
+  background: #f3f4f6;
+  color: #111827;
+}
+
+.auth-header-link.active {
+  color: #667eea;
+  background: rgba(102, 126, 234, 0.1);
 }
 
 .register-card {
@@ -14,8 +71,54 @@
   border-radius: 20px;
   padding: 40px;
   width: 100%;
-  max-width: 500px;
+  max-width: 560px;
   box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+  margin-top: 8px;
+}
+
+.form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.form-row-3 {
+  grid-template-columns: 1fr 1fr 1fr;
+}
+
+.form-select {
+  padding-left: 12px !important;
+  appearance: auto;
+  cursor: pointer;
+}
+
+.location-block {
+  margin-bottom: 8px;
+}
+
+.location-label {
+  color: rgba(255, 255, 255, 0.9);
+  font-size: 14px;
+  font-weight: 600;
+  margin: 0 0 10px;
+}
+
+.social-notice {
+  background: rgba(102, 126, 234, 0.15);
+  color: #c7d2fe;
+  padding: 12px;
+  border-radius: 8px;
+  margin-bottom: 16px;
+  font-size: 13px;
+  text-align: center;
+  border: 1px solid rgba(102, 126, 234, 0.35);
+}
+
+@media (max-width: 640px) {
+  .form-row,
+  .form-row-3 {
+    grid-template-columns: 1fr;
+  }
 }
 
 .logo {
@@ -249,6 +352,11 @@
 .social-button svg {
   width: 24px;
   height: 24px;
+}
+
+.social-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
 }
 
 .signin-link {
