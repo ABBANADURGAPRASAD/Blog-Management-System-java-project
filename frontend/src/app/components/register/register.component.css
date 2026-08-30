@@ -35,9 +35,16 @@
 }
 
 .auth-header-logo {
-  height: 36px;
+  height: 40px;
   width: auto;
   object-fit: contain;
+}
+
+.regester-page-logo{
+  height: 3em;
+  width: auto;
+  object-fit: contain;
+  background-color: #ffffff;
 }
 
 .auth-header-nav {
@@ -130,7 +137,7 @@
 .logo-icon {
   width: 48px;
   height: 48px;
-  background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+  background: linear-gradient(135deg, #ffffff 0%, #ffffff 100%);
   border-radius: 12px;
   display: flex;
   align-items: center;
